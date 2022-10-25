@@ -40,7 +40,6 @@ void vm_wat_print_lang_type(FILE *out, vm_wasm_lang_type_t ltype) {
 }
 
 void vm_wat_print_instr(FILE *out, vm_wasm_instr_t instr) {
-    fprintf(out, "(");
     switch (instr.opcode) {
         case VM_WASM_OPCODE_UNREACHABLE:
             fprintf(out, "unreachable");
@@ -88,19 +87,19 @@ void vm_wat_print_instr(FILE *out, vm_wasm_instr_t instr) {
             fprintf(out, "select");
             break;
         case VM_WASM_OPCODE_GET_LOCAL:
-            fprintf(out, "get_local");
+            fprintf(out, "local.get");
             break;
         case VM_WASM_OPCODE_SET_LOCAL:
-            fprintf(out, "set_local");
+            fprintf(out, "local.set");
             break;
         case VM_WASM_OPCODE_TEE_LOCAL:
-            fprintf(out, "tee_local");
+            fprintf(out, "local.tee");
             break;
         case VM_WASM_OPCODE_GET_GLOBAL:
-            fprintf(out, "get_global");
+            fprintf(out, "global.get");
             break;
         case VM_WASM_OPCODE_SET_GLOBAL:
-            fprintf(out, "set_global");
+            fprintf(out, "global.set");
             break;
         case VM_WASM_OPCODE_I32_LOAD:
             fprintf(out, "i32.load");
@@ -593,10 +592,9 @@ void vm_wat_print_instr(FILE *out, vm_wasm_instr_t instr) {
             fprintf(out, " ");
             break;
         case VM_WASM_IMMEDIATE_MEMORY_IMMEDIATE:
-            fprintf(out, " ");
+            fprintf(out, " offset=%zu", (size_t)instr.immediate.memory_immediate.offset);
             break;
     }
-    fprintf(out, ")");
 }
 
 void vm_wat_print_section_custom(FILE *out, vm_wasm_section_custom_t scustom) {
@@ -612,13 +610,16 @@ void vm_wat_print_section_type(FILE *out, vm_wasm_section_type_t stype) {
         if (entry.type == VM_WASM_TYPE_FUNC) {
             fprintf(out, "(func");
             bool first = true;
-            for (uint64_t j = 0; j < entry.num_params; j++) {
-                fprintf(out, " ");
-                vm_wat_print_lang_type(out, entry.params[j]);
+            if (entry.num_params != 0) {
+                fprintf(out, " (param");
+                for (uint64_t j = 0; j < entry.num_params; j++) {
+                    fprintf(out, " ");
+                    vm_wat_print_lang_type(out, entry.params[j]);
+                }
+                fprintf(out, ")");
             }
             if (entry.has_return_type) {
-                fprintf(out, " ");
-                fprintf(out, "(result ");
+                fprintf(out, " (result ");
                 vm_wat_print_lang_type(out, entry.return_type);
                 fprintf(out, ")");
             }
@@ -634,9 +635,53 @@ void vm_wat_print_section_import(FILE *out, vm_wasm_section_import_t simport) {
     fprintf(stderr, "unsupported: import section\n");
 }
 
-void vm_wat_print_section_function(FILE *out, vm_wasm_section_function_t sfunction) {
-    for (uint64_t i = 0; i < sfunction.num_entries; i++) {
-        fprintf(out, "\n  (func (;%zu;) %zu)", (size_t)i, (size_t)sfunction.entries[i]);
+void vm_wat_print_section_function(FILE *out, vm_wasm_module_t mod, vm_wasm_section_function_t sfunction) {
+    vm_wasm_section_code_t code_section;
+    vm_wasm_section_type_t type_section;
+    for (uint64_t i = 0; i < mod.num_sections; i++) {
+        if (mod.sections[i].id == VM_WASM_SECTION_ID_CODE) {
+            code_section = mod.sections[i].code_section;
+        }
+        if (mod.sections[i].id == VM_WASM_SECTION_ID_TYPE) {
+            type_section = mod.sections[i].type_section;
+        }
+    }
+has_code:;
+    for (uint64_t i = 0; i < code_section.num_entries; i++) {
+        vm_wasm_section_type_entry_t type = type_section.entries[sfunction.entries[i]];
+        vm_wasm_section_code_entry_t code = code_section.entries[i];
+        fprintf(out, "\n  (func (;%zu;) (type %zu)", (size_t)i, (size_t) sfunction.entries[i]);
+        if (type.num_params != 0) {
+            fprintf(out, " (param");
+            for (uint64_t j = 0; j < type.num_params; j++) {
+                fprintf(out, " ");
+                vm_wat_print_lang_type(out, type.params[j]);
+            }
+            fprintf(out, ")");
+        }
+        if (type.has_return_type) {
+            fprintf(out, " (result ");
+            vm_wat_print_lang_type(out, type.return_type);
+            fprintf(out, ")");
+        }
+        if (code.num_locals != 0) {
+            fprintf(out, "\n    (local");
+            for (uint64_t j = 0; j < code.num_locals; j++) {
+                for (uint64_t k = 0; k < code.locals[j].count; k++) {
+                    fprintf(out, " ");
+                    vm_wat_print_lang_type(out, code.locals[j].type);
+                }
+            }
+            fprintf(out, ")");
+        }
+        for (uint64_t j = 0; j < code.num_instrs; j++) {
+            if (code.instrs[j].opcode == VM_WASM_OPCODE_END || code.instrs[j].opcode == VM_WASM_OPCODE_ELSE) {
+                continue;
+            }
+            fprintf(out, "\n    ");
+            vm_wat_print_instr(out, code.instrs[j]);
+        }
+        fprintf(out, ")");
     }
 }
 
@@ -667,7 +712,9 @@ void vm_wat_print_section_global(FILE *out, vm_wasm_section_global_t sglobal) {
             vm_wat_print_lang_type(out, global.global.content_type);
         }
         fprintf(out, " ");
+        fprintf(out, " (");
         vm_wat_print_instr(out, global.init_expr);
+        fprintf(out, ")");
         fprintf(out, ")");
     }
 }
@@ -709,7 +756,7 @@ void vm_wat_print_section_data(FILE *out, vm_wasm_section_data_t sdata) {
     fprintf(stderr, "unsupported: data section\n");
 }
 
-void vm_wat_print_section(FILE *out, vm_wasm_section_t section) {
+void vm_wat_print_section(FILE *out, vm_wasm_module_t mod, vm_wasm_section_t section) {
     switch (section.id) {
         case VM_WASM_SECTION_ID_CUSTOM: {
             vm_wat_print_section_custom(out, section.custom_section);
@@ -724,7 +771,7 @@ void vm_wat_print_section(FILE *out, vm_wasm_section_t section) {
             break;
         }
         case VM_WASM_SECTION_ID_FUNCTION: {
-            vm_wat_print_section_function(out, section.function_section);
+            vm_wat_print_section_function(out, mod, section.function_section);
             break;
         }
         case VM_WASM_SECTION_ID_TABLE: {
@@ -765,7 +812,7 @@ void vm_wat_print_section(FILE *out, vm_wasm_section_t section) {
 void vm_wat_print_module(FILE *out, vm_wasm_module_t mod) {
     fprintf(out, "(module");
     for (uint64_t i = 0; i < mod.num_sections; i++) {
-        vm_wat_print_section(out, mod.sections[i]);
+        vm_wat_print_section(out, mod, mod.sections[i]);
     }
     fprintf(out, ")");
 }

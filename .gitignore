@@ -3,6 +3,7 @@
 *.exp
 *.lib
 *.ilk
+*.pdb
 test/*.wasm
 miniwasm.exe
 miniwasm

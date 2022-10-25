@@ -1,7 +1,7 @@
 
 #include "./parse.h"
 
-vm_wasm_immediate_id_t vm_wasm_immediates[] = {
+vm_wasm_immediate_id_t vm_wasm_immediates[256] = {
     [VM_WASM_OPCODE_BLOCK] = VM_WASM_IMMEDIATE_BLOCK_TYPE,
     [VM_WASM_OPCODE_LOOP] = VM_WASM_IMMEDIATE_BLOCK_TYPE,
     [VM_WASM_OPCODE_IF] = VM_WASM_IMMEDIATE_BLOCK_TYPE,
