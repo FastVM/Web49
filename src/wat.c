@@ -566,25 +566,25 @@ void vm_wat_print_instr(FILE *out, vm_wasm_instr_t instr) {
             fprintf(out, " <<<BLOCK>>>");
             break;
         case VM_WASM_IMMEDIATE_VARUINT1:
-            fprintf(out, " %zu", (size_t) instr.immediate.varuint1);
+            fprintf(out, " %zu", (size_t)instr.immediate.varuint1);
             break;
         case VM_WASM_IMMEDIATE_VARUINT32:
-            fprintf(out, " %zu", (size_t) instr.immediate.varuint32);
+            fprintf(out, " %zu", (size_t)instr.immediate.varuint32);
             break;
         case VM_WASM_IMMEDIATE_VARUINT64:
-            fprintf(out, " %zu", (size_t) instr.immediate.varuint64);
+            fprintf(out, " %zu", (size_t)instr.immediate.varuint64);
             break;
         case VM_WASM_IMMEDIATE_VARINT32:
-            fprintf(out, " %zi", (ptrdiff_t) instr.immediate.varint32);
+            fprintf(out, " %zi", (ptrdiff_t)instr.immediate.varint32);
             break;
         case VM_WASM_IMMEDIATE_VARINT64:
-            fprintf(out, " %zi", (ptrdiff_t) instr.immediate.varint64);
+            fprintf(out, " %zi", (ptrdiff_t)instr.immediate.varint64);
             break;
         case VM_WASM_IMMEDIATE_UINT32:
-            fprintf(out, " %zu", (size_t) instr.immediate.uint32);
+            fprintf(out, " %zu", (size_t)instr.immediate.uint32);
             break;
         case VM_WASM_IMMEDIATE_UINT64:
-            fprintf(out, " %zu", (size_t) instr.immediate.uint64);
+            fprintf(out, " %zu", (size_t)instr.immediate.uint64);
             break;
         case VM_WASM_IMMEDIATE_BR_TABLE:
             fprintf(out, " ");
@@ -605,7 +605,7 @@ void vm_wat_print_section_custom(FILE *out, vm_wasm_section_custom_t scustom) {
 
 void vm_wat_print_section_type(FILE *out, vm_wasm_section_type_t stype) {
     for (uint64_t i = 0; i < stype.num_entries; i++) {
-        fprintf(out, "  (type");
+        fprintf(out, "\n  (type");
         fprintf(out, " ");
         vm_wasm_section_type_entry_t entry = stype.entries[i];
         fprintf(out, "(;%zu;) ", (size_t)i);
@@ -626,7 +626,7 @@ void vm_wat_print_section_type(FILE *out, vm_wasm_section_type_t stype) {
         } else {
             vm_wat_print_lang_type(out, entry.type);
         }
-        fprintf(out, ")\n");
+        fprintf(out, ")");
     }
 }
 
@@ -636,7 +636,7 @@ void vm_wat_print_section_import(FILE *out, vm_wasm_section_import_t simport) {
 
 void vm_wat_print_section_function(FILE *out, vm_wasm_section_function_t sfunction) {
     for (uint64_t i = 0; i < sfunction.num_entries; i++) {
-        fprintf(out, "  (func (;%zu;) %zu)\n", (size_t)i, (size_t)sfunction.entries[i]);
+        fprintf(out, "\n  (func (;%zu;) %zu)", (size_t)i, (size_t)sfunction.entries[i]);
     }
 }
 
@@ -648,9 +648,9 @@ void vm_wat_print_section_memory(FILE *out, vm_wasm_section_memory_t smemory) {
     for (uint64_t i = 0; i < smemory.num_entries; i++) {
         vm_wasm_type_memory_t mem = smemory.entries[i];
         if (mem.flags & 1) {
-            fprintf(out, "  (memory (;%zu;) %zu %zu)\n", (size_t)i, (size_t)mem.initial, (size_t)mem.maximum);
+            fprintf(out, "\n  (memory (;%zu;) %zu %zu)", (size_t)i, (size_t)mem.initial, (size_t)mem.maximum);
         } else {
-            fprintf(out, "  (memory (;%zu;) %zu)\n", (size_t)i, (size_t)mem.initial);
+            fprintf(out, "\n  (memory (;%zu;) %zu)", (size_t)i, (size_t)mem.initial);
         }
     }
 }
@@ -658,7 +658,7 @@ void vm_wat_print_section_memory(FILE *out, vm_wasm_section_memory_t smemory) {
 void vm_wat_print_section_global(FILE *out, vm_wasm_section_global_t sglobal) {
     for (uint64_t i = 0; i < sglobal.num_entries; i++) {
         vm_wasm_section_global_entry_t global = sglobal.entries[i];
-        fprintf(out, "  (global (;%zu;) ", (size_t)i);
+        fprintf(out, "\n  (global (;%zu;) ", (size_t)i);
         if (global.global.mutable) {
             fprintf(out, "(mut ");
             vm_wat_print_lang_type(out, global.global.content_type);
@@ -668,12 +668,30 @@ void vm_wat_print_section_global(FILE *out, vm_wasm_section_global_t sglobal) {
         }
         fprintf(out, " ");
         vm_wat_print_instr(out, global.init_expr);
-        fprintf(out, ")\n");
+        fprintf(out, ")");
     }
 }
 
 void vm_wat_print_section_export(FILE *out, vm_wasm_section_export_t sexport) {
-    fprintf(stderr, "unsupported: export section\n");
+    for (uint64_t i = 0; i < sexport.num_entries; i++) {
+        vm_wasm_section_export_entry_t export = sexport.entries[i];
+        fprintf(out, "\n  (export \"%s\" ", export.field_str);
+        switch (export.kind) {
+            case VM_WASM_EXTERNAL_KIND_FUNCTION:
+                fprintf(out, "(func %zu)", (size_t) export.index);
+                break;
+            case VM_WASM_EXTERNAL_KIND_TABLE:
+                fprintf(out, "(table %zu)", (size_t) export.index);
+                break;
+            case VM_WASM_EXTERNAL_KIND_MEMORY:
+                fprintf(out, "(memory %zu)", (size_t) export.index);
+                break;
+            case VM_WASM_EXTERNAL_KIND_GLOBAL:
+                fprintf(out, "(global %zu)", (size_t) export.index);
+                break;
+        }
+        fprintf(out, ")");
+    }
 }
 
 void vm_wat_print_section_start(FILE *out, vm_wasm_section_start_t sstart) {
@@ -685,7 +703,6 @@ void vm_wat_print_section_element(FILE *out, vm_wasm_section_element_t selement)
 }
 
 void vm_wat_print_section_code(FILE *out, vm_wasm_section_code_t scode) {
-    fprintf(stderr, "unsupported: code section\n");
 }
 
 void vm_wat_print_section_data(FILE *out, vm_wasm_section_data_t sdata) {
@@ -746,7 +763,7 @@ void vm_wat_print_section(FILE *out, vm_wasm_section_t section) {
 }
 
 void vm_wat_print_module(FILE *out, vm_wasm_module_t mod) {
-    fprintf(out, "(module\n");
+    fprintf(out, "(module");
     for (uint64_t i = 0; i < mod.num_sections; i++) {
         vm_wat_print_section(out, mod.sections[i]);
     }
