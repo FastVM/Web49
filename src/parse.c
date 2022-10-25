@@ -235,7 +235,7 @@ vm_wasm_section_type_t vm_wasm_parse_section_type(FILE *in) {
         uint64_t num_returns = vm_wasm_parse_uleb(in);
         vm_wasm_lang_type_t return_type = VM_WASM_TYPE_NOT_SPECIFIED;
         bool has_return_type = false;
-        if (num_returns) {
+        if (num_returns != 0) {
             has_return_type = true;
             return_type = vm_wasm_parse_byte(in);
         }

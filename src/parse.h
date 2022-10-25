@@ -1,4 +1,7 @@
 
+#if !defined(VM_HEADER_WASM)
+#define VM_HEADER_WASM
+
 #include <ctype.h>
 #include <limits.h>
 #include <math.h>
@@ -441,10 +444,10 @@ struct vm_wasm_section_custom_t {
 };
 
 struct vm_wasm_section_type_entry_t {
+    vm_wasm_lang_type_t type;
     uint64_t num_params;
     vm_wasm_lang_type_t *params;
     uint64_t num_returns;
-    vm_wasm_lang_type_t type;
     vm_wasm_lang_type_t return_type;
     bool has_return_type;
 };
@@ -629,3 +632,5 @@ vm_wasm_instr_t vm_wasm_parse_init_expr(FILE *in);
 vm_wasm_instr_t vm_wasm_parse_instr(FILE *in);
 vm_wasm_section_t vm_wasm_parse_section(FILE *in, vm_wasm_section_header_t id);
 vm_wasm_module_t vm_wasm_parse_module(FILE *in);
+
+#endif

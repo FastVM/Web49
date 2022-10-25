@@ -1,2 +1,9 @@
 *.o
 *.exe
+*.exp
+*.lib
+*.ilk
+test/*.wasm
+miniwasm.exe
+miniwasm
+out.*
