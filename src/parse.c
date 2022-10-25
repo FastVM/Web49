@@ -47,14 +47,15 @@ vm_wasm_immediate_id_t vm_wasm_immediates[] = {
 };
 
 uint64_t vm_wasm_parse_uleb(FILE *in) {
-    unsigned char buf;
+    uint8_t buf;
     uint64_t x = 0;
-    size_t bytes = 0;
+    size_t mul = 1;
     while (fread(&buf, 1, 1, in)) {
-        x |= (buf & 0x7fULL) << (7 * bytes++);
-        if (!(buf & 0x80U)) {
+        x |= (buf & 0x7f) * mul;
+        if (!(buf & 0x80)) {
             break;
         }
+        mul *= 0x80;
     }
     return x;
 }
@@ -172,7 +173,7 @@ vm_wasm_type_table_t vm_wasm_parse_type_table(FILE *in) {
 vm_wasm_type_global_t vm_wasm_parse_type_global(FILE *in) {
     return (vm_wasm_type_global_t){
         .content_type = vm_wasm_parse_byte(in),
-        .mutability = vm_wasm_parse_byte(in),
+        .mutable = vm_wasm_parse_byte(in),
     };
 }
 
@@ -181,7 +182,7 @@ vm_wasm_type_memory_t vm_wasm_parse_type_memory(FILE *in) {
     return (vm_wasm_type_memory_t){
         .flags = flags,
         .initial = vm_wasm_parse_uleb(in),
-        .maximum = (flags % 2 == 1) ? vm_wasm_parse_uleb(in) : UINT64_MAX,
+        .maximum = (flags & 1) ? vm_wasm_parse_uleb(in) : UINT64_MAX,
     };
 }
 

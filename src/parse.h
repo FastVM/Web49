@@ -399,8 +399,8 @@ struct vm_wasm_type_function_t {
 };
 
 struct vm_wasm_type_global_t {
-    vm_wasm_external_kind_t content_type;
-    uint8_t mutability;
+    vm_wasm_lang_type_t content_type;
+    uint8_t mutable;
 };
 
 struct vm_wasm_type_memory_t {
