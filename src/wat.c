@@ -1,5 +1,6 @@
 #include "./wat.h"
 
+#include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -40,6 +41,13 @@ void vm_wat_print_lang_type(FILE *out, vm_wasm_lang_type_t ltype) {
 }
 
 void vm_wat_print_instr(FILE *out, vm_wasm_instr_t instr) {
+    vm_wat_print_instr_depth(out, instr, 0);
+}
+
+void vm_wat_print_instr_depth(FILE *out, vm_wasm_instr_t instr, uint64_t indent) {
+    for (uint64_t i = 0; i < indent; i++) {
+        fprintf(out, "  ");
+    }
     switch (instr.opcode) {
         case VM_WASM_OPCODE_UNREACHABLE:
             fprintf(out, "unreachable");
@@ -483,7 +491,7 @@ void vm_wat_print_instr(FILE *out, vm_wasm_instr_t instr) {
             fprintf(out, "f64.copysign");
             break;
         case VM_WASM_OPCODE_I32_WRAP_I64:
-            fprintf(out, "i32.wrap/i64");
+            fprintf(out, "i32.wrap_i64");
             break;
         case VM_WASM_OPCODE_I32_TRUNC_S_F32:
             fprintf(out, "i32.trunc_s/f32");
@@ -501,49 +509,49 @@ void vm_wat_print_instr(FILE *out, vm_wasm_instr_t instr) {
             fprintf(out, "i64.extend_s/i32");
             break;
         case VM_WASM_OPCODE_I64_EXTEND_U_I32:
-            fprintf(out, "i64.extend_u/i32");
+            fprintf(out, "i64.extend_i32_u");
             break;
         case VM_WASM_OPCODE_I64_TRUNC_S_F32:
-            fprintf(out, "i64.trunc_s/f32");
+            fprintf(out, "i64.trunc_f32_s");
             break;
         case VM_WASM_OPCODE_I64_TRUNC_U_F32:
-            fprintf(out, "i64.trunc_u/f32");
+            fprintf(out, "i64.trunc_f32_u");
             break;
         case VM_WASM_OPCODE_I64_TRUNC_S_F64:
-            fprintf(out, "i64.trunc_s/f64");
+            fprintf(out, "i64.trunc_f64_s");
             break;
         case VM_WASM_OPCODE_I64_TRUNC_U_F64:
-            fprintf(out, "i64.trunc_u/f64");
+            fprintf(out, "i64.trunc_f64_u");
             break;
         case VM_WASM_OPCODE_F32_CONVERT_S_I32:
-            fprintf(out, "f32.convert_s/i32");
+            fprintf(out, "f32.convert_i32_s");
             break;
         case VM_WASM_OPCODE_F32_CONVERT_U_I32:
-            fprintf(out, "f32.convert_u/i32");
+            fprintf(out, "f32.convert_i32_u");
             break;
         case VM_WASM_OPCODE_F32_CONVERT_S_I64:
-            fprintf(out, "f32.convert_s/i64");
+            fprintf(out, "f32.convert_i64_s");
             break;
         case VM_WASM_OPCODE_F32_CONVERT_U_I64:
-            fprintf(out, "f32.convert_u/i64");
+            fprintf(out, "f32.convert_i64_u");
             break;
         case VM_WASM_OPCODE_F32_DEMOTE_F64:
-            fprintf(out, "f32.demote/f64");
+            fprintf(out, "f32.demote_f64");
             break;
         case VM_WASM_OPCODE_F64_CONVERT_S_I32:
-            fprintf(out, "f64.convert_s/i32");
+            fprintf(out, "f64.convert_i32_s");
             break;
         case VM_WASM_OPCODE_F64_CONVERT_U_I32:
-            fprintf(out, "f64.convert_u/i32");
+            fprintf(out, "f64.convert_i32_u");
             break;
         case VM_WASM_OPCODE_F64_CONVERT_S_I64:
-            fprintf(out, "f64.convert_s/i64");
+            fprintf(out, "f64.convert_i64_s");
             break;
         case VM_WASM_OPCODE_F64_CONVERT_U_I64:
-            fprintf(out, "f64.convert_u/i64");
+            fprintf(out, "f64.convert_i64_u");
             break;
         case VM_WASM_OPCODE_F64_PROMOTE_F32:
-            fprintf(out, "f64.promote/f32");
+            fprintf(out, "f64.promo_f32te");
             break;
         case VM_WASM_OPCODE_I32_REINTERPRET_F32:
             fprintf(out, "i32.reinterpret/f32");
@@ -562,13 +570,15 @@ void vm_wat_print_instr(FILE *out, vm_wasm_instr_t instr) {
         case VM_WASM_IMMEDIATE_NONE:
             break;
         case VM_WASM_IMMEDIATE_BLOCK_TYPE:
-            fprintf(out, " <<<BLOCK>>>");
             break;
         case VM_WASM_IMMEDIATE_VARUINT1:
             fprintf(out, " %zu", (size_t)instr.immediate.varuint1);
             break;
         case VM_WASM_IMMEDIATE_VARUINT32:
             fprintf(out, " %zu", (size_t)instr.immediate.varuint32);
+            if (instr.opcode == VM_WASM_OPCODE_BR_IF || instr.opcode == VM_WASM_OPCODE_BR) {
+                fprintf(out, " (;@%zu;)", (size_t)(indent - instr.immediate.varuint32));
+            }
             break;
         case VM_WASM_IMMEDIATE_VARUINT64:
             fprintf(out, " %zu", (size_t)instr.immediate.varuint64);
@@ -586,22 +596,27 @@ void vm_wat_print_instr(FILE *out, vm_wasm_instr_t instr) {
             fprintf(out, " %zu", (size_t)instr.immediate.uint64);
             break;
         case VM_WASM_IMMEDIATE_BR_TABLE:
-            fprintf(out, " ");
+            for (uint64_t i = 0; i < instr.immediate.br_table.num_targets; i++) {
+                fprintf(out, " %zu (;@%zu;)", (size_t)instr.immediate.br_table.targets[i], (size_t)(indent - instr.immediate.br_table.targets[i]));
+            }
+            fprintf(out, " %zu (;@%zu;)", (size_t)instr.immediate.br_table.default_target, (size_t)(indent - instr.immediate.br_table.default_target));
             break;
         case VM_WASM_IMMEDIATE_CALL_INDIRECT:
             fprintf(out, " ");
             break;
         case VM_WASM_IMMEDIATE_MEMORY_IMMEDIATE:
-            fprintf(out, " offset=%zu", (size_t)instr.immediate.memory_immediate.offset);
+            if (instr.immediate.memory_immediate.offset != 0) {
+                fprintf(out, " offset=%zu", (size_t)instr.immediate.memory_immediate.offset);
+            }
             break;
     }
 }
 
-void vm_wat_print_section_custom(FILE *out, vm_wasm_section_custom_t scustom) {
+void vm_wat_print_section_custom(FILE *out, vm_wasm_module_t mod, vm_wasm_section_custom_t scustom) {
     // fprintf(stderr, "unsupported: custom section type\n");
 }
 
-void vm_wat_print_section_type(FILE *out, vm_wasm_section_type_t stype) {
+void vm_wat_print_section_type(FILE *out, vm_wasm_module_t mod, vm_wasm_section_type_t stype) {
     for (uint64_t i = 0; i < stype.num_entries; i++) {
         fprintf(out, "\n  (type");
         fprintf(out, " ");
@@ -609,7 +624,6 @@ void vm_wat_print_section_type(FILE *out, vm_wasm_section_type_t stype) {
         fprintf(out, "(;%zu;) ", (size_t)i);
         if (entry.type == VM_WASM_TYPE_FUNC) {
             fprintf(out, "(func");
-            bool first = true;
             if (entry.num_params != 0) {
                 fprintf(out, " (param");
                 for (uint64_t j = 0; j < entry.num_params; j++) {
@@ -631,11 +645,12 @@ void vm_wat_print_section_type(FILE *out, vm_wasm_section_type_t stype) {
     }
 }
 
-void vm_wat_print_section_import(FILE *out, vm_wasm_section_import_t simport) {
+void vm_wat_print_section_import(FILE *out, vm_wasm_module_t mod, vm_wasm_section_import_t simport) {
     fprintf(stderr, "unsupported: import section\n");
 }
 
 void vm_wat_print_section_function(FILE *out, vm_wasm_module_t mod, vm_wasm_section_function_t sfunction) {
+    size_t num_funcs  = 0;
     vm_wasm_section_code_t code_section;
     vm_wasm_section_type_t type_section;
     for (uint64_t i = 0; i < mod.num_sections; i++) {
@@ -645,12 +660,18 @@ void vm_wat_print_section_function(FILE *out, vm_wasm_module_t mod, vm_wasm_sect
         if (mod.sections[i].id == VM_WASM_SECTION_ID_TYPE) {
             type_section = mod.sections[i].type_section;
         }
+        if (mod.sections[i].id == VM_WASM_SECTION_ID_IMPORT) {
+            for (uint64_t j = 0; j < mod.sections[i].import_section.num_entries; j++) {
+                if (mod.sections[i].import_section.entries[j].kind == VM_WASM_EXTERNAL_KIND_FUNCTION) {
+                    num_funcs++;
+                }
+            }
+        }
     }
-has_code:;
     for (uint64_t i = 0; i < code_section.num_entries; i++) {
         vm_wasm_section_type_entry_t type = type_section.entries[sfunction.entries[i]];
         vm_wasm_section_code_entry_t code = code_section.entries[i];
-        fprintf(out, "\n  (func (;%zu;) (type %zu)", (size_t)i, (size_t) sfunction.entries[i]);
+        fprintf(out, "\n  (func (;%zu;) (type %zu)", (size_t)num_funcs++, (size_t) sfunction.entries[i]);
         if (type.num_params != 0) {
             fprintf(out, " (param");
             for (uint64_t j = 0; j < type.num_params; j++) {
@@ -674,22 +695,39 @@ has_code:;
             }
             fprintf(out, ")");
         }
-        for (uint64_t j = 0; j < code.num_instrs; j++) {
-            if (code.instrs[j].opcode == VM_WASM_OPCODE_END || code.instrs[j].opcode == VM_WASM_OPCODE_ELSE) {
-                continue;
+        uint64_t depth = 0;
+        for (uint64_t j = 0; j + 1 < code.num_instrs; j++) {
+            vm_wasm_opcode_t op = code.instrs[j].opcode;
+            if (op == VM_WASM_OPCODE_END || op == VM_WASM_OPCODE_ELSE) {
+                depth -= 1;
             }
             fprintf(out, "\n    ");
-            vm_wat_print_instr(out, code.instrs[j]);
+            vm_wat_print_instr_depth(out, code.instrs[j], depth);
+            if (op == VM_WASM_OPCODE_ELSE || op == VM_WASM_OPCODE_BLOCK || op== VM_WASM_OPCODE_IF || op== VM_WASM_OPCODE_LOOP) {
+                depth += 1;
+            }
+            if (op == VM_WASM_OPCODE_BLOCK || op == VM_WASM_OPCODE_LOOP || op == VM_WASM_OPCODE_IF) {
+                fprintf(out, "  ;; label = @%zu", (size_t) depth);
+            }
         }
         fprintf(out, ")");
     }
 }
 
-void vm_wat_print_section_table(FILE *out, vm_wasm_section_table_t stable) {
-    fprintf(stderr, "unsupported: table section\n");
+void vm_wat_print_section_table(FILE *out, vm_wasm_module_t mod, vm_wasm_section_table_t stable) {
+    for (uint64_t i = 0; i < stable.num_entries; i++) {
+        vm_wasm_type_table_t table = stable.entries[i];
+        fprintf(out, "\n  (table (;%zu;) %zu", (size_t) i, table.limits.initial);
+        if (table.limits.flags & 1) {
+            fprintf(out, " %zu", (size_t) table.limits.maximum);
+        }
+        fprintf(out, " ");
+        vm_wat_print_lang_type(out, table.element_type);
+        fprintf(out, ")");
+    }
 }
 
-void vm_wat_print_section_memory(FILE *out, vm_wasm_section_memory_t smemory) {
+void vm_wat_print_section_memory(FILE *out, vm_wasm_module_t mod, vm_wasm_section_memory_t smemory) {
     for (uint64_t i = 0; i < smemory.num_entries; i++) {
         vm_wasm_type_memory_t mem = smemory.entries[i];
         if (mem.flags & 1) {
@@ -700,18 +738,17 @@ void vm_wat_print_section_memory(FILE *out, vm_wasm_section_memory_t smemory) {
     }
 }
 
-void vm_wat_print_section_global(FILE *out, vm_wasm_section_global_t sglobal) {
+void vm_wat_print_section_global(FILE *out, vm_wasm_module_t mod, vm_wasm_section_global_t sglobal) {
     for (uint64_t i = 0; i < sglobal.num_entries; i++) {
         vm_wasm_section_global_entry_t global = sglobal.entries[i];
         fprintf(out, "\n  (global (;%zu;) ", (size_t)i);
-        if (global.global.mutable) {
+        if (global.global.is_mutable) {
             fprintf(out, "(mut ");
             vm_wat_print_lang_type(out, global.global.content_type);
             fprintf(out, ")");
         } else {
             vm_wat_print_lang_type(out, global.global.content_type);
         }
-        fprintf(out, " ");
         fprintf(out, " (");
         vm_wat_print_instr(out, global.init_expr);
         fprintf(out, ")");
@@ -719,7 +756,7 @@ void vm_wat_print_section_global(FILE *out, vm_wasm_section_global_t sglobal) {
     }
 }
 
-void vm_wat_print_section_export(FILE *out, vm_wasm_section_export_t sexport) {
+void vm_wat_print_section_export(FILE *out, vm_wasm_module_t mod, vm_wasm_section_export_t sexport) {
     for (uint64_t i = 0; i < sexport.num_entries; i++) {
         vm_wasm_section_export_entry_t export = sexport.entries[i];
         fprintf(out, "\n  (export \"%s\" ", export.field_str);
@@ -741,33 +778,75 @@ void vm_wat_print_section_export(FILE *out, vm_wasm_section_export_t sexport) {
     }
 }
 
-void vm_wat_print_section_start(FILE *out, vm_wasm_section_start_t sstart) {
+void vm_wat_print_section_start(FILE *out, vm_wasm_module_t mod, vm_wasm_section_start_t sstart) {
     fprintf(stderr, "unsupported: start section\n");
 }
 
-void vm_wat_print_section_element(FILE *out, vm_wasm_section_element_t selement) {
-    fprintf(stderr, "unsupported: element section\n");
+void vm_wat_print_section_element(FILE *out, vm_wasm_module_t mod, vm_wasm_section_element_t selement) {
+    for (uint64_t i = 0; i < selement.num_entries; i++) {
+        vm_wasm_section_element_entry_t element = selement.entries[i];
+        fprintf(out, "\n  (elem (;%zu;) (", i);
+        vm_wat_print_instr(out, element.offset);
+        fprintf(out, ") func");
+        for (uint64_t j = 0; j < element.num_elems; j++) {
+            fprintf(out, " %zu", (size_t) element.elems[j]);
+        }
+        fprintf(out, ")");
+    }
 }
 
-void vm_wat_print_section_code(FILE *out, vm_wasm_section_code_t scode) {
+void vm_wat_print_section_code(FILE *out, vm_wasm_module_t mod, vm_wasm_section_code_t scode) {
 }
 
-void vm_wat_print_section_data(FILE *out, vm_wasm_section_data_t sdata) {
-    fprintf(stderr, "unsupported: data section\n");
+void vm_wat_print_section_data(FILE *out, vm_wasm_module_t mod, vm_wasm_section_data_t sdata) {
+    // fprintf(stderr, "unsupported: data section\n");
+    vm_wasm_section_type_t type_section;
+    for (uint64_t i = 0; i < mod.num_sections; i++) {
+        if (mod.sections[i].id == VM_WASM_SECTION_ID_TYPE) {
+            type_section = mod.sections[i].type_section;
+        }
+    }
+    for (uint64_t i = 0; i < sdata.num_entries; i++) {
+        vm_wasm_section_data_entry_t data = sdata.entries[i];
+        vm_wasm_section_type_entry_t type = type_section.entries[data.index];
+        fprintf(out, "\n  (data (;%zu;) (", i);
+        vm_wat_print_instr(out, data.offset);
+        fprintf(out, ") \"");
+        for (uint64_t j = 0; j < data.size; j++) {
+            uint8_t arg = data.data[j];
+            if (arg == '\\') {
+            } else if (arg == '\t') {
+                fprintf(out, "\\%02zx", (size_t) '\t');
+            } else if (arg == '\r') {
+                fprintf(out, "\\%02zx", (size_t) '\r');
+            } else if (arg == '\n') {
+                fprintf(out, "\\%02zx", (size_t) '\n');
+            } else if (arg == '\'') {
+                fprintf(out, "\\%02zx", (size_t) '\'');
+            } else if (arg == '\"') {
+                fprintf(out, "\\%02zx", (size_t) '\"');
+            } else if (isprint(arg)) {
+                fprintf(out, "%c", (char) arg);
+            } else {
+                fprintf(out, "\\%02zx", (size_t) arg);
+            }
+        }
+        fprintf(out, "\")");
+    }
 }
 
 void vm_wat_print_section(FILE *out, vm_wasm_module_t mod, vm_wasm_section_t section) {
     switch (section.id) {
         case VM_WASM_SECTION_ID_CUSTOM: {
-            vm_wat_print_section_custom(out, section.custom_section);
+            vm_wat_print_section_custom(out, mod, section.custom_section);
             break;
         }
         case VM_WASM_SECTION_ID_TYPE: {
-            vm_wat_print_section_type(out, section.type_section);
+            vm_wat_print_section_type(out, mod, section.type_section);
             break;
         }
         case VM_WASM_SECTION_ID_IMPORT: {
-            vm_wat_print_section_import(out, section.import_section);
+            vm_wat_print_section_import(out, mod, section.import_section);
             break;
         }
         case VM_WASM_SECTION_ID_FUNCTION: {
@@ -775,35 +854,35 @@ void vm_wat_print_section(FILE *out, vm_wasm_module_t mod, vm_wasm_section_t sec
             break;
         }
         case VM_WASM_SECTION_ID_TABLE: {
-            vm_wat_print_section_table(out, section.table_section);
+            vm_wat_print_section_table(out, mod, section.table_section);
             break;
         }
         case VM_WASM_SECTION_ID_MEMORY: {
-            vm_wat_print_section_memory(out, section.memory_section);
+            vm_wat_print_section_memory(out, mod, section.memory_section);
             break;
         }
         case VM_WASM_SECTION_ID_GLOBAL: {
-            vm_wat_print_section_global(out, section.global_section);
+            vm_wat_print_section_global(out, mod, section.global_section);
             break;
         }
         case VM_WASM_SECTION_ID_EXPORT: {
-            vm_wat_print_section_export(out, section.export_section);
+            vm_wat_print_section_export(out, mod, section.export_section);
             break;
         }
         case VM_WASM_SECTION_ID_START: {
-            vm_wat_print_section_start(out, section.start_section);
+            vm_wat_print_section_start(out, mod, section.start_section);
             break;
         }
         case VM_WASM_SECTION_ID_ELEMENT: {
-            vm_wat_print_section_element(out, section.element_section);
+            vm_wat_print_section_element(out, mod, section.element_section);
             break;
         }
         case VM_WASM_SECTION_ID_CODE: {
-            vm_wat_print_section_code(out, section.code_section);
+            vm_wat_print_section_code(out, mod, section.code_section);
             break;
         }
         case VM_WASM_SECTION_ID_DATA: {
-            vm_wat_print_section_data(out, section.data_section);
+            vm_wat_print_section_data(out, mod, section.data_section);
             break;
         }
     }

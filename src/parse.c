@@ -1,5 +1,6 @@
 
 #include "./parse.h"
+#include <stdint.h>
 
 vm_wasm_immediate_id_t vm_wasm_immediates[256] = {
     [VM_WASM_OPCODE_BLOCK] = VM_WASM_IMMEDIATE_BLOCK_TYPE,
@@ -49,20 +50,33 @@ vm_wasm_immediate_id_t vm_wasm_immediates[256] = {
 uint64_t vm_wasm_parse_uleb(FILE *in) {
     uint8_t buf;
     uint64_t x = 0;
-    size_t mul = 1;
+    size_t shift = 0;
     while (fread(&buf, 1, 1, in)) {
-        x |= (buf & 0x7f) * mul;
+        x |= (uint64_t) (buf & 0x7f) << shift;
         if (!(buf & 0x80)) {
             break;
         }
-        mul *= 0x80;
+        shift += 7;
     }
     return x;
 }
 
 int64_t vm_wasm_parse_sleb(FILE *in) {
-    uint64_t ret = vm_wasm_parse_uleb(in);
-    return *(int64_t *)&ret;
+    uint8_t buf;
+    int64_t x = 0;
+    size_t shift = 0;
+    while (fread(&buf, 1, 1, in)) {
+        x += (int64_t) (buf & 0x7f) << shift;
+        shift += 7;
+        if (!(buf & 0x80)) {
+            break;
+        }
+    }
+    if (shift < 64 && (buf & 0x40)) {
+        return x - ((int64_t)1 << shift);
+    } else {
+        return x;
+    }
 }
 
 uint8_t vm_wasm_parse_byte(FILE *in) {
@@ -173,7 +187,7 @@ vm_wasm_type_table_t vm_wasm_parse_type_table(FILE *in) {
 vm_wasm_type_global_t vm_wasm_parse_type_global(FILE *in) {
     return (vm_wasm_type_global_t){
         .content_type = vm_wasm_parse_byte(in),
-        .mutable = vm_wasm_parse_byte(in),
+        .is_mutable = vm_wasm_parse_byte(in),
     };
 }
 
@@ -226,7 +240,6 @@ vm_wasm_section_type_t vm_wasm_parse_section_type(FILE *in) {
     uint64_t num = vm_wasm_parse_uleb(in);
     vm_wasm_section_type_entry_t *entries = vm_malloc(sizeof(vm_wasm_section_type_entry_t) * num);
     for (uint64_t i = 0; i < num; i++) {
-        vm_wasm_section_type_entry_t entry;
         vm_wasm_lang_type_t type = vm_wasm_parse_byte(in);
         uint64_t num_params = vm_wasm_parse_uleb(in);
         vm_wasm_lang_type_t *params = vm_malloc(sizeof(vm_wasm_lang_type_t) * num_params);
@@ -526,7 +539,7 @@ vm_wasm_instr_t vm_wasm_parse_init_expr(FILE *in) {
 }
 
 vm_wasm_instr_t vm_wasm_parse_instr(FILE *in) {
-    vm_wasm_opcode_t opcode = vm_wasm_parse_sleb(in);
+    vm_wasm_opcode_t opcode = vm_wasm_parse_byte(in);
     vm_wasm_immediate_id_t immediate_id = vm_wasm_immediates[opcode];
     vm_wasm_instr_immediate_t immediate = vm_wasm_parse_instr_immediate(in, immediate_id);
     return (vm_wasm_instr_t){

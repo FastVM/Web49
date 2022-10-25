@@ -21,6 +21,10 @@ miniwasm.exe: src/main.o $(OBJS)
 	@mkdir -p bin
 	$(CC) $(OPT) src/main.o $(OBJS) -o $(@) $(LDFLAGS)
 
+miniwasm.wasm: src/main.o $(OBJS)
+	@mkdir -p bin
+	$(CC) $(OPT) src/main.o $(OBJS) -o $(@) $(LDFLAGS)
+
 # clean
 
 clean: gcc-pgo-clean clang-pgo-clean objs-clean

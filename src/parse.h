@@ -400,7 +400,7 @@ struct vm_wasm_type_function_t {
 
 struct vm_wasm_type_global_t {
     vm_wasm_lang_type_t content_type;
-    uint8_t mutable;
+    uint8_t is_mutable;
 };
 
 struct vm_wasm_type_memory_t {
@@ -500,8 +500,8 @@ struct vm_wasm_instr_immediate_t {
         uint8_t varuint1;
         uint32_t varuint32;
         uint64_t varuint64;
-        uint32_t varint32;
-        uint64_t varint64;
+        int32_t varint32;
+        int64_t varint64;
         uint32_t uint32;
         uint64_t uint64;
         vm_wasm_lang_type_t block_type;
