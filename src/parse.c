@@ -39,8 +39,8 @@ vm_wasm_immediate_id_t vm_wasm_immediates[256] = {
     [VM_WASM_OPCODE_I64_STORE8] = VM_WASM_IMMEDIATE_MEMORY_IMMEDIATE,
     [VM_WASM_OPCODE_I64_STORE16] = VM_WASM_IMMEDIATE_MEMORY_IMMEDIATE,
     [VM_WASM_OPCODE_I64_STORE32] = VM_WASM_IMMEDIATE_MEMORY_IMMEDIATE,
-    [VM_WASM_OPCODE_CURRENT_MEMORY] = VM_WASM_IMMEDIATE_VARUINT1,
-    [VM_WASM_OPCODE_GROW_MEMORY] = VM_WASM_IMMEDIATE_VARUINT1,
+    [VM_WASM_OPCODE_MEMORY_SIZE] = VM_WASM_IMMEDIATE_VARUINT1,
+    [VM_WASM_OPCODE_MEMORY_GROW] = VM_WASM_IMMEDIATE_VARUINT1,
     [VM_WASM_OPCODE_I32_CONST] = VM_WASM_IMMEDIATE_VARINT32,
     [VM_WASM_OPCODE_I64_CONST] = VM_WASM_IMMEDIATE_VARINT64,
     [VM_WASM_OPCODE_F32_CONST] = VM_WASM_IMMEDIATE_UINT32,
@@ -281,12 +281,12 @@ vm_wasm_section_import_t vm_wasm_parse_section_import(FILE *in) {
         fread(field_str, 1, field_len, in);
         field_str[field_len] = '\0';
         vm_wasm_external_kind_t kind = vm_wasm_parse_byte(in);
-        vm_wasm_type_t type = vm_wasm_parse_type(in, kind);
+        uint64_t index = vm_wasm_parse_uleb(in);
         entries[i] = (vm_wasm_section_import_entry_t){
             .module_str = module_str,
             .field_str = field_str,
             .kind = kind,
-            .type = type,
+            .index = index,
         };
     }
     return (vm_wasm_section_import_t){

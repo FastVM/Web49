@@ -109,8 +109,8 @@ enum vm_wasm_opcode_enum_t {
     VM_WASM_OPCODE_I64_STORE8 = 0X3C,
     VM_WASM_OPCODE_I64_STORE16 = 0X3D,
     VM_WASM_OPCODE_I64_STORE32 = 0X3E,
-    VM_WASM_OPCODE_CURRENT_MEMORY = 0X3F,
-    VM_WASM_OPCODE_GROW_MEMORY = 0X40,
+    VM_WASM_OPCODE_MEMORY_SIZE = 0X3F,
+    VM_WASM_OPCODE_MEMORY_GROW = 0X40,
 
     // CONSTANTS
     VM_WASM_OPCODE_I32_CONST = 0X41,
@@ -461,7 +461,7 @@ struct vm_wasm_section_import_entry_t {
     const char *module_str;
     const char *field_str;
     vm_wasm_external_kind_t kind;
-    vm_wasm_type_t type;
+    uint64_t index;
 };
 
 struct vm_wasm_section_import_t {
