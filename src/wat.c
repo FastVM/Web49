@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-size_t vm_wat_instr_mem_size[256] = {
+size_t vm_wat_instr_mem_size[VM_WASM_MAX_OPCODE_NUM] = {
     [VM_WASM_OPCODE_I32_LOAD] = 4,
     [VM_WASM_OPCODE_I64_LOAD] = 8,
     [VM_WASM_OPCODE_F32_LOAD] = 4,
@@ -208,7 +208,7 @@ void vm_wat_print_instr_depth(FILE *out, vm_wasm_instr_t instr, uint64_t indent)
             fprintf(out, "memory.size");
             break;
         case VM_WASM_OPCODE_MEMORY_GROW:
-            fprintf(out, "grow_memory");
+            fprintf(out, "memory.grow");
             break;
         case VM_WASM_OPCODE_I32_CONST:
             fprintf(out, "i32.const");
@@ -520,16 +520,16 @@ void vm_wat_print_instr_depth(FILE *out, vm_wasm_instr_t instr, uint64_t indent)
             fprintf(out, "i32.wrap_i64");
             break;
         case VM_WASM_OPCODE_I32_TRUNC_S_F32:
-            fprintf(out, "i32.trunc_s/f32");
+            fprintf(out, "i32.trunc_f32_s");
             break;
         case VM_WASM_OPCODE_I32_TRUNC_U_F32:
-            fprintf(out, "i32.trunc_u/f32");
+            fprintf(out, "i32.trunc_f32_u");
             break;
         case VM_WASM_OPCODE_I32_TRUNC_S_F64:
-            fprintf(out, "i32.trunc_s/f64");
+            fprintf(out, "i32.trunc_f64_s");
             break;
         case VM_WASM_OPCODE_I32_TRUNC_U_F64:
-            fprintf(out, "i32.trunc_u/f64");
+            fprintf(out, "i32.trunc_f64_u");
             break;
         case VM_WASM_OPCODE_I64_EXTEND_S_I32:
             fprintf(out, "i64.extend_i32_s");
@@ -577,19 +577,40 @@ void vm_wat_print_instr_depth(FILE *out, vm_wasm_instr_t instr, uint64_t indent)
             fprintf(out, "f64.convert_i64_u");
             break;
         case VM_WASM_OPCODE_F64_PROMOTE_F32:
-            fprintf(out, "f64.promo_f32te");
+            fprintf(out, "f64.promote_f32");
             break;
         case VM_WASM_OPCODE_I32_REINTERPRET_F32:
-            fprintf(out, "i32.reinterpret/f32");
+            fprintf(out, "i32.reinterpret_f32");
             break;
         case VM_WASM_OPCODE_I64_REINTERPRET_F64:
-            fprintf(out, "i64.reinterpret/f64");
+            fprintf(out, "i64.reinterpret_f64");
             break;
         case VM_WASM_OPCODE_F32_REINTERPRET_I32:
-            fprintf(out, "f32.reinterpret/i32");
+            fprintf(out, "f32.reinterpret_i32");
             break;
         case VM_WASM_OPCODE_F64_REINTERPRET_I64:
-            fprintf(out, "f64.reinterpret/i64");
+            fprintf(out, "f64.reinterpret_i64");
+            break;
+        case VM_WASM_OPCODE_MEMORY_INIT:
+            fprintf(out, "memory.init");
+            break;
+        case VM_WASM_OPCODE_MEMORY_COPY:
+            fprintf(out, "memory.copy");
+            break;
+        case VM_WASM_OPCODE_MEMORY_FILL:
+            fprintf(out, "memory.fill");
+            break;
+        case VM_WASM_OPCODE_DATA_DROP:
+            fprintf(out, "data.drop");
+            break;
+        case VM_WASM_OPCODE_TABLE_INIT:
+            fprintf(out, "table.init");
+            break;
+        case VM_WASM_OPCODE_ELEM_DROP:
+            fprintf(out, "elem.drop");
+            break;
+        case VM_WASM_OPCODE_TABLE_COPY:
+            fprintf(out, "table.copy");
             break;
     }
     switch (instr.immediate.id) {
@@ -640,7 +661,7 @@ void vm_wat_print_instr_depth(FILE *out, vm_wasm_instr_t instr, uint64_t indent)
                 fprintf(out, " offset=%zu", (size_t)instr.immediate.memory_immediate.offset);
             }
             size_t nat_size = vm_wat_instr_mem_size[instr.opcode];
-            size_t size = (size_t) 1 << instr.immediate.memory_immediate.flags;
+            size_t size = (size_t) 1 << instr.immediate.memory_immediate.align;
             if (size != nat_size) {
                 fprintf(out, " align=%zu", size);
             } else {
@@ -694,16 +715,26 @@ void vm_wat_print_section_import(FILE *out, vm_wasm_module_t mod, vm_wasm_sectio
         fprintf(out, "\n  (import \"%s\" \"%s\" ", import.module_str, import.field_str);
         switch (import.kind) {
             case VM_WASM_EXTERNAL_KIND_FUNCTION:
-                fprintf(out, "(func (;%zu;) (type %zu))", (size_t) num_funcs++, (size_t) import.index);
+                fprintf(out, "(func (;%zu;) (type %zu))", (size_t) num_funcs++, (size_t) import.func_type.data);
                 break;
             case VM_WASM_EXTERNAL_KIND_TABLE:
-                fprintf(out, "(table %zu)", (size_t) import.index);
+                fprintf(out, "(table ");
+                vm_wat_print_lang_type(out, import.table_type.element_type);
+                fprintf(out, ")");
                 break;
             case VM_WASM_EXTERNAL_KIND_MEMORY:
-                fprintf(out, "(memory %zu)", (size_t) import.index);
+                fprintf(out, "(memory %zu)", (size_t) import.memory_type.initial);
                 break;
             case VM_WASM_EXTERNAL_KIND_GLOBAL:
-                fprintf(out, "(global %zu)", (size_t) import.index);
+                fprintf(out, "(global ");
+                if (import.global_type.is_mutable) {
+                    fprintf(out, "(mut ");
+                    vm_wat_print_lang_type(out, import.global_type.content_type);
+                    fprintf(out, ")");
+                } else {
+                    vm_wat_print_lang_type(out, import.global_type.content_type);
+                }
+                fprintf(out, ")");
                 break;
         }
         fprintf(out, ")");
@@ -757,9 +788,12 @@ void vm_wat_print_section_function(FILE *out, vm_wasm_module_t mod, vm_wasm_sect
             fprintf(out, ")");
         }
         uint64_t depth = 0;
-        for (uint64_t j = 0; j + 1 < code.num_instrs; j++) {
+        for (uint64_t j = 0; j < code.num_instrs; j++) {
             vm_wasm_opcode_t op = code.instrs[j].opcode;
-            if (op == VM_WASM_OPCODE_END || op == VM_WASM_OPCODE_ELSE) {
+            if (j + 1 == code.num_instrs && op == VM_WASM_OPCODE_END) {
+                break;
+            }
+            if (depth != 0 && (op == VM_WASM_OPCODE_END || op == VM_WASM_OPCODE_ELSE)) {
                 depth -= 1;
             }
             fprintf(out, "\n    ");
@@ -844,7 +878,7 @@ void vm_wat_print_section_export(FILE *out, vm_wasm_module_t mod, vm_wasm_sectio
 }
 
 void vm_wat_print_section_start(FILE *out, vm_wasm_module_t mod, vm_wasm_section_start_t sstart) {
-    fprintf(stderr, "unsupported: start section\n");
+    // fprintf(stderr, "unsupported: start section\n");
 }
 
 void vm_wat_print_section_element(FILE *out, vm_wasm_module_t mod, vm_wasm_section_element_t selement) {
@@ -880,6 +914,7 @@ void vm_wat_print_section_data(FILE *out, vm_wasm_module_t mod, vm_wasm_section_
         for (uint64_t j = 0; j < data.size; j++) {
             uint8_t arg = data.data[j];
             if (arg == '\\') {
+                fprintf(out, "\\%02zx", (size_t) '\\');
             } else if (arg == '\t') {
                 fprintf(out, "\\%02zx", (size_t) '\t');
             } else if (arg == '\r') {
@@ -958,5 +993,5 @@ void vm_wat_print_module(FILE *out, vm_wasm_module_t mod) {
     for (uint64_t i = 0; i < mod.num_sections; i++) {
         vm_wat_print_section(out, mod, mod.sections[i]);
     }
-    fprintf(out, ")");
+    fprintf(out, ")\n");
 }

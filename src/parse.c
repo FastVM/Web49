@@ -2,7 +2,7 @@
 #include "./parse.h"
 #include <stdint.h>
 
-vm_wasm_immediate_id_t vm_wasm_immediates[256] = {
+vm_wasm_immediate_id_t vm_wasm_immediates[VM_WASM_MAX_OPCODE_NUM] = {
     [VM_WASM_OPCODE_BLOCK] = VM_WASM_IMMEDIATE_BLOCK_TYPE,
     [VM_WASM_OPCODE_LOOP] = VM_WASM_IMMEDIATE_BLOCK_TYPE,
     [VM_WASM_OPCODE_IF] = VM_WASM_IMMEDIATE_BLOCK_TYPE,
@@ -45,6 +45,9 @@ vm_wasm_immediate_id_t vm_wasm_immediates[256] = {
     [VM_WASM_OPCODE_I64_CONST] = VM_WASM_IMMEDIATE_VARINT64,
     [VM_WASM_OPCODE_F32_CONST] = VM_WASM_IMMEDIATE_UINT32,
     [VM_WASM_OPCODE_F64_CONST] = VM_WASM_IMMEDIATE_UINT64,
+    [VM_WASM_OPCODE_MEMORY_INIT] = VM_WASM_IMMEDIATE_DATA_INDEX,
+    [VM_WASM_OPCODE_DATA_DROP] = VM_WASM_IMMEDIATE_DATA_INDEX,
+
 };
 
 uint64_t vm_wasm_parse_uleb(FILE *in) {
@@ -63,17 +66,17 @@ uint64_t vm_wasm_parse_uleb(FILE *in) {
 
 int64_t vm_wasm_parse_sleb(FILE *in) {
     uint8_t buf;
-    int64_t x = 0;
+    __int128  x = 0;
     size_t shift = 0;
     while (fread(&buf, 1, 1, in)) {
-        x += (int64_t) (buf & 0x7f) << shift;
+        x += (__int128 ) (buf & 0x7f) << shift;
         shift += 7;
         if (!(buf & 0x80)) {
             break;
         }
     }
     if (shift < 64 && (buf & 0x40)) {
-        return x - ((int64_t)1 << shift);
+        return (int64_t) (x - ((__int128 )1 << shift));
     } else {
         return x;
     }
@@ -101,9 +104,18 @@ vm_wasm_preamble_t vm_wasm_parse_preamble(FILE *in) {
 vm_wasm_section_header_t vm_wasm_parse_section_header(FILE *in) {
     uint8_t id = vm_wasm_parse_byte(in);
     uint64_t size = vm_wasm_parse_uleb(in);
+    char *custom_name = NULL;
+    if (id == VM_WASM_SECTION_ID_CUSTOM) {
+        uint64_t len = vm_wasm_parse_uleb(in);
+        custom_name = vm_malloc(sizeof(char) * (len + 1));
+        fread(custom_name, 1, len, in);
+        custom_name[len] = '\0';
+        vm_wasm_parse_byte(in);
+    }
     return (vm_wasm_section_header_t){
         .id = id,
         .size = size,
+        .custom_name = custom_name,
     };
 }
 
@@ -166,7 +178,7 @@ vm_wasm_call_indirect_t vm_wasm_parse_call_indirect(FILE *in) {
 
 vm_wasm_memory_immediate_t vm_wasm_parse_memory_immediate(FILE *in) {
     return (vm_wasm_memory_immediate_t){
-        .flags = vm_wasm_parse_uleb(in),
+        .align = vm_wasm_parse_uleb(in),
         .offset = vm_wasm_parse_uleb(in),
     };
 }
@@ -225,10 +237,12 @@ vm_wasm_type_t vm_wasm_parse_type(FILE *in, vm_wasm_external_kind_t tag) {
             .tag = tag,
         };
     }
+    fprintf(stderr, "unknown external kind: %zu", (size_t) tag);
     exit(1);
 }
 
 vm_wasm_section_custom_t vm_wasm_parse_section_custom(FILE *in, vm_wasm_section_header_t header) {
+    printf("%s\n", header.custom_name);
     void *payload = vm_malloc(header.size);
     fread(payload, 1, header.size, in);
     return (vm_wasm_section_custom_t){
@@ -281,13 +295,29 @@ vm_wasm_section_import_t vm_wasm_parse_section_import(FILE *in) {
         fread(field_str, 1, field_len, in);
         field_str[field_len] = '\0';
         vm_wasm_external_kind_t kind = vm_wasm_parse_byte(in);
-        uint64_t index = vm_wasm_parse_uleb(in);
         entries[i] = (vm_wasm_section_import_entry_t){
             .module_str = module_str,
             .field_str = field_str,
             .kind = kind,
-            .index = index,
         };
+        switch (kind) {
+        case VM_WASM_EXTERNAL_KIND_FUNCTION: {
+            entries[i].func_type = vm_wasm_parse_type_function(in);
+            break;
+        }
+        case VM_WASM_EXTERNAL_KIND_TABLE: {
+            entries[i].table_type = vm_wasm_parse_type_table(in);
+            break;
+        }
+        case VM_WASM_EXTERNAL_KIND_MEMORY: {
+            entries[i].memory_type = vm_wasm_parse_type_memory(in);
+            break;
+        }
+        case VM_WASM_EXTERNAL_KIND_GLOBAL: {
+            entries[i].global_type = vm_wasm_parse_type_global(in);
+            break;
+        }
+        }
     }
     return (vm_wasm_section_import_t){
         .num_entries = num_entries,
@@ -527,6 +557,12 @@ vm_wasm_instr_immediate_t vm_wasm_parse_instr_immediate(FILE *in, vm_wasm_immedi
             .memory_immediate = vm_wasm_parse_memory_immediate(in),
         };
     }
+    if (id == VM_WASM_IMMEDIATE_DATA_INDEX) {
+        return (vm_wasm_instr_immediate_t){
+            .id = VM_WASM_IMMEDIATE_MEMORY_IMMEDIATE,
+            .data_index = vm_wasm_parse_varint32(in),
+        };
+    }
     return (vm_wasm_instr_immediate_t) {
         .id = VM_WASM_IMMEDIATE_NONE,
     };
@@ -540,8 +576,32 @@ vm_wasm_instr_t vm_wasm_parse_init_expr(FILE *in) {
 
 vm_wasm_instr_t vm_wasm_parse_instr(FILE *in) {
     vm_wasm_opcode_t opcode = vm_wasm_parse_byte(in);
+    size_t skip = 0;
+    if (opcode == 0xFC) {
+        switch (vm_wasm_parse_byte(in)) {
+        case 0x8:
+            opcode = VM_WASM_OPCODE_MEMORY_INIT;
+            skip = 1;
+            break;
+        case 0x9:
+            opcode = VM_WASM_OPCODE_DATA_DROP;
+            skip = 0;
+            break;
+        case 0x10:
+            opcode = VM_WASM_OPCODE_MEMORY_COPY;
+            skip = 2;
+            break;
+        case 0x11:
+            opcode = VM_WASM_OPCODE_MEMORY_FILL;
+            skip = 1;
+            break;
+        }
+    }
     vm_wasm_immediate_id_t immediate_id = vm_wasm_immediates[opcode];
     vm_wasm_instr_immediate_t immediate = vm_wasm_parse_instr_immediate(in, immediate_id);
+    for (size_t i = 0; i < skip; i++) {
+        (void) vm_wasm_parse_byte(in);
+    }
     return (vm_wasm_instr_t){
         .opcode = opcode,
         .immediate = immediate,
@@ -622,6 +682,7 @@ vm_wasm_section_t vm_wasm_parse_section(FILE *in, vm_wasm_section_header_t heade
             .data_section = vm_wasm_parse_section_data(in),
         };
     }
+    fprintf(stderr, "unknown section kind: 0x%zX starting at %zX", (size_t) id, (size_t) ftell(in));
     exit(1);
 }
 
@@ -636,6 +697,9 @@ vm_wasm_module_t vm_wasm_parse_module(FILE *in) {
             sections = vm_realloc(sections, sizeof(vm_wasm_section_t) * alloc_sections);
         }
         vm_wasm_section_header_t header = vm_wasm_parse_section_header(in);
+        if (header.id == VM_WASM_SECTION_ID_CUSTOM) {
+            break;
+        }
         sections[num_sections] = vm_wasm_parse_section(in, header);
         num_sections += 1;
     }
