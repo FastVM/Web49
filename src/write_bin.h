@@ -1,0 +1,5 @@
+
+#if !defined(WEB49_HEADER_WRITEBIN)
+#define WEB49_HEADER_WRITEBIN
+
+#endif

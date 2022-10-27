@@ -1,29 +1,27 @@
 
+EXE = .exe
+
 OPT ?= -O2
 
-PROG_SRCS := src/main.c
+PROG_SRCS := main/wasm2wat.c
 PROG_OBJS := $(PROG_SRCS:%.c=%.o)
 
-VM_SRCS := src/parse.c src/wat.c
-VM_OBJS := $(VM_SRCS:%.c=%.o)
+WEB49_SRCS := src/read_bin.c src/write_wat.c
+WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
 
-OBJS := $(VM_OBJS)
+OBJS := $(WEB49_OBJS)
 
 default: all
 
-all: miniwasm.exe
+all: bin/wasm2wat$(EXE)
 
 format: .dummy
 	find . -name '*.c' | xargs -I FILENAME clang-format -style=file -i FILENAME
 	find . -name '*.h' | xargs -I FILENAME clang-format -style=file -i FILENAME
 
-miniwasm.exe: src/main.o $(OBJS)
+bin/wasm2wat$(EXE): main/wasm2wat.o $(OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) src/main.o $(OBJS) -o $(@) $(LDFLAGS)
-
-miniwasm.wasm: src/main.o $(OBJS)
-	@mkdir -p bin
-	$(CC) $(OPT) src/main.o $(OBJS) -o $(@) $(LDFLAGS)
+	$(CC) $(OPT) main/wasm2wat.o $(OBJS) -o $(@) $(LDFLAGS)
 
 # clean
 
@@ -31,7 +29,7 @@ clean: gcc-pgo-clean clang-pgo-clean objs-clean
 
 # intermediate files
 
-$(PROG_OBJS) $(VM_OBJS): $(@:%.o=%.c)
+$(PROG_OBJS) $(WEB49_OBJS): $(@:%.o=%.c)
 	$(CC) -c $(OPT) $(@:%.o=%.c) -o $(@) $(CFLAGS) -D_CRT_SECURE_NO_WARNINGS
 
 # dummy
