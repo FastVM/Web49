@@ -390,6 +390,7 @@ struct web49_preamble_t {
 struct web49_section_header_t {
     web49_section_id_t id;
     uint64_t size;
+    bool size_known;
 };
 
 struct web49_br_table_t {
@@ -453,7 +454,6 @@ struct web49_type_t {
 // };
 
 struct web49_section_custom_t {
-    const char *custom_name;
     void *payload;
 };
 

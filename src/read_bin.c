@@ -107,6 +107,7 @@ web49_section_header_t web49_readbin_section_header(FILE *in) {
     return (web49_section_header_t){
         .id = id,
         .size = size,
+        .size_known = true,
     };
 }
 
@@ -232,16 +233,9 @@ web49_type_t web49_readbin_type(FILE *in, web49_external_kind_t tag) {
 }
 
 web49_section_custom_t web49_readbin_section_custom(FILE *in, web49_section_header_t header) {
-    uint64_t len = web49_readbin_uleb(in);
-    char *custom_name = web49_malloc(sizeof(char) * (len + 1));
-    fread(custom_name, 1, len, in);
-    custom_name[len] = '\0';
-    web49_readbin_byte(in);
-    uint64_t size = header.size - len;
-    void *payload = web49_malloc(size);
-    fread(payload, 1, size, in);
+    void *payload = web49_malloc(header.size);
+    fread(payload, 1, header.size, in);
     return (web49_section_custom_t){
-        .custom_name = custom_name,
         .payload = payload,
     };
 }
