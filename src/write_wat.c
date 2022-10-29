@@ -61,7 +61,8 @@ void web49_wat_print_lang_type(FILE *out, web49_lang_type_t ltype) {
             break;
         }
         default: {
-            fprintf(stderr, "unsupported: type tag %x", (int)ltype);
+            fprintf(stderr, "unsupported: type tag 0x%02zX", (size_t)ltype);
+            exit(1);
         }
     }
 }
@@ -621,7 +622,7 @@ void web49_wat_print_instr_depth(FILE *out, web49_instr_t instr, uint64_t indent
             break;
         case WEB49_IMMEDIATE_BLOCK_TYPE:
             if (instr.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
-                fprintf(out, " (result ");
+                fprintf(out, " (result");
                 web49_wat_print_lang_type(out, instr.immediate.block_type);
                 fprintf(out, ")");
             }
@@ -796,6 +797,7 @@ void web49_wat_print_section_function(FILE *out, web49_module_t mod, web49_secti
                 depth -= 1;
             }
             fprintf(out, "\n    ");
+            fflush(out);
             web49_wat_print_instr_depth(out, code.instrs[j], depth);
             if (op == WEB49_OPCODE_ELSE || op == WEB49_OPCODE_BLOCK || op == WEB49_OPCODE_IF || op == WEB49_OPCODE_LOOP) {
                 depth += 1;

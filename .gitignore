@@ -10,3 +10,6 @@ miniwasm
 out.*
 bin/*
 .DS_Store
+*.wasm
+*.wat
+.vscode

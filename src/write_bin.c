@@ -68,7 +68,6 @@ void web49_writebin_instr(web49_writebin_buf_t *out, web49_instr_t instr) {
         web49_writebin_byte(out, instr.opcode);
         break;
     }
-    // web49_writebin_byte(out, instr.immediate.id);
     switch (instr.immediate.id) {
         case WEB49_IMMEDIATE_NONE:
             break;
@@ -149,8 +148,8 @@ void web49_writebin_type(web49_writebin_buf_t *out, web49_type_t type) {
     }
 }
 void web49_writebin_uleb(web49_writebin_buf_t *out, uint64_t x) {
-    uint8_t buf[10];
     size_t bytes = 0;
+    uint8_t buf[10];
     do {
         buf[bytes] = x & 0x7FU;
         x >>= 7;
@@ -162,26 +161,18 @@ void web49_writebin_uleb(web49_writebin_buf_t *out, uint64_t x) {
     web49_writebin_fwrite(out, bytes, buf);
 }
 void web49_writebin_sleb(web49_writebin_buf_t *out, int64_t x) {
-    if (x < 0) {
-        uint8_t buf[10];
-        size_t bytes = 0;
-        do {
-            buf[bytes] = x & 0x7FU;
-            x >>= 7;
-            if (x != 0) {
-                buf[bytes] |= 0x80U;
-            }
-            bytes += 1;
-        } while (x != -1);
-        if (buf[bytes-1] & 0x40) {
-            buf[bytes++] = 0x40;
-        } else {
-            buf[bytes-1] |= 0x40;
+    size_t len = 0;
+    uint8_t result[10];
+    while (true) {
+        uint8_t byte = x & 0x7f;
+        x >>= 7;
+        if ((x == 0 && 0 == (byte & 0x40)) || (x == -1 && 0 != (byte & 0x40))) {
+            result[len++] = byte;
+            break;
         }
-        web49_writebin_fwrite(out, bytes, buf);
-    } else {
-        web49_writebin_uleb(out, (uint64_t) x);
+        result[len++] = byte | 0x80;
     }
+    web49_writebin_fwrite(out, len, result);
 }
 void web49_writebin_section_custom(web49_writebin_buf_t *out, web49_section_t section) {
     web49_writebin_fwrite(out, section.header.size, section.custom_section.payload);
@@ -296,7 +287,6 @@ void web49_writebin_section_code(web49_writebin_buf_t *out, web49_section_t sect
             web49_writebin_uleb(&buf, entry.locals[j].count);
             web49_writebin_byte(&buf, entry.locals[j].type);
         }
-        web49_writebin_uleb(&buf, entry.num_instrs);
         for (uint64_t j = 0; j < entry.num_instrs; j++) {
             web49_writebin_instr(&buf, entry.instrs[j]);
         }
@@ -367,19 +357,9 @@ void web49_writebin_section(web49_writebin_buf_t *out, web49_section_t section) 
             break;
         }
     }
-    // if (section.header.size_known) {
-    //     if (section.header.size != buf.len) {
-    //         fprintf(stderr, "error reading data for buffer in section: %zu\n", (size_t) section.header.id);
-    //         fprintf(stderr, "              ^ .length = %zu (wanted %zu)\n", buf.len, (size_t)section.header.size);
-    //         exit(1);
-    //     }
-    // }
-    // if (section.header.id == 10) {
-        // fprintf(stderr, "%zu => @%zu\n", (size_t) section.header.id, out->len);
-        web49_writebin_byte(out, section.header.id);
-        web49_writebin_uleb(out, buf.len);
-        web49_writebin_fwrite(out, buf.len, buf.data);
-    // }
+    web49_writebin_byte(out, section.header.id);
+    web49_writebin_uleb(out, buf.len);
+    web49_writebin_fwrite(out, buf.len, buf.data);
 }
 
 void web49_writebin_module(web49_writebin_buf_t *out, web49_module_t mod) {

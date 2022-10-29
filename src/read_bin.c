@@ -569,21 +569,30 @@ web49_instr_t web49_readbin_instr(FILE *in) {
     size_t skip = 0;
     if (opcode == 0xFC) {
         switch (web49_readbin_byte(in)) {
-            case 0x8:
+            case 0x08:
                 opcode = WEB49_OPCODE_MEMORY_INIT;
                 skip = 1;
                 break;
-            case 0x9:
+            case 0x09:
                 opcode = WEB49_OPCODE_DATA_DROP;
                 skip = 0;
                 break;
-            case 0xA:
+            case 0x0A:
                 opcode = WEB49_OPCODE_MEMORY_COPY;
                 skip = 2;
                 break;
-            case 0xB:
+            case 0x0B:
                 opcode = WEB49_OPCODE_MEMORY_FILL;
                 skip = 1;
+                break;
+            case 0x0C:
+                opcode = WEB49_OPCODE_TABLE_INIT;
+                break;
+            case 0x0D:
+                opcode = WEB49_OPCODE_ELEM_DROP;
+                break;
+            case 0x0E:
+                opcode = WEB49_OPCODE_TABLE_COPY;
                 break;
             default:
                 break;
@@ -692,7 +701,13 @@ web49_module_t web49_readbin_module(FILE *in) {
         if (header.id >= WEB49_SECTION_HIGH_ID) {
             header.id = WEB49_SECTION_ID_CUSTOM;
         }
+        size_t a = ftell(in);
         sections[num_sections] = web49_readbin_section(in, header);
+        size_t b = ftell(in);
+        if (header.size != b - a) {
+            fprintf(stderr, "read wrong number of bytes (read: %zu) (section size: %zu) ", (size_t) header.size, b - a);
+            exit(1);
+        }
         num_sections += 1;
     }
     return (web49_module_t){
