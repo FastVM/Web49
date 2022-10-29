@@ -8,3 +8,5 @@ test/*.wasm
 miniwasm.exe
 miniwasm
 out.*
+bin/*
+.DS_Store

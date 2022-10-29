@@ -55,6 +55,8 @@ enum web49_section_id_enum_t {
     WEB49_SECTION_ID_ELEMENT = 9,
     WEB49_SECTION_ID_CODE = 10,
     WEB49_SECTION_ID_DATA = 11,
+    WEB49_SECTION_ID_DATA_COUNT = 12,
+    WEB49_SECTION_HIGH_ID,
 };
 
 enum web49_opcode_enum_t {
@@ -388,7 +390,6 @@ struct web49_preamble_t {
 struct web49_section_header_t {
     web49_section_id_t id;
     uint64_t size;
-    const char *custom_name;
 };
 
 struct web49_br_table_t {
@@ -417,7 +418,6 @@ struct web49_type_global_t {
 };
 
 struct web49_type_memory_t {
-    uint64_t flags;
     uint64_t initial;
     uint64_t maximum;
 };
@@ -453,6 +453,7 @@ struct web49_type_t {
 // };
 
 struct web49_section_custom_t {
+    const char *custom_name;
     void *payload;
 };
 
@@ -606,7 +607,7 @@ struct web49_section_t {
         web49_section_code_t code_section;
         web49_section_data_t data_section;
     };
-    web49_section_id_t id;
+    web49_section_header_t header;
 };
 
 struct web49_module_t {

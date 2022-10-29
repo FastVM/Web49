@@ -104,18 +104,9 @@ web49_preamble_t web49_readbin_preamble(FILE *in) {
 web49_section_header_t web49_readbin_section_header(FILE *in) {
     uint8_t id = web49_readbin_byte(in);
     uint64_t size = web49_readbin_uleb(in);
-    char *custom_name = NULL;
-    if (id == WEB49_SECTION_ID_CUSTOM) {
-        uint64_t len = web49_readbin_uleb(in);
-        custom_name = web49_malloc(sizeof(char) * (len + 1));
-        fread(custom_name, 1, len, in);
-        custom_name[len] = '\0';
-        web49_readbin_byte(in);
-    }
     return (web49_section_header_t){
         .id = id,
         .size = size,
-        .custom_name = custom_name,
     };
 }
 
@@ -206,7 +197,6 @@ web49_type_global_t web49_readbin_type_global(FILE *in) {
 web49_type_memory_t web49_readbin_type_memory(FILE *in) {
     uint64_t flags = web49_readbin_uleb(in);
     return (web49_type_memory_t){
-        .flags = flags,
         .initial = web49_readbin_uleb(in),
         .maximum = (flags & 1) ? web49_readbin_uleb(in) : UINT64_MAX,
     };
@@ -242,10 +232,16 @@ web49_type_t web49_readbin_type(FILE *in, web49_external_kind_t tag) {
 }
 
 web49_section_custom_t web49_readbin_section_custom(FILE *in, web49_section_header_t header) {
-    printf("%s\n", header.custom_name);
-    void *payload = web49_malloc(header.size);
-    fread(payload, 1, header.size, in);
+    uint64_t len = web49_readbin_uleb(in);
+    char *custom_name = web49_malloc(sizeof(char) * (len + 1));
+    fread(custom_name, 1, len, in);
+    custom_name[len] = '\0';
+    web49_readbin_byte(in);
+    uint64_t size = header.size - len;
+    void *payload = web49_malloc(size);
+    fread(payload, 1, size, in);
     return (web49_section_custom_t){
+        .custom_name = custom_name,
         .payload = payload,
     };
 }
@@ -614,73 +610,73 @@ web49_section_t web49_readbin_section(FILE *in, web49_section_header_t header) {
     web49_section_id_t id = header.id;
     if (id == WEB49_SECTION_ID_CUSTOM) {
         return (web49_section_t){
-            .id = id,
+            .header = header,
             .custom_section = web49_readbin_section_custom(in, header),
         };
     }
     if (id == WEB49_SECTION_ID_TYPE) {
         return (web49_section_t){
-            .id = id,
+            .header = header,
             .type_section = web49_readbin_section_type(in),
         };
     }
     if (id == WEB49_SECTION_ID_IMPORT) {
         return (web49_section_t){
-            .id = id,
+            .header = header,
             .import_section = web49_readbin_section_import(in),
         };
     }
     if (id == WEB49_SECTION_ID_FUNCTION) {
         return (web49_section_t){
-            .id = id,
+            .header = header,
             .function_section = web49_readbin_section_function(in),
         };
     }
     if (id == WEB49_SECTION_ID_TABLE) {
         return (web49_section_t){
-            .id = id,
+            .header = header,
             .table_section = web49_readbin_section_table(in),
         };
     }
     if (id == WEB49_SECTION_ID_MEMORY) {
         return (web49_section_t){
-            .id = id,
+            .header = header,
             .memory_section = web49_readbin_section_memory(in),
         };
     }
     if (id == WEB49_SECTION_ID_GLOBAL) {
         return (web49_section_t){
-            .id = id,
+            .header = header,
             .global_section = web49_readbin_section_global(in),
         };
     }
     if (id == WEB49_SECTION_ID_EXPORT) {
         return (web49_section_t){
-            .id = id,
+            .header = header,
             .export_section = web49_readbin_section_export(in),
         };
     }
     if (id == WEB49_SECTION_ID_START) {
         return (web49_section_t){
-            .id = id,
+            .header = header,
             .start_section = web49_readbin_section_start(in),
         };
     }
     if (id == WEB49_SECTION_ID_ELEMENT) {
         return (web49_section_t){
-            .id = id,
+            .header = header,
             .element_section = web49_readbin_section_element(in),
         };
     }
     if (id == WEB49_SECTION_ID_CODE) {
         return (web49_section_t){
-            .id = id,
+            .header = header,
             .code_section = web49_readbin_section_code(in),
         };
     }
     if (id == WEB49_SECTION_ID_DATA) {
         return (web49_section_t){
-            .id = id,
+            .header = header,
             .data_section = web49_readbin_section_data(in),
         };
     }
@@ -699,8 +695,8 @@ web49_module_t web49_readbin_module(FILE *in) {
             sections = web49_realloc(sections, sizeof(web49_section_t) * alloc_sections);
         }
         web49_section_header_t header = web49_readbin_section_header(in);
-        if (header.id == WEB49_SECTION_ID_CUSTOM) {
-            break;
+        if (header.id >= WEB49_SECTION_HIGH_ID) {
+            header.id = WEB49_SECTION_ID_CUSTOM;
         }
         sections[num_sections] = web49_readbin_section(in, header);
         num_sections += 1;

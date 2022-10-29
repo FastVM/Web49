@@ -745,13 +745,13 @@ void web49_wat_print_section_function(FILE *out, web49_module_t mod, web49_secti
     web49_section_code_t code_section;
     web49_section_type_t type_section;
     for (uint64_t i = 0; i < mod.num_sections; i++) {
-        if (mod.sections[i].id == WEB49_SECTION_ID_CODE) {
+        if (mod.sections[i].header.id == WEB49_SECTION_ID_CODE) {
             code_section = mod.sections[i].code_section;
         }
-        if (mod.sections[i].id == WEB49_SECTION_ID_TYPE) {
+        if (mod.sections[i].header.id == WEB49_SECTION_ID_TYPE) {
             type_section = mod.sections[i].type_section;
         }
-        if (mod.sections[i].id == WEB49_SECTION_ID_IMPORT) {
+        if (mod.sections[i].header.id == WEB49_SECTION_ID_IMPORT) {
             for (uint64_t j = 0; j < mod.sections[i].import_section.num_entries; j++) {
                 if (mod.sections[i].import_section.entries[j].kind == WEB49_EXTERNAL_KIND_FUNCTION) {
                     num_funcs++;
@@ -812,7 +812,7 @@ void web49_wat_print_section_table(FILE *out, web49_module_t mod, web49_section_
     for (uint64_t i = 0; i < stable.num_entries; i++) {
         web49_type_table_t table = stable.entries[i];
         fprintf(out, "\n  (table (;%zu;) %"PRIu64, (size_t)i, table.limits.initial);
-        if (table.limits.flags & 1) {
+        if (table.limits.maximum != UINT64_MAX) {
             fprintf(out, " %zu", (size_t)table.limits.maximum);
         }
         fprintf(out, " ");
@@ -828,7 +828,7 @@ void web49_wat_print_section_table(FILE *out, web49_module_t mod, web49_section_
 void web49_wat_print_section_memory(FILE *out, web49_module_t mod, web49_section_memory_t smemory) {
     for (uint64_t i = 0; i < smemory.num_entries; i++) {
         web49_type_memory_t mem = smemory.entries[i];
-        if (mem.flags & 1) {
+        if (mem.maximum != UINT64_MAX) {
             fprintf(out, "\n  (memory (;%zu;) %zu %zu)", (size_t)i, (size_t)mem.initial, (size_t)mem.maximum);
         } else {
             fprintf(out, "\n  (memory (;%zu;) %zu)", (size_t)i, (size_t)mem.initial);
@@ -900,7 +900,7 @@ void web49_wat_print_section_data(FILE *out, web49_module_t mod, web49_section_d
     // fprintf(stderr, "unsupported: data section\n");
     web49_section_type_t type_section;
     for (uint64_t i = 0; i < mod.num_sections; i++) {
-        if (mod.sections[i].id == WEB49_SECTION_ID_TYPE) {
+        if (mod.sections[i].header.id == WEB49_SECTION_ID_TYPE) {
             type_section = mod.sections[i].type_section;
         }
     }
@@ -935,7 +935,7 @@ void web49_wat_print_section_data(FILE *out, web49_module_t mod, web49_section_d
 }
 
 void web49_wat_print_section(FILE *out, web49_module_t mod, web49_section_t section) {
-    switch (section.id) {
+    switch (section.header.id) {
         case WEB49_SECTION_ID_CUSTOM: {
             web49_wat_print_section_custom(out, mod, section.custom_section);
             break;

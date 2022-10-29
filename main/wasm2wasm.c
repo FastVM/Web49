@@ -1,6 +1,6 @@
 #include "../src/ast.h"
 #include "../src/read_bin.h"
-#include "../src/write_wat.h"
+#include "../src/write_bin.h"
 
 int web49_file_main(const char *inarg, const char *outarg) {
     FILE *infile = fopen(inarg, "rb");
@@ -10,11 +10,13 @@ int web49_file_main(const char *inarg, const char *outarg) {
     }
     web49_module_t mod = web49_readbin_module(infile);
     fclose(infile);
+    web49_writebin_buf_t buf = {0};
+    web49_writebin_module(&buf, mod);
     if (outarg == NULL) {
-        web49_wat_print_module(stdout, mod);
+        fwrite(buf.data, 1, buf.len, stdout);
     } else {
         FILE *outfile = fopen(outarg, "wb");
-        web49_wat_print_module(outfile, mod);
+        fwrite(buf.data, 1, buf.len, outfile);
         fclose(outfile);
     }
     return 0;
