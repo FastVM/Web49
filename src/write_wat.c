@@ -622,7 +622,7 @@ void web49_wat_print_instr_depth(FILE *out, web49_instr_t instr, uint64_t indent
             break;
         case WEB49_IMMEDIATE_BLOCK_TYPE:
             if (instr.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
-                fprintf(out, " (result");
+                fprintf(out, " (result ");
                 web49_wat_print_lang_type(out, instr.immediate.block_type);
                 fprintf(out, ")");
             }

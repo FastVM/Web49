@@ -2,21 +2,7 @@
 #if !defined(WEB49_HEADER_AST)
 #define WEB49_HEADER_AST
 
-#include <ctype.h>
-#include <limits.h>
-#include <math.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
-
-#define web49_malloc(size) (malloc(size))
-#define web49_realloc(ptr, size) (realloc(ptr, size))
-#define web49_free(ptr) (free((void *)ptr))
+#include "lib.h"
 
 typedef uint8_t web49_immediate_id_t;
 typedef uint16_t web49_opcode_t;
@@ -615,5 +601,7 @@ struct web49_module_t {
     uint64_t num_sections;
     web49_section_t *sections;
 };
+
+#define web49_preamble_init ((web49_preamble_t) { 0x00, 0x61, 0x73, 0x6D, 0x00, 0x00, 0x00, 0x01 })
 
 #endif
