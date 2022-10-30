@@ -628,7 +628,7 @@ void web49_wat_print_instr_depth(FILE *out, web49_instr_t instr, uint64_t indent
             }
             break;
         case WEB49_IMMEDIATE_VARUINT1:
-            if (instr.opcode != WEB49_OPCODE_MEMORY_GROW) {
+            if (instr.opcode != WEB49_OPCODE_MEMORY_GROW && instr.opcode != WEB49_OPCODE_MEMORY_SIZE) {
                 fprintf(out, " %zu", (size_t) (instr.immediate.varuint1 ? 1 : 0));
             }
             break;
