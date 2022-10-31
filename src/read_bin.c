@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-web49_immediate_id_t web49_immediates[WEB49_MAX_OPCODE_NUM] = {
+static const web49_immediate_id_t web49_immediates[WEB49_MAX_OPCODE_NUM] = {
     [WEB49_OPCODE_BLOCK] = WEB49_IMMEDIATE_BLOCK_TYPE,
     [WEB49_OPCODE_LOOP] = WEB49_IMMEDIATE_BLOCK_TYPE,
     [WEB49_OPCODE_IF] = WEB49_IMMEDIATE_BLOCK_TYPE,
