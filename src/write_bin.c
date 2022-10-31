@@ -9,7 +9,7 @@ void web49_writebin_byte(web49_writebin_buf_t *out, uint8_t u8) {
     out->data[out->len++] = u8;
 }
 void web49_writebin_fwrite(web49_writebin_buf_t *out, size_t n, const void *data) {
-    const uint8_t *udata = (const uint8_t*)data;
+    const uint8_t *udata = (const uint8_t *)data;
     for (size_t i = 0; i < n; i++) {
         web49_writebin_byte(out, udata[i]);
     }
@@ -36,37 +36,37 @@ void web49_writebin_init_expr(web49_writebin_buf_t *out, web49_instr_t instr) {
 
 void web49_writebin_instr(web49_writebin_buf_t *out, web49_instr_t instr) {
     switch (instr.opcode) {
-    case WEB49_OPCODE_MEMORY_INIT:
-        web49_writebin_byte(out, 0xFC);
-        web49_writebin_byte(out, 0x08);
-        break;
-    case  WEB49_OPCODE_DATA_DROP:
-        web49_writebin_byte(out, 0xFC);
-        web49_writebin_byte(out, 0x09);
-        break;
-    case WEB49_OPCODE_MEMORY_COPY:
-        web49_writebin_byte(out, 0xFC);
-        web49_writebin_byte(out, 0x0A);
-        break;
-    case WEB49_OPCODE_MEMORY_FILL:
-        web49_writebin_byte(out, 0xFC);
-        web49_writebin_byte(out, 0x0B);
-        break;
-    case WEB49_OPCODE_TABLE_INIT:
-        web49_writebin_byte(out, 0xFC);
-        web49_writebin_byte(out, 0x0C);
-        break;
-    case WEB49_OPCODE_ELEM_DROP:
-        web49_writebin_byte(out, 0xFC);
-        web49_writebin_byte(out, 0x0D);
-        break;
-    case WEB49_OPCODE_TABLE_COPY:
-        web49_writebin_byte(out, 0xFC);
-        web49_writebin_byte(out, 0x0E);
-        break;
-    default:
-        web49_writebin_byte(out, instr.opcode);
-        break;
+        case WEB49_OPCODE_MEMORY_INIT:
+            web49_writebin_byte(out, 0xFC);
+            web49_writebin_byte(out, 0x08);
+            break;
+        case WEB49_OPCODE_DATA_DROP:
+            web49_writebin_byte(out, 0xFC);
+            web49_writebin_byte(out, 0x09);
+            break;
+        case WEB49_OPCODE_MEMORY_COPY:
+            web49_writebin_byte(out, 0xFC);
+            web49_writebin_byte(out, 0x0A);
+            break;
+        case WEB49_OPCODE_MEMORY_FILL:
+            web49_writebin_byte(out, 0xFC);
+            web49_writebin_byte(out, 0x0B);
+            break;
+        case WEB49_OPCODE_TABLE_INIT:
+            web49_writebin_byte(out, 0xFC);
+            web49_writebin_byte(out, 0x0C);
+            break;
+        case WEB49_OPCODE_ELEM_DROP:
+            web49_writebin_byte(out, 0xFC);
+            web49_writebin_byte(out, 0x0D);
+            break;
+        case WEB49_OPCODE_TABLE_COPY:
+            web49_writebin_byte(out, 0xFC);
+            web49_writebin_byte(out, 0x0E);
+            break;
+        default:
+            web49_writebin_byte(out, instr.opcode);
+            break;
     }
     switch (instr.immediate.id) {
         case WEB49_IMMEDIATE_NONE:
@@ -78,13 +78,13 @@ void web49_writebin_instr(web49_writebin_buf_t *out, web49_instr_t instr) {
             web49_writebin_byte(out, instr.immediate.varuint1);
             break;
         case WEB49_IMMEDIATE_VARUINT32:
-            web49_writebin_uleb(out, (uint64_t) instr.immediate.varuint32);
+            web49_writebin_uleb(out, (uint64_t)instr.immediate.varuint32);
             break;
         case WEB49_IMMEDIATE_VARUINT64:
             web49_writebin_uleb(out, instr.immediate.varuint64);
             break;
         case WEB49_IMMEDIATE_VARINT32:
-            web49_writebin_sleb(out, (int64_t) instr.immediate.varint32);
+            web49_writebin_sleb(out, (int64_t)instr.immediate.varint32);
             break;
         case WEB49_IMMEDIATE_VARINT64:
             web49_writebin_sleb(out, instr.immediate.varint64);
@@ -133,18 +133,18 @@ void web49_writebin_type_global(web49_writebin_buf_t *out, web49_type_global_t t
 void web49_writebin_type(web49_writebin_buf_t *out, web49_type_t type) {
     web49_writebin_byte(out, type.tag);
     switch (type.tag) {
-    case WEB49_EXTERNAL_KIND_FUNCTION:
-        web49_writebin_type_function(out, type.function);
-        break;
-    case WEB49_EXTERNAL_KIND_TABLE:
-        web49_writebin_type_table(out, type.table);
-        break;
-    case WEB49_EXTERNAL_KIND_MEMORY:
-        web49_writebin_type_memory(out, type.memory);
-        break;
-    case WEB49_EXTERNAL_KIND_GLOBAL:
-        web49_writebin_type_global(out, type.global);
-        break;
+        case WEB49_EXTERNAL_KIND_FUNCTION:
+            web49_writebin_type_function(out, type.function);
+            break;
+        case WEB49_EXTERNAL_KIND_TABLE:
+            web49_writebin_type_table(out, type.table);
+            break;
+        case WEB49_EXTERNAL_KIND_MEMORY:
+            web49_writebin_type_memory(out, type.memory);
+            break;
+        case WEB49_EXTERNAL_KIND_GLOBAL:
+            web49_writebin_type_global(out, type.global);
+            break;
     }
 }
 void web49_writebin_uleb(web49_writebin_buf_t *out, uint64_t x) {

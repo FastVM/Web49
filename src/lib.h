@@ -2,6 +2,8 @@
 #if !defined(WEB49_HEADER_LIB)
 #define WEB49_HEADER_LIB
 
+#include <ctype.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <math.h>
 #include <stdarg.h>
@@ -11,7 +13,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <inttypes.h>
 
 #define web49_malloc(size) (malloc(size))
 #define web49_realloc(ptr, size) (realloc(ptr, size))

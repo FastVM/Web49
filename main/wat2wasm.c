@@ -1,6 +1,6 @@
 #include "../src/ast.h"
-#include "../src/write_bin.h"
 #include "../src/read_wat.h"
+#include "../src/write_bin.h"
 
 int web49_file_main(const char *inarg, const char *outarg) {
     FILE *infile = fopen(inarg, "rb");

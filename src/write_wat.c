@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-size_t web49_wat_instr_mem_size[WEB49_MAX_OPCODE_NUM] = {
+static size_t web49_wat_instr_mem_size[WEB49_MAX_OPCODE_NUM] = {
     [WEB49_OPCODE_I32_LOAD] = 4,
     [WEB49_OPCODE_I64_LOAD] = 8,
     [WEB49_OPCODE_F32_LOAD] = 4,
@@ -629,42 +629,42 @@ void web49_wat_print_instr_depth(FILE *out, web49_instr_t instr, uint64_t indent
             break;
         case WEB49_IMMEDIATE_VARUINT1:
             if (instr.opcode != WEB49_OPCODE_MEMORY_GROW && instr.opcode != WEB49_OPCODE_MEMORY_SIZE) {
-                fprintf(out, " %zu", (size_t) (instr.immediate.varuint1 ? 1 : 0));
+                fprintf(out, " %zu", (size_t)(instr.immediate.varuint1 ? 1 : 0));
             }
             break;
         case WEB49_IMMEDIATE_VARUINT32:
-            fprintf(out, " %"PRIu32, instr.immediate.varuint32);
+            fprintf(out, " %" PRIu32, instr.immediate.varuint32);
             if (instr.opcode == WEB49_OPCODE_BR_IF || instr.opcode == WEB49_OPCODE_BR) {
                 fprintf(out, " (;@%zu;)", (size_t)(indent - instr.immediate.varuint32));
             }
             break;
         case WEB49_IMMEDIATE_VARUINT64:
-            fprintf(out, " %"PRIu64, instr.immediate.varuint64);
+            fprintf(out, " %" PRIu64, instr.immediate.varuint64);
             break;
         case WEB49_IMMEDIATE_VARINT32:
-            fprintf(out, " %"PRIi32, instr.immediate.varint32);
+            fprintf(out, " %" PRIi32, instr.immediate.varint32);
             break;
         case WEB49_IMMEDIATE_VARINT64:
-            fprintf(out, " %"PRIi64, instr.immediate.varint64);
+            fprintf(out, " %" PRIi64, instr.immediate.varint64);
             break;
         case WEB49_IMMEDIATE_UINT32:
-            fprintf(out, " %"PRIu32, instr.immediate.uint32);
+            fprintf(out, " %" PRIu32, instr.immediate.uint32);
             break;
         case WEB49_IMMEDIATE_UINT64:
-            fprintf(out, " %"PRIu64, instr.immediate.uint64);
+            fprintf(out, " %" PRIu64, instr.immediate.uint64);
             break;
         case WEB49_IMMEDIATE_BR_TABLE:
             for (uint64_t i = 0; i < instr.immediate.br_table.num_targets; i++) {
-                fprintf(out, " %"PRIu64" (;@%zu;)", instr.immediate.br_table.targets[i], (size_t)(indent - instr.immediate.br_table.targets[i]));
+                fprintf(out, " %" PRIu64 " (;@%zu;)", instr.immediate.br_table.targets[i], (size_t)(indent - instr.immediate.br_table.targets[i]));
             }
-            fprintf(out, " %"PRIu64" (;@%zu;)", instr.immediate.br_table.default_target, (size_t)(indent - instr.immediate.br_table.default_target));
+            fprintf(out, " %" PRIu64 " (;@%zu;)", instr.immediate.br_table.default_target, (size_t)(indent - instr.immediate.br_table.default_target));
             break;
         case WEB49_IMMEDIATE_CALL_INDIRECT:
-            fprintf(out, " (type %"PRIu64")", instr.immediate.call_indirect.index);
+            fprintf(out, " (type %" PRIu64 ")", instr.immediate.call_indirect.index);
             break;
         case WEB49_IMMEDIATE_MEMORY_IMMEDIATE:
             if (instr.immediate.memory_immediate.offset != 0) {
-                fprintf(out, " offset=%"PRIu64, instr.immediate.memory_immediate.offset);
+                fprintf(out, " offset=%" PRIu64, instr.immediate.memory_immediate.offset);
             }
             size_t nat_size = web49_wat_instr_mem_size[instr.opcode];
             size_t size = (size_t)1 << instr.immediate.memory_immediate.align;
@@ -684,7 +684,7 @@ void web49_wat_print_section_type(FILE *out, web49_module_t mod, web49_section_t
         fprintf(out, "\n  (type");
         fprintf(out, " ");
         web49_section_type_entry_t entry = stype.entries[i];
-        fprintf(out, "(;%"PRIi64";) ", i);
+        fprintf(out, "(;%" PRIi64 ";) ", i);
         if (entry.type == WEB49_TYPE_FUNC) {
             fprintf(out, "(func");
             if (entry.num_params != 0) {
@@ -723,7 +723,7 @@ void web49_wat_print_section_import(FILE *out, web49_module_t mod, web49_section
                 fprintf(out, ")");
                 break;
             case WEB49_EXTERNAL_KIND_MEMORY:
-                fprintf(out, "(memory %"PRIu64")", import.memory_type.initial);
+                fprintf(out, "(memory %" PRIu64 ")", import.memory_type.initial);
                 break;
             case WEB49_EXTERNAL_KIND_GLOBAL:
                 fprintf(out, "(global ");
@@ -813,7 +813,7 @@ void web49_wat_print_section_function(FILE *out, web49_module_t mod, web49_secti
 void web49_wat_print_section_table(FILE *out, web49_module_t mod, web49_section_table_t stable) {
     for (uint64_t i = 0; i < stable.num_entries; i++) {
         web49_type_table_t table = stable.entries[i];
-        fprintf(out, "\n  (table (;%zu;) %"PRIu64, (size_t)i, table.limits.initial);
+        fprintf(out, "\n  (table (;%zu;) %" PRIu64, (size_t)i, table.limits.initial);
         if (table.limits.maximum != UINT64_MAX) {
             fprintf(out, " %zu", (size_t)table.limits.maximum);
         }
@@ -885,7 +885,7 @@ void web49_wat_print_section_start(FILE *out, web49_module_t mod, web49_section_
 void web49_wat_print_section_element(FILE *out, web49_module_t mod, web49_section_element_t selement) {
     for (uint64_t i = 0; i < selement.num_entries; i++) {
         web49_section_element_entry_t element = selement.entries[i];
-        fprintf(out, "\n  (elem (;%"PRIu64";) (", i);
+        fprintf(out, "\n  (elem (;%" PRIu64 ";) (", i);
         web49_wat_print_instr(out, element.offset);
         fprintf(out, ") func");
         for (uint64_t j = 0; j < element.num_elems; j++) {
@@ -909,7 +909,7 @@ void web49_wat_print_section_data(FILE *out, web49_module_t mod, web49_section_d
     for (uint64_t i = 0; i < sdata.num_entries; i++) {
         web49_section_data_entry_t data = sdata.entries[i];
         web49_section_type_entry_t type = type_section.entries[data.index];
-        fprintf(out, "\n  (data (;%"PRIu64";) (", i);
+        fprintf(out, "\n  (data (;%" PRIu64 ";) (", i);
         web49_wat_print_instr(out, data.offset);
         fprintf(out, ") \"");
         for (uint64_t j = 0; j < data.size; j++) {

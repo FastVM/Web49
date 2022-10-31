@@ -705,7 +705,7 @@ web49_module_t web49_readbin_module(FILE *in) {
         sections[num_sections] = web49_readbin_section(in, header);
         size_t b = ftell(in);
         if (header.size != b - a) {
-            fprintf(stderr, "read wrong number of bytes (read: %zu) (section size: %zu) ", (size_t) header.size, b - a);
+            fprintf(stderr, "read wrong number of bytes (read: %zu) (section size: %zu) ", (size_t)header.size, b - a);
             exit(1);
         }
         num_sections += 1;
