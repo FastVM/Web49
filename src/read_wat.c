@@ -1,6 +1,7 @@
 #include "read_wat.h"
 
 #include <ctype.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -1051,7 +1052,7 @@ static void web49_readwat_state_import_entry(web49_readwat_state_t *out, web49_r
                     exit(1);
                 }
                 if (arg.fun_nargs > 1) {
-                    fprintf(stderr, "expected only one argument inside of parens of (mut), not `mut` + %zu others\n", arg.fun_nargs);
+                    fprintf(stderr, "expected only one argument inside of parens of (mut), not `mut` + %zu others\n", (size_t) arg.fun_nargs);
                     exit(1);
                 }
                 tglobal = arg.fun_args[0];
@@ -1095,22 +1096,21 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
                 if (!strcmp(code.fun_fun, "type")) {
                     entry = web49_readwat_expr_to_u64(code.fun_args[0].sym);
                     break;
-                }
-                if (!strcmp(code.fun_fun, "param") || !strcmp(code.fun_fun, "result")) {
+                } else {
                     web49_lang_type_t type = WEB49_TYPE_FUNC;
                     uint64_t num_params = 0;
                     web49_lang_type_t *params = NULL;
                     uint64_t alloc_params = 0;
                     uint64_t num_returns = 0;
                     web49_lang_type_t return_type;
-                    web49_readwat_expr_t expr = expr.fun_args[i++];
-                    if (!strcmp(expr.fun_fun, "param")) {
-                        for (uint64_t k = 0; k < expr.fun_nargs; k++) {
+                    web49_readwat_expr_t paramres = expr.fun_args[i++];
+                    if (!strcmp(paramres.fun_fun, "param")) {
+                        for (uint64_t k = 0; k < paramres.fun_nargs; k++) {
                             if (num_params + 2 >= alloc_params) {
                                 alloc_params = (num_params + 2) * 2;
                                 params = web49_realloc(params, sizeof(web49_lang_type_t) * alloc_params);
                             }
-                            web49_readwat_expr_t name = expr.fun_args[k];
+                            web49_readwat_expr_t name = paramres.fun_args[k];
                             if (name.tag != WEB49_READWAT_EXPR_TAG_SYM) {
                                 fprintf(stderr, "expected param to be `i32` or `i64` or `f32` or `f64`\n");
                                 exit(1);
@@ -1128,15 +1128,15 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
                                 exit(1);
                             }
                         }
-                        expr = expr.fun_args[i++];
+                        paramres = expr.fun_args[i++];
                     }
-                    if (!strcmp(expr.fun_fun, "result")) {
-                        for (uint64_t k = 0; k < expr.fun_nargs; k++) {
+                    if (!strcmp(paramres.fun_fun, "result")) {
+                        for (uint64_t k = 0; k < paramres.fun_nargs; k++) {
                             if (num_returns != 0) {
                                 fprintf(stderr, "expected you not to use multi-results :(\n");
                                 exit(1);
                             }
-                            web49_readwat_expr_t name = expr.fun_args[k];
+                            web49_readwat_expr_t name = paramres.fun_args[k];
                             if (name.tag != WEB49_READWAT_EXPR_TAG_SYM) {
                                 fprintf(stderr, "expected result to be `i32` or `i64` or `f32` or `f64`\n");
                                 exit(1);
@@ -1172,6 +1172,21 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
                     break;
                 }
             }
+        }
+        if (entry == UINT64_MAX) {
+            if (out->stype.num_entries + 1 >= out->alloc_type) {
+                out->alloc_type = (out->stype.num_entries + 1) * 2;
+                out->stype.entries = web49_realloc(out->stype.entries, sizeof(web49_section_type_entry_t) * out->alloc_type);
+            }
+            entry = out->stype.num_entries;
+            out->stype.entries[out->stype.num_entries++] = (web49_section_type_entry_t){
+                .type = WEB49_TYPE_FUNC,
+                .num_params = 0,
+                .params = NULL,
+                .num_returns = 0,
+                .return_type = 0,
+                .has_return_type = false,
+            };
         }
         if (out->sfunction.num_entries + 1 >= out->alloc_function) {
             out->alloc_function = (out->sfunction.num_entries + 1) * 2;

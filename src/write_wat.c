@@ -763,7 +763,7 @@ void web49_wat_print_section_function(FILE *out, web49_module_t mod, web49_secti
     for (uint64_t i = 0; i < code_section.num_entries; i++) {
         web49_section_type_entry_t type = type_section.entries[sfunction.entries[i]];
         web49_section_code_entry_t code = code_section.entries[i];
-        fprintf(out, "\n  (func (;%zu;) (type %zu)", (size_t)num_funcs++, (size_t)sfunction.entries[i]);
+        fprintf(out, "\n  (func (;%zu;) (type %"PRIu64")", (size_t)num_funcs++, (size_t)sfunction.entries[i]);
         if (type.num_params != 0) {
             fprintf(out, " (param");
             for (uint64_t j = 0; j < type.num_params; j++) {
