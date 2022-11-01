@@ -3,13 +3,8 @@
 #include "../src/write_wat.h"
 
 int web49_file_main(const char *inarg, const char *outarg) {
-    FILE *infile = fopen(inarg, "rb");
-    if (infile == NULL) {
-        fprintf(stderr, "cannot open file: %s\n", inarg);
-        return 1;
-    }
-    web49_module_t mod = web49_readbin_module(infile);
-    fclose(infile);
+    web49_io_input_t infile = web49_io_input_open(inarg);
+    web49_module_t mod = web49_readbin_module(&infile);
     if (outarg == NULL) {
         web49_wat_print_module(stdout, mod);
     } else {

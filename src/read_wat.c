@@ -724,15 +724,15 @@ uint64_t web49_readwat_table_get(web49_readwat_table_t *restrict table, const ch
     return UINT64_MAX;
 }
 
-const char *web49_readwat_name(FILE *in) {
+const char *web49_readwat_name(web49_io_input_t *in) {
 redo:;
-    char first = fgetc(in);
+    char first = web49_io_input_fgetc(in);
     if (first == ';') {
-        if (fgetc(in) != ';') {
-            ungetc(';', in);
+        if (web49_io_input_fgetc(in) != ';') {
+            web49_io_input_rewind(in);
             return ";";
         }
-        while (fgetc(in) != '\n') {
+        while (web49_io_input_fgetc(in) != '\n') {
         }
     }
     uint64_t alloc = 16;
@@ -747,35 +747,35 @@ redo:;
             buf = web49_realloc(buf, sizeof(char) * alloc);
         }
         buf[len++] = first;
-        first = fgetc(in);
+        first = web49_io_input_fgetc(in);
     }
-    ungetc(first, in);
+    web49_io_input_rewind(in);
     buf[len] = '\0';
     return buf;
 }
 
-web49_readwat_expr_t web49_readwat_expr(FILE *in) {
+web49_readwat_expr_t web49_readwat_expr(web49_io_input_t *in) {
 redo:;
-    uint64_t start = ftell(in);
-    char first = fgetc(in);
+    uint64_t start = web49_io_input_ftell(in);
+    char first = web49_io_input_fgetc(in);
     while (isspace(first)) {
-        first = fgetc(in);
+        first = web49_io_input_fgetc(in);
     }
     if (first == ';') {
-        char second = fgetc(in);
+        char second = web49_io_input_fgetc(in);
         if (second == ';') {
-            while (fgetc(in) != '\n') {
+            while (web49_io_input_fgetc(in) != '\n') {
             }
             goto redo;
         }
-        ungetc(second, in);
+        web49_io_input_rewind(in);
     }
     if (first == '(') {
         const char *name = web49_readwat_name(in);
         if (!strcmp(name, ";")) {
             uint64_t depth = 1;
             while (depth != 0) {
-                char comment = fgetc(in);
+                char comment = web49_io_input_fgetc(in);
                 if (comment == '(') {
                     depth += 1;
                 }
@@ -793,19 +793,19 @@ redo:;
                 alloc *= 2;
                 args = web49_realloc(args, sizeof(web49_readwat_expr_t) * alloc);
             }
-            first = fgetc(in);
+            first = web49_io_input_fgetc(in);
             while (isspace(first)) {
-                first = fgetc(in);
+                first = web49_io_input_fgetc(in);
             }
             if (first == ')' || first == '\0' || first == EOF) {
                 break;
             }
-            ungetc(first, in);
+            web49_io_input_rewind(in);
             args[nargs++] = web49_readwat_expr(in);
         }
         return (web49_readwat_expr_t){
             .start = start,
-            .end = ftell(in),
+            .end = web49_io_input_ftell(in),
             .fun_fun = name,
             .fun_nargs = nargs,
             .fun_args = args,
@@ -816,7 +816,7 @@ redo:;
         uint64_t alloc = 16;
         uint8_t *buf = web49_malloc(sizeof(uint8_t) * alloc);
         uint64_t len = 0;
-        first = fgetc(in);
+        first = web49_io_input_fgetc(in);
         while (true) {
             if (first == '"') {
                 break;
@@ -826,10 +826,10 @@ redo:;
                 buf = web49_realloc(buf, sizeof(uint8_t) * alloc);
             }
             if (first == '\\') {
-                char escape = fgetc(in);
+                char escape = web49_io_input_fgetc(in);
                 if (isdigit(escape) || ('a' <= escape && escape <= 'f')) {
                     char c1 = escape;
-                    char c2 = fgetc(in);
+                    char c2 = web49_io_input_fgetc(in);
                     uint64_t high = isdigit(c1) ? c1 - '0' : c1 - 'a' + 10;
                     uint64_t low = isdigit(c2) ? c2 - '0' : c2 - 'a' + 10;
                     buf[len++] = (uint8_t)(high * 16 + low);
@@ -839,21 +839,21 @@ redo:;
             } else {
                 buf[len++] = first;
             }
-            first = fgetc(in);
+            first = web49_io_input_fgetc(in);
         }
         buf[len] = '\0';
         return (web49_readwat_expr_t){
             .start = start,
-            .end = ftell(in),
+            .end = web49_io_input_ftell(in),
             .len_str = len,
             .str = buf,
             .tag = WEB49_READWAT_EXPR_TAG_STR,
         };
     }
-    ungetc(first, in);
+    web49_io_input_rewind(in);
     return (web49_readwat_expr_t){
         .start = start,
-        .end = ftell(in),
+        .end = web49_io_input_ftell(in),
         .sym = web49_readwat_name(in),
         .tag = WEB49_READWAT_EXPR_TAG_SYM,
     };
@@ -1740,7 +1740,7 @@ static void web49_readwat_state_toplevel(web49_readwat_state_t *out, web49_readw
     }
 }
 
-web49_module_t web49_readwat_module(FILE *in) {
+web49_module_t web49_readwat_module(web49_io_input_t *in) {
     web49_readwat_state_t state = {0};
     web49_readwat_expr_t expr = web49_readwat_expr(in);
     web49_readwat_state_toplevel(&state, expr);

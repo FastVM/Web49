@@ -50,11 +50,11 @@ static const web49_immediate_id_t web49_immediates[WEB49_MAX_OPCODE_NUM] = {
     [WEB49_OPCODE_DATA_DROP] = WEB49_IMMEDIATE_DATA_INDEX,
 };
 
-uint64_t web49_readbin_uleb(FILE *in) {
+uint64_t web49_readbin_uleb(web49_io_input_t *in) {
     uint8_t buf;
     uint64_t x = 0;
     size_t shift = 0;
-    while (fread(&buf, 1, 1, in)) {
+    while (web49_io_input_fread(in, 1, &buf)) {
         x |= (uint64_t)(buf & 0x7f) << shift;
         if (!(buf & 0x80)) {
             break;
@@ -64,11 +64,11 @@ uint64_t web49_readbin_uleb(FILE *in) {
     return x;
 }
 
-int64_t web49_readbin_sleb(FILE *in) {
+int64_t web49_readbin_sleb(web49_io_input_t *in) {
     uint8_t buf;
     __int128 x = 0;
     size_t shift = 0;
-    while (fread(&buf, 1, 1, in)) {
+    while (web49_io_input_fread(in, 1, &buf)) {
         x += (__int128)(buf & 0x7f) << shift;
         shift += 7;
         if (!(buf & 0x80)) {
@@ -82,13 +82,13 @@ int64_t web49_readbin_sleb(FILE *in) {
     }
 }
 
-uint8_t web49_readbin_byte(FILE *in) {
+uint8_t web49_readbin_byte(web49_io_input_t *in) {
     uint8_t ret;
-    fread(&ret, 1, 1, in);
+    web49_io_input_fread(in, 1, &ret);
     return ret;
 }
 
-web49_preamble_t web49_readbin_preamble(FILE *in) {
+web49_preamble_t web49_readbin_preamble(web49_io_input_t *in) {
     return (web49_preamble_t){
         .magic[0] = web49_readbin_byte(in),
         .magic[1] = web49_readbin_byte(in),
@@ -101,7 +101,7 @@ web49_preamble_t web49_readbin_preamble(FILE *in) {
     };
 }
 
-web49_section_header_t web49_readbin_section_header(FILE *in) {
+web49_section_header_t web49_readbin_section_header(web49_io_input_t *in) {
     uint8_t id = web49_readbin_byte(in);
     uint64_t size = web49_readbin_uleb(in);
     return (web49_section_header_t){
@@ -111,43 +111,43 @@ web49_section_header_t web49_readbin_section_header(FILE *in) {
     };
 }
 
-uint8_t web49_readbin_varuint1(FILE *in) {
+uint8_t web49_readbin_varuint1(web49_io_input_t *in) {
     return web49_readbin_byte(in);
 }
 
-int32_t web49_readbin_varint32(FILE *in) {
+int32_t web49_readbin_varint32(web49_io_input_t *in) {
     return (int32_t)web49_readbin_sleb(in);
 }
 
-int64_t web49_readbin_varint64(FILE *in) {
+int64_t web49_readbin_varint64(web49_io_input_t *in) {
     return (int64_t)web49_readbin_sleb(in);
 }
 
-int32_t web49_readbin_varuint32(FILE *in) {
+int32_t web49_readbin_varuint32(web49_io_input_t *in) {
     return (uint32_t)web49_readbin_uleb(in);
 }
 
-int64_t web49_readbin_varuint64(FILE *in) {
+int64_t web49_readbin_varuint64(web49_io_input_t *in) {
     return (uint64_t)web49_readbin_uleb(in);
 }
 
-uint32_t web49_readbin_uint32(FILE *in) {
+uint32_t web49_readbin_uint32(web49_io_input_t *in) {
     uint32_t ret;
-    fread(&ret, sizeof(uint32_t), 1, in);
+    web49_io_input_fread(in, (sizeof(uint32_t)) * (1), &ret);
     return ret;
 }
 
-uint64_t web49_readbin_uint64(FILE *in) {
+uint64_t web49_readbin_uint64(web49_io_input_t *in) {
     uint64_t ret;
-    fread(&ret, sizeof(uint64_t), 1, in);
+    web49_io_input_fread(in, (sizeof(uint64_t)) * (1), &ret);
     return ret;
 }
 
-web49_lang_type_t web49_readbin_block_type(FILE *in) {
+web49_lang_type_t web49_readbin_block_type(web49_io_input_t *in) {
     return web49_readbin_byte(in);
 }
 
-web49_br_table_t web49_readbin_br_table(FILE *in) {
+web49_br_table_t web49_readbin_br_table(web49_io_input_t *in) {
     uint64_t num = web49_readbin_uleb(in);
     uint64_t *targets = web49_malloc(sizeof(uint64_t) * num);
     for (uint64_t i = 0; i < num; i++) {
@@ -161,41 +161,41 @@ web49_br_table_t web49_readbin_br_table(FILE *in) {
     };
 }
 
-web49_call_indirect_t web49_readbin_call_indirect(FILE *in) {
+web49_call_indirect_t web49_readbin_call_indirect(web49_io_input_t *in) {
     return (web49_call_indirect_t){
         .index = web49_readbin_uleb(in),
         .reserved = web49_readbin_byte(in),
     };
 }
 
-web49_memory_immediate_t web49_readbin_memory_immediate(FILE *in) {
+web49_memory_immediate_t web49_readbin_memory_immediate(web49_io_input_t *in) {
     return (web49_memory_immediate_t){
         .align = web49_readbin_uleb(in),
         .offset = web49_readbin_uleb(in),
     };
 }
 
-web49_type_function_t web49_readbin_type_function(FILE *in) {
+web49_type_function_t web49_readbin_type_function(web49_io_input_t *in) {
     return (web49_type_function_t){
         .data = web49_readbin_uleb(in),
     };
 }
 
-web49_type_table_t web49_readbin_type_table(FILE *in) {
+web49_type_table_t web49_readbin_type_table(web49_io_input_t *in) {
     return (web49_type_table_t){
         .element_type = web49_readbin_byte(in),
         .limits = web49_readbin_type_memory(in),
     };
 }
 
-web49_type_global_t web49_readbin_type_global(FILE *in) {
+web49_type_global_t web49_readbin_type_global(web49_io_input_t *in) {
     return (web49_type_global_t){
         .content_type = web49_readbin_byte(in),
         .is_mutable = web49_readbin_byte(in),
     };
 }
 
-web49_type_memory_t web49_readbin_type_memory(FILE *in) {
+web49_type_memory_t web49_readbin_type_memory(web49_io_input_t *in) {
     uint64_t flags = web49_readbin_uleb(in);
     return (web49_type_memory_t){
         .initial = web49_readbin_uleb(in),
@@ -203,7 +203,7 @@ web49_type_memory_t web49_readbin_type_memory(FILE *in) {
     };
 }
 
-web49_type_t web49_readbin_type(FILE *in, web49_external_kind_t tag) {
+web49_type_t web49_readbin_type(web49_io_input_t *in, web49_external_kind_t tag) {
     if (tag == WEB49_EXTERNAL_KIND_FUNCTION) {
         return (web49_type_t){
             .function = web49_readbin_type_function(in),
@@ -232,15 +232,15 @@ web49_type_t web49_readbin_type(FILE *in, web49_external_kind_t tag) {
     exit(1);
 }
 
-web49_section_custom_t web49_readbin_section_custom(FILE *in, web49_section_header_t header) {
+web49_section_custom_t web49_readbin_section_custom(web49_io_input_t *in, web49_section_header_t header) {
     void *payload = web49_malloc(header.size);
-    fread(payload, 1, header.size, in);
+    web49_io_input_fread(in, (header.size), payload);
     return (web49_section_custom_t){
         .payload = payload,
     };
 }
 
-web49_section_type_t web49_readbin_section_type(FILE *in) {
+web49_section_type_t web49_readbin_section_type(web49_io_input_t *in) {
     uint64_t num = web49_readbin_uleb(in);
     web49_section_type_entry_t *entries = web49_malloc(sizeof(web49_section_type_entry_t) * num);
     for (uint64_t i = 0; i < num; i++) {
@@ -272,17 +272,17 @@ web49_section_type_t web49_readbin_section_type(FILE *in) {
     };
 }
 
-web49_section_import_t web49_readbin_section_import(FILE *in) {
+web49_section_import_t web49_readbin_section_import(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
     web49_section_import_entry_t *entries = web49_malloc(sizeof(web49_section_import_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
         uint64_t module_len = web49_readbin_uleb(in);
         char *module_str = web49_malloc(sizeof(char) * (module_len + 1));
-        fread(module_str, 1, module_len, in);
+        web49_io_input_fread(in, (module_len), module_str);
         module_str[module_len] = '\0';
         uint64_t field_len = web49_readbin_uleb(in);
         char *field_str = web49_malloc(sizeof(char) * (field_len + 1));
-        fread(field_str, 1, field_len, in);
+        web49_io_input_fread(in, (field_len), field_str);
         field_str[field_len] = '\0';
         web49_external_kind_t kind = web49_readbin_byte(in);
         entries[i] = (web49_section_import_entry_t){
@@ -315,7 +315,7 @@ web49_section_import_t web49_readbin_section_import(FILE *in) {
     };
 }
 
-web49_section_function_t web49_readbin_section_function(FILE *in) {
+web49_section_function_t web49_readbin_section_function(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
     uint64_t *entries = web49_malloc(sizeof(uint64_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
@@ -327,7 +327,7 @@ web49_section_function_t web49_readbin_section_function(FILE *in) {
     };
 }
 
-web49_section_table_t web49_readbin_section_table(FILE *in) {
+web49_section_table_t web49_readbin_section_table(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
     web49_type_table_t *entries = web49_malloc(sizeof(web49_type_table_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
@@ -339,7 +339,7 @@ web49_section_table_t web49_readbin_section_table(FILE *in) {
     };
 }
 
-web49_section_memory_t web49_readbin_section_memory(FILE *in) {
+web49_section_memory_t web49_readbin_section_memory(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
     web49_type_memory_t *entries = web49_malloc(sizeof(web49_section_global_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
@@ -351,7 +351,7 @@ web49_section_memory_t web49_readbin_section_memory(FILE *in) {
     };
 }
 
-web49_section_global_t web49_readbin_section_global(FILE *in) {
+web49_section_global_t web49_readbin_section_global(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
     web49_section_global_entry_t *entries = web49_malloc(sizeof(web49_section_global_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
@@ -366,13 +366,13 @@ web49_section_global_t web49_readbin_section_global(FILE *in) {
     };
 }
 
-web49_section_export_t web49_readbin_section_export(FILE *in) {
+web49_section_export_t web49_readbin_section_export(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
     web49_section_export_entry_t *entries = web49_malloc(sizeof(web49_section_export_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
         uint64_t field_len = web49_readbin_uleb(in);
         char *field_str = web49_malloc(sizeof(char) * (field_len + 1));
-        fread(field_str, 1, field_len, in);
+        web49_io_input_fread(in, (field_len), field_str);
         field_str[field_len] = '\0';
         web49_external_kind_t kind = web49_readbin_byte(in);
         uint64_t index = web49_readbin_uleb(in);
@@ -388,13 +388,13 @@ web49_section_export_t web49_readbin_section_export(FILE *in) {
     };
 }
 
-web49_section_start_t web49_readbin_section_start(FILE *in) {
+web49_section_start_t web49_readbin_section_start(web49_io_input_t *in) {
     return (web49_section_start_t){
         .index = web49_readbin_uleb(in),
     };
 }
 
-web49_section_element_t web49_readbin_section_element(FILE *in) {
+web49_section_element_t web49_readbin_section_element(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
     web49_section_element_entry_t *entries = web49_malloc(sizeof(web49_section_element_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
@@ -418,12 +418,12 @@ web49_section_element_t web49_readbin_section_element(FILE *in) {
     };
 }
 
-web49_section_code_t web49_readbin_section_code(FILE *in) {
+web49_section_code_t web49_readbin_section_code(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
     web49_section_code_entry_t *entries = web49_malloc(sizeof(web49_section_code_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
         uint64_t body_len = web49_readbin_uleb(in);
-        long end = ftell(in) + (long)body_len;
+        long end = web49_io_input_ftell(in) + (long)body_len;
         uint64_t num_locals = web49_readbin_uleb(in);
         web49_section_code_entry_local_t *locals = web49_malloc(sizeof(web49_section_code_entry_local_t) * num_locals);
         for (uint64_t j = 0; j < num_locals; j++) {
@@ -437,7 +437,7 @@ web49_section_code_t web49_readbin_section_code(FILE *in) {
         uint64_t alloc_instrs = 4;
         web49_instr_t *instrs = web49_malloc(sizeof(web49_instr_t) * alloc_instrs);
         uint64_t num_instrs = 0;
-        while (ftell(in) < end) {
+        while (web49_io_input_ftell(in) < end) {
             if (num_instrs + 1 >= alloc_instrs) {
                 alloc_instrs = (alloc_instrs + 1) * 2;
                 instrs = web49_realloc(instrs, sizeof(web49_instr_t) * alloc_instrs);
@@ -458,7 +458,7 @@ web49_section_code_t web49_readbin_section_code(FILE *in) {
     };
 }
 
-web49_section_data_t web49_readbin_section_data(FILE *in) {
+web49_section_data_t web49_readbin_section_data(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
     web49_section_data_entry_t *entries = web49_malloc(sizeof(web49_section_data_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
@@ -466,7 +466,7 @@ web49_section_data_t web49_readbin_section_data(FILE *in) {
         web49_instr_t offset = web49_readbin_init_expr(in);
         uint64_t size = web49_readbin_uleb(in);
         uint8_t *data = web49_malloc(sizeof(uint8_t) * size);
-        fread(data, 1, size, in);
+        web49_io_input_fread(in, (size), data);
         entries[i] = (web49_section_data_entry_t){
             .index = index,
             .offset = offset,
@@ -480,7 +480,7 @@ web49_section_data_t web49_readbin_section_data(FILE *in) {
     };
 }
 
-web49_instr_immediate_t web49_readbin_instr_immediate(FILE *in, web49_immediate_id_t id) {
+web49_instr_immediate_t web49_readbin_instr_immediate(web49_io_input_t *in, web49_immediate_id_t id) {
     if (id == WEB49_IMMEDIATE_BLOCK_TYPE) {
         return (web49_instr_immediate_t){
             .id = WEB49_IMMEDIATE_BLOCK_TYPE,
@@ -558,13 +558,13 @@ web49_instr_immediate_t web49_readbin_instr_immediate(FILE *in, web49_immediate_
     };
 }
 
-web49_instr_t web49_readbin_init_expr(FILE *in) {
+web49_instr_t web49_readbin_init_expr(web49_io_input_t *in) {
     web49_instr_t ret = web49_readbin_instr(in);
     web49_readbin_byte(in);
     return ret;
 }
 
-web49_instr_t web49_readbin_instr(FILE *in) {
+web49_instr_t web49_readbin_instr(web49_io_input_t *in) {
     web49_opcode_t opcode = web49_readbin_byte(in);
     size_t skip = 0;
     if (opcode == 0xFC) {
@@ -609,7 +609,7 @@ web49_instr_t web49_readbin_instr(FILE *in) {
     };
 }
 
-web49_section_t web49_readbin_section(FILE *in, web49_section_header_t header) {
+web49_section_t web49_readbin_section(web49_io_input_t *in, web49_section_header_t header) {
     web49_section_id_t id = header.id;
     if (id == WEB49_SECTION_ID_CUSTOM) {
         return (web49_section_t){
@@ -683,16 +683,16 @@ web49_section_t web49_readbin_section(FILE *in, web49_section_header_t header) {
             .data_section = web49_readbin_section_data(in),
         };
     }
-    fprintf(stderr, "unknown section kind: 0x%zX starting at %zX\n", (size_t)id, (size_t)ftell(in));
+    fprintf(stderr, "unknown section kind: 0x%zX starting at %zX\n", (size_t)id, (size_t)web49_io_input_ftell(in));
     exit(1);
 }
 
-web49_module_t web49_readbin_module(FILE *in) {
+web49_module_t web49_readbin_module(web49_io_input_t *in) {
     web49_preamble_t preamble = web49_readbin_preamble(in);
     uint64_t alloc_sections = 4;
     web49_section_t *sections = web49_malloc(sizeof(web49_section_t) * alloc_sections);
     uint64_t num_sections = 0;
-    while (!feof(in)) {
+    while (!web49_io_input_is_empty(in)) {
         if (num_sections + 1 >= alloc_sections) {
             alloc_sections = (alloc_sections + 1) * 2;
             sections = web49_realloc(sections, sizeof(web49_section_t) * alloc_sections);
@@ -701,12 +701,12 @@ web49_module_t web49_readbin_module(FILE *in) {
         if (header.id >= WEB49_SECTION_HIGH_ID) {
             header.id = WEB49_SECTION_ID_CUSTOM;
         }
-        if (feof(in)) {
+        if (web49_io_input_is_empty(in)) {
             break;
         }
-        size_t a = ftell(in);
+        size_t a = web49_io_input_ftell(in);
         sections[num_sections] = web49_readbin_section(in, header);
-        size_t b = ftell(in);
+        size_t b = web49_io_input_ftell(in);
         if (header.size != b - a) {
             fprintf(stderr, "read wrong number of bytes (read: %zu) (section size: %zu)\n", (size_t)header.size, b - a);
             exit(1);
