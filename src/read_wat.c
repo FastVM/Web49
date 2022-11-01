@@ -1,6 +1,8 @@
 #include "read_wat.h"
 
+#include <ctype.h>
 #include <stdio.h>
+#include <string.h>
 
 static size_t web49_wat_instr_mem_size[WEB49_MAX_OPCODE_NUM] = {
     [WEB49_OPCODE_I32_LOAD] = 4,
@@ -78,6 +80,7 @@ static const web49_immediate_id_t web49_immediates[WEB49_MAX_OPCODE_NUM] = {
 enum {
     WEB49_READWAT_EXPR_TAG_INIT,
     WEB49_READWAT_EXPR_TAG_FUN,
+    WEB49_READWAT_EXPR_TAG_SYM,
     WEB49_READWAT_EXPR_TAG_STR,
 };
 
@@ -150,7 +153,11 @@ struct web49_readwat_expr_t {
             uint64_t fun_nargs;
             web49_readwat_expr_t *fun_args;
         };
-        const char *str;
+        struct {
+            uint64_t len_str;
+            uint8_t *str;
+        };
+        const char *sym;
     };
     uint8_t tag;
 };
@@ -806,7 +813,7 @@ redo:;
     }
     if (first == '"') {
         uint64_t alloc = 16;
-        char *buf = web49_malloc(sizeof(char) * alloc);
+        uint8_t *buf = web49_malloc(sizeof(uint8_t) * alloc);
         uint64_t len = 0;
         first = fgetc(in);
         while (true) {
@@ -815,14 +822,16 @@ redo:;
             }
             if (len + 2 >= alloc) {
                 alloc *= 2;
-                buf = web49_realloc(buf, sizeof(char) * alloc);
+                buf = web49_realloc(buf, sizeof(uint8_t) * alloc);
             }
             if (first == '\\') {
                 char escape = fgetc(in);
-                if (isdigit(escape)) {
-                    uint64_t high = (escape - '0');
-                    uint64_t low = (fgetc(in) - '0');
-                    buf[len++] = (char)(high * 16 + low);
+                if (isdigit(escape) || ('a' <= escape && escape <= 'f')) {
+                    char c1 = escape;
+                    char c2 = fgetc(in);
+                    uint64_t high = isdigit(c1) ? c1 - '0' : c1 - 'a' + 10;
+                    uint64_t low = isdigit(c2) ? c2 - '0' : c2 - 'a' + 10;
+                    buf[len++] = (uint8_t)(high * 16 + low);
                 } else {
                     buf[len++] = escape;
                 }
@@ -835,6 +844,7 @@ redo:;
         return (web49_readwat_expr_t){
             .start = start,
             .end = ftell(in),
+            .len_str = len,
             .str = buf,
             .tag = WEB49_READWAT_EXPR_TAG_STR,
         };
@@ -843,8 +853,8 @@ redo:;
     return (web49_readwat_expr_t){
         .start = start,
         .end = ftell(in),
-        .str = web49_readwat_name(in),
-        .tag = WEB49_READWAT_EXPR_TAG_STR,
+        .sym = web49_readwat_name(in),
+        .tag = WEB49_READWAT_EXPR_TAG_SYM,
     };
 }
 
@@ -892,7 +902,7 @@ static void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_rea
     for (uint64_t i = 0; i < expr.fun_nargs; i++) {
         web49_readwat_expr_t func = expr.fun_args[i];
         if (func.tag != WEB49_READWAT_EXPR_TAG_FUN) {
-            fprintf(stderr, "expected (func ...) type, not `%s`\n", func.str);
+            fprintf(stderr, "expected (func ...) type, not `%s`\n", func.sym);
             exit(1);
         }
         if (!!strcmp(func.fun_fun, "func")) {
@@ -903,7 +913,7 @@ static void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_rea
         for (uint64_t j = 0; j < func.fun_nargs; j++) {
             web49_readwat_expr_t arg = func.fun_args[j];
             if (arg.tag != WEB49_READWAT_EXPR_TAG_FUN) {
-                web49_readwat_table_set(&out->type_table, arg.str, out->stype.num_entries);
+                web49_readwat_table_set(&out->type_table, arg.sym, out->stype.num_entries);
                 continue;
             }
             if (arg.tag != WEB49_READWAT_EXPR_TAG_FUN) {
@@ -917,20 +927,20 @@ static void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_rea
                         params = web49_realloc(params, sizeof(web49_lang_type_t) * alloc_params);
                     }
                     web49_readwat_expr_t name = arg.fun_args[k];
-                    if (name.tag != WEB49_READWAT_EXPR_TAG_STR) {
+                    if (name.tag != WEB49_READWAT_EXPR_TAG_SYM) {
                         fprintf(stderr, "expected param to be `i32` or `i64` or `f32` or `f64`\n");
                         exit(1);
                     }
-                    if (!strcmp(name.str, "i32")) {
+                    if (!strcmp(name.sym, "i32")) {
                         params[num_params++] = WEB49_TYPE_I32;
-                    } else if (!strcmp(name.str, "i64")) {
+                    } else if (!strcmp(name.sym, "i64")) {
                         params[num_params++] = WEB49_TYPE_I64;
-                    } else if (!strcmp(name.str, "f32")) {
+                    } else if (!strcmp(name.sym, "f32")) {
                         params[num_params++] = WEB49_TYPE_F32;
-                    } else if (!strcmp(name.str, "f64")) {
+                    } else if (!strcmp(name.sym, "f64")) {
                         params[num_params++] = WEB49_TYPE_F64;
                     } else {
-                        fprintf(stderr, "expected param to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.str);
+                        fprintf(stderr, "expected param to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.sym);
                         exit(1);
                     }
                 }
@@ -941,20 +951,20 @@ static void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_rea
                         exit(1);
                     }
                     web49_readwat_expr_t name = arg.fun_args[k];
-                    if (name.tag != WEB49_READWAT_EXPR_TAG_STR) {
+                    if (name.tag != WEB49_READWAT_EXPR_TAG_SYM) {
                         fprintf(stderr, "expected result to be `i32` or `i64` or `f32` or `f64`\n");
                         exit(1);
                     }
-                    if (!strcmp(name.str, "i32")) {
+                    if (!strcmp(name.sym, "i32")) {
                         return_type = WEB49_TYPE_I32;
-                    } else if (!strcmp(name.str, "i64")) {
+                    } else if (!strcmp(name.sym, "i64")) {
                         return_type = WEB49_TYPE_I64;
-                    } else if (!strcmp(name.str, "f32")) {
+                    } else if (!strcmp(name.sym, "f32")) {
                         return_type = WEB49_TYPE_F32;
-                    } else if (!strcmp(name.str, "f64")) {
+                    } else if (!strcmp(name.sym, "f64")) {
                         return_type = WEB49_TYPE_F64;
                     } else {
-                        fprintf(stderr, "expected result to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.str);
+                        fprintf(stderr, "expected result to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.sym);
                         exit(1);
                     }
                     num_returns += 1;
@@ -983,22 +993,29 @@ static void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_rea
     };
 }
 
+static const char *web49_readwat_sym_to_str(web49_readwat_expr_t expr) {
+    char *str = web49_malloc(sizeof(char) * (expr.len_str + 1));
+    memcpy(str, expr.str, expr.len_str);
+    str[expr.len_str] = '\0';
+    return str;
+}
+
 static void web49_readwat_state_import_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr) {
     web49_section_import_entry_t entry = (web49_section_import_entry_t){
-        .module_str = expr.fun_args[0].str,
-        .field_str = expr.fun_args[1].str,
+        .module_str = web49_readwat_sym_to_str(expr.fun_args[0]),
+        .field_str = web49_readwat_sym_to_str(expr.fun_args[1]),
     };
     if (expr.fun_args[2].tag != WEB49_READWAT_EXPR_TAG_FUN) {
-        fprintf(stderr, "expected (func ...) or (table ...) or (memory ...) or (global ..), not `%s`\n", expr.fun_args[2].str);
+        fprintf(stderr, "expected (func ...) or (table ...) or (memory ...) or (global ..), not `%s`\n", expr.fun_args[2].sym);
     }
     if (!strcmp(expr.fun_args[2].fun_fun, "func")) {
         entry.kind = WEB49_EXTERNAL_KIND_FUNCTION;
         for (uint64_t i = 0; i < expr.fun_args[2].fun_nargs; i++) {
             web49_readwat_expr_t func = expr.fun_args[2].fun_args[i];
-            if (func.tag == WEB49_READWAT_EXPR_TAG_STR) {
-                web49_readwat_table_set(&out->func_table, func.str, out->simport.num_entries);
+            if (func.tag == WEB49_READWAT_EXPR_TAG_SYM) {
+                web49_readwat_table_set(&out->func_table, func.sym, out->simport.num_entries);
             } else if (!strcmp(func.fun_fun, "type")) {
-                entry.func_type.data = web49_readwat_expr_to_u64(func.fun_args[0].str);
+                entry.func_type.data = web49_readwat_expr_to_u64(func.fun_args[0].sym);
             } else {
                 fprintf(stderr, "expected $name or (type ...)");
                 exit(1);
@@ -1010,11 +1027,11 @@ static void web49_readwat_state_import_entry(web49_readwat_state_t *out, web49_r
     } else if (!strcmp(expr.fun_args[2].fun_fun, "memory")) {
         entry.kind = WEB49_EXTERNAL_KIND_MEMORY;
         if (expr.fun_args[2].fun_nargs == 1) {
-            entry.memory_type.initial = web49_readwat_expr_to_u64(expr.fun_args[2].fun_args[0].str);
+            entry.memory_type.initial = web49_readwat_expr_to_u64(expr.fun_args[2].fun_args[0].sym);
             entry.memory_type.maximum = UINT64_MAX;
         } else if (expr.fun_args[2].fun_nargs == 1) {
-            entry.memory_type.initial = web49_readwat_expr_to_u64(expr.fun_args[2].fun_args[0].str);
-            entry.memory_type.maximum = web49_readwat_expr_to_u64(expr.fun_args[2].fun_args[1].str);
+            entry.memory_type.initial = web49_readwat_expr_to_u64(expr.fun_args[2].fun_args[0].sym);
+            entry.memory_type.maximum = web49_readwat_expr_to_u64(expr.fun_args[2].fun_args[1].sym);
         }
     } else if (!strcmp(expr.fun_args[2].fun_fun, "global")) {
         entry.kind = WEB49_EXTERNAL_KIND_GLOBAL;
@@ -1022,9 +1039,9 @@ static void web49_readwat_state_import_entry(web49_readwat_state_t *out, web49_r
         web49_readwat_expr_t tglobal = (web49_readwat_expr_t){.tag = WEB49_READWAT_EXPR_TAG_INIT};
         for (uint64_t i = 0; i < expr.fun_args[2].fun_nargs; i++) {
             web49_readwat_expr_t arg = expr.fun_args[2].fun_args[i];
-            if (arg.tag == WEB49_READWAT_EXPR_TAG_STR) {
-                if (arg.str[0] == '$') {
-                    web49_readwat_table_set(&out->global_table, arg.str, out->simport.num_entries);
+            if (arg.tag == WEB49_READWAT_EXPR_TAG_SYM) {
+                if (arg.sym[0] == '$') {
+                    web49_readwat_table_set(&out->global_table, arg.sym, out->simport.num_entries);
                 } else {
                     tglobal = arg;
                 }
@@ -1044,20 +1061,20 @@ static void web49_readwat_state_import_entry(web49_readwat_state_t *out, web49_r
                 exit(1);
             }
         }
-        if (tglobal.tag != WEB49_READWAT_EXPR_TAG_STR) {
+        if (tglobal.tag != WEB49_READWAT_EXPR_TAG_SYM) {
             fprintf(stderr, "expected a type for the global\n");
             exit(1);
         }
-        if (!strcmp(tglobal.str, "i32")) {
+        if (!strcmp(tglobal.sym, "i32")) {
             entry.global_type.content_type = WEB49_TYPE_I32;
-        } else if (!strcmp(tglobal.str, "i64")) {
+        } else if (!strcmp(tglobal.sym, "i64")) {
             entry.global_type.content_type = WEB49_TYPE_I64;
-        } else if (!strcmp(tglobal.str, "f32")) {
+        } else if (!strcmp(tglobal.sym, "f32")) {
             entry.global_type.content_type = WEB49_TYPE_F32;
-        } else if (!strcmp(tglobal.str, "f64")) {
+        } else if (!strcmp(tglobal.sym, "f64")) {
             entry.global_type.content_type = WEB49_TYPE_F64;
         } else {
-            fprintf(stderr, "exepcted a type name for the global, not `%s`", tglobal.str);
+            fprintf(stderr, "exepcted a type name for the global, not `%s`", tglobal.sym);
             exit(1);
         }
         entry.global_type.is_mutable = ismut;
@@ -1076,7 +1093,7 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
             web49_readwat_expr_t code = expr.fun_args[i];
             if (code.tag == WEB49_READWAT_EXPR_TAG_FUN) {
                 if (!strcmp(code.fun_fun, "type")) {
-                    entry = web49_readwat_expr_to_u64(code.fun_args[0].str);
+                    entry = web49_readwat_expr_to_u64(code.fun_args[0].sym);
                     break;
                 }
                 if (!strcmp(code.fun_fun, "param") || !strcmp(code.fun_fun, "result")) {
@@ -1094,20 +1111,20 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
                                 params = web49_realloc(params, sizeof(web49_lang_type_t) * alloc_params);
                             }
                             web49_readwat_expr_t name = expr.fun_args[k];
-                            if (name.tag != WEB49_READWAT_EXPR_TAG_STR) {
+                            if (name.tag != WEB49_READWAT_EXPR_TAG_SYM) {
                                 fprintf(stderr, "expected param to be `i32` or `i64` or `f32` or `f64`\n");
                                 exit(1);
                             }
-                            if (!strcmp(name.str, "i32")) {
+                            if (!strcmp(name.sym, "i32")) {
                                 params[num_params++] = WEB49_TYPE_I32;
-                            } else if (!strcmp(name.str, "i64")) {
+                            } else if (!strcmp(name.sym, "i64")) {
                                 params[num_params++] = WEB49_TYPE_I64;
-                            } else if (!strcmp(name.str, "f32")) {
+                            } else if (!strcmp(name.sym, "f32")) {
                                 params[num_params++] = WEB49_TYPE_F32;
-                            } else if (!strcmp(name.str, "f64")) {
+                            } else if (!strcmp(name.sym, "f64")) {
                                 params[num_params++] = WEB49_TYPE_F64;
                             } else {
-                                fprintf(stderr, "expected param to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.str);
+                                fprintf(stderr, "expected param to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.sym);
                                 exit(1);
                             }
                         }
@@ -1120,20 +1137,20 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
                                 exit(1);
                             }
                             web49_readwat_expr_t name = expr.fun_args[k];
-                            if (name.tag != WEB49_READWAT_EXPR_TAG_STR) {
+                            if (name.tag != WEB49_READWAT_EXPR_TAG_SYM) {
                                 fprintf(stderr, "expected result to be `i32` or `i64` or `f32` or `f64`\n");
                                 exit(1);
                             }
-                            if (!strcmp(name.str, "i32")) {
+                            if (!strcmp(name.sym, "i32")) {
                                 return_type = WEB49_TYPE_I32;
-                            } else if (!strcmp(name.str, "i64")) {
+                            } else if (!strcmp(name.sym, "i64")) {
                                 return_type = WEB49_TYPE_I64;
-                            } else if (!strcmp(name.str, "f32")) {
+                            } else if (!strcmp(name.sym, "f32")) {
                                 return_type = WEB49_TYPE_F32;
-                            } else if (!strcmp(name.str, "f64")) {
+                            } else if (!strcmp(name.sym, "f64")) {
                                 return_type = WEB49_TYPE_F64;
                             } else {
-                                fprintf(stderr, "expected result to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.str);
+                                fprintf(stderr, "expected result to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.sym);
                                 exit(1);
                             }
                             num_returns += 1;
@@ -1173,8 +1190,8 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
         };
         for (uint64_t i = 0; i < expr.fun_nargs; i++) {
             web49_readwat_expr_t code = expr.fun_args[i];
-            if (code.tag == WEB49_READWAT_EXPR_TAG_STR) {
-                web49_opcode_t opcode = web49_readwat_name_to_opcode(code.str);
+            if (code.tag == WEB49_READWAT_EXPR_TAG_SYM) {
+                web49_opcode_t opcode = web49_readwat_name_to_opcode(code.sym);
                 if (opcode < WEB49_MAX_OPCODE_NUM) {
                     web49_immediate_id_t id = web49_immediates[opcode];
                     web49_instr_immediate_t imm = (web49_instr_immediate_t){
@@ -1186,20 +1203,20 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
                         case WEB49_IMMEDIATE_BLOCK_TYPE:
                             if (expr.fun_args[i].tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(expr.fun_args[i + 1].fun_fun, "result")) {
                                 web49_readwat_expr_t arg = expr.fun_args[i + 1].fun_args[0];
-                                if (arg.tag != WEB49_READWAT_EXPR_TAG_STR) {
+                                if (arg.tag != WEB49_READWAT_EXPR_TAG_SYM) {
                                     fprintf(stderr, "expected basic type\n");
                                     exit(1);
                                 }
-                                if (!strcmp(arg.str, "i32")) {
+                                if (!strcmp(arg.sym, "i32")) {
                                     imm.block_type = WEB49_TYPE_I32;
-                                } else if (!strcmp(arg.str, "i64")) {
+                                } else if (!strcmp(arg.sym, "i64")) {
                                     imm.block_type = WEB49_TYPE_I64;
-                                } else if (!strcmp(arg.str, "f32")) {
+                                } else if (!strcmp(arg.sym, "f32")) {
                                     imm.block_type = WEB49_TYPE_F32;
-                                } else if (!strcmp(arg.str, "f64")) {
+                                } else if (!strcmp(arg.sym, "f64")) {
                                     imm.block_type = WEB49_TYPE_F64;
                                 } else {
-                                    fprintf(stderr, "expected basic type name, not `%s`\n", arg.str);
+                                    fprintf(stderr, "expected basic type name, not `%s`\n", arg.sym);
                                     exit(1);
                                 }
                             } else {
@@ -1210,38 +1227,38 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
                             imm.varuint1 = 0;
                             break;
                         case WEB49_IMMEDIATE_VARUINT32:
-                            imm.varuint32 = (uint32_t)web49_readwat_expr_to_u64(expr.fun_args[++i].str);
+                            imm.varuint32 = (uint32_t)web49_readwat_expr_to_u64(expr.fun_args[++i].sym);
                             break;
                         case WEB49_IMMEDIATE_VARUINT64:
-                            imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(expr.fun_args[++i].str);
+                            imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(expr.fun_args[++i].sym);
                             break;
                         case WEB49_IMMEDIATE_VARINT32:
-                            imm.varuint64 = (int32_t)web49_readwat_expr_to_i64(expr.fun_args[++i].str);
+                            imm.varuint64 = (int32_t)web49_readwat_expr_to_i64(expr.fun_args[++i].sym);
                             break;
                         case WEB49_IMMEDIATE_VARINT64:
-                            imm.varuint64 = (int64_t)web49_readwat_expr_to_i64(expr.fun_args[++i].str);
+                            imm.varuint64 = (int64_t)web49_readwat_expr_to_i64(expr.fun_args[++i].sym);
                             break;
                         case WEB49_IMMEDIATE_UINT32:
-                            imm.varuint32 = (uint32_t)web49_readwat_expr_to_u64(expr.fun_args[++i].str);
+                            imm.varuint32 = (uint32_t)web49_readwat_expr_to_u64(expr.fun_args[++i].sym);
                             break;
                         case WEB49_IMMEDIATE_UINT64:
-                            imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(expr.fun_args[++i].str);
+                            imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(expr.fun_args[++i].sym);
                             break;
                         case WEB49_IMMEDIATE_BR_TABLE: {
                             i += 1;
                             uint64_t alloc = 0;
-                            while (i < expr.fun_nargs && isdigit(expr.fun_args[i + 1].str[0])) {
+                            while (i < expr.fun_nargs && isdigit(expr.fun_args[i + 1].sym[0])) {
                                 if (imm.br_table.num_targets + 2 >= alloc) {
                                     alloc = (imm.br_table.num_targets + 2) * 2;
                                     imm.br_table.targets = web49_realloc(imm.br_table.targets, sizeof(uint64_t) * alloc);
                                 }
-                                imm.br_table.targets[imm.br_table.num_targets++] = web49_readwat_expr_to_u64(expr.fun_args[i++].str);
+                                imm.br_table.targets[imm.br_table.num_targets++] = web49_readwat_expr_to_u64(expr.fun_args[i++].sym);
                             }
-                            imm.br_table.default_target = web49_readwat_expr_to_u64(expr.fun_args[i].str);
+                            imm.br_table.default_target = web49_readwat_expr_to_u64(expr.fun_args[i].sym);
                             break;
                         }
                         case WEB49_IMMEDIATE_CALL_INDIRECT:
-                            imm.call_indirect.index = (uint64_t)web49_readwat_expr_to_u64(expr.fun_args[++i].fun_args[0].str);
+                            imm.call_indirect.index = (uint64_t)web49_readwat_expr_to_u64(expr.fun_args[++i].fun_args[0].sym);
                             break;
                         case WEB49_IMMEDIATE_MEMORY_IMMEDIATE: {
                             switch (web49_wat_instr_mem_size[opcode]) {
@@ -1263,9 +1280,9 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
                             }
                         redo:;
                             web49_readwat_expr_t arg = expr.fun_args[i + 1];
-                            if (arg.tag == WEB49_READWAT_EXPR_TAG_STR) {
-                                if (!strncmp(arg.str, "align=", 6)) {
-                                    uint64_t n = web49_readwat_expr_to_u64(&arg.str[6]);
+                            if (arg.tag == WEB49_READWAT_EXPR_TAG_SYM) {
+                                if (!strncmp(arg.sym, "align=", 6)) {
+                                    uint64_t n = web49_readwat_expr_to_u64(&arg.sym[6]);
                                     uint64_t nat_align = imm.memory_immediate.align;
                                     switch (n) {
                                         case 1:
@@ -1290,8 +1307,8 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
                                     i += 1;
                                     goto redo;
                                 }
-                                if (!strncmp(arg.str, "offset=", 7)) {
-                                    imm.memory_immediate.offset = web49_readwat_expr_to_u64(&arg.str[7]);
+                                if (!strncmp(arg.sym, "offset=", 7)) {
+                                    imm.memory_immediate.offset = web49_readwat_expr_to_u64(&arg.sym[7]);
                                     i += 1;
                                     goto redo;
                                 }
@@ -1308,7 +1325,7 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
                         .immediate = imm,
                     };
                 } else {
-                    fprintf(stderr, "unexpected word: `%s` byte=%zu\n", code.str, (size_t)code.start);
+                    fprintf(stderr, "unexpected word: `%s` byte=%zu\n", code.sym, (size_t)code.start);
                     exit(1);
                 }
             } else if (!strcmp(code.fun_fun, "param") || !strcmp(code.fun_fun, "type") || !strcmp(code.fun_fun, "result")) {
@@ -1317,16 +1334,16 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
                 for (uint64_t j = 0; j < code.fun_nargs; j++) {
                     web49_readwat_expr_t name = code.fun_args[j];
                     web49_lang_type_t local_type;
-                    if (!strcmp(name.str, "i32")) {
+                    if (!strcmp(name.sym, "i32")) {
                         local_type = WEB49_TYPE_I32;
-                    } else if (!strcmp(name.str, "i64")) {
+                    } else if (!strcmp(name.sym, "i64")) {
                         local_type = WEB49_TYPE_I64;
-                    } else if (!strcmp(name.str, "f32")) {
+                    } else if (!strcmp(name.sym, "f32")) {
                         local_type = WEB49_TYPE_F32;
-                    } else if (!strcmp(name.str, "f64")) {
+                    } else if (!strcmp(name.sym, "f64")) {
                         local_type = WEB49_TYPE_F64;
                     } else {
-                        fprintf(stderr, "expected local to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.str);
+                        fprintf(stderr, "expected local to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.sym);
                         exit(1);
                     }
                     if (entry.num_locals + 2 >= alloc_locals) {
@@ -1369,29 +1386,29 @@ static void web49_readwat_state_table_entry(web49_readwat_state_t *out, web49_re
     bool init = false;
     for (uint64_t i = 0; i < expr.fun_nargs; i++) {
         web49_readwat_expr_t arg = expr.fun_args[i];
-        if (arg.tag != WEB49_READWAT_EXPR_TAG_STR) {
+        if (arg.tag != WEB49_READWAT_EXPR_TAG_SYM) {
             fprintf(stderr, "did not expect a paren\n");
             exit(1);
         }
-        if (isdigit(arg.str[0])) {
+        if (isdigit(arg.sym[0])) {
             if (!init) {
-                entry.limits.initial = web49_readwat_expr_to_u64(arg.str);
+                entry.limits.initial = web49_readwat_expr_to_u64(arg.sym);
                 init = true;
             } else {
-                entry.limits.maximum = web49_readwat_expr_to_u64(arg.str);
+                entry.limits.maximum = web49_readwat_expr_to_u64(arg.sym);
             }
-        } else if (!strcmp(arg.str, "i32")) {
+        } else if (!strcmp(arg.sym, "i32")) {
             entry.element_type = WEB49_TYPE_I32;
-        } else if (!strcmp(arg.str, "i64")) {
+        } else if (!strcmp(arg.sym, "i64")) {
             entry.element_type = WEB49_TYPE_I64;
-        } else if (!strcmp(arg.str, "f32")) {
+        } else if (!strcmp(arg.sym, "f32")) {
             entry.element_type = WEB49_TYPE_F32;
-        } else if (!strcmp(arg.str, "f64")) {
+        } else if (!strcmp(arg.sym, "f64")) {
             entry.element_type = WEB49_TYPE_F64;
-        } else if (!strcmp(arg.str, "funcref")) {
+        } else if (!strcmp(arg.sym, "funcref")) {
             entry.element_type = WEB49_TYPE_ANYFUNC;
         } else {
-            fprintf(stderr, "expected a type, not `%s`", arg.str);
+            fprintf(stderr, "expected a type, not `%s`", arg.sym);
             exit(1);
         }
     }
@@ -1416,20 +1433,20 @@ static web49_instr_t web49_readwat_instr(web49_readwat_expr_t code) {
                 case WEB49_IMMEDIATE_BLOCK_TYPE:
                     if (code.fun_args[0].tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(code.fun_args[0].fun_fun, "result")) {
                         web49_readwat_expr_t arg = code.fun_args[0].fun_args[0];
-                        if (arg.tag != WEB49_READWAT_EXPR_TAG_STR) {
+                        if (arg.tag != WEB49_READWAT_EXPR_TAG_SYM) {
                             fprintf(stderr, "expected basic type\n");
                             exit(1);
                         }
-                        if (!strcmp(arg.str, "i32")) {
+                        if (!strcmp(arg.sym, "i32")) {
                             imm.block_type = WEB49_TYPE_I32;
-                        } else if (!strcmp(arg.str, "i64")) {
+                        } else if (!strcmp(arg.sym, "i64")) {
                             imm.block_type = WEB49_TYPE_I64;
-                        } else if (!strcmp(arg.str, "f32")) {
+                        } else if (!strcmp(arg.sym, "f32")) {
                             imm.block_type = WEB49_TYPE_F32;
-                        } else if (!strcmp(arg.str, "f64")) {
+                        } else if (!strcmp(arg.sym, "f64")) {
                             imm.block_type = WEB49_TYPE_F64;
                         } else {
-                            fprintf(stderr, "expected basic type name, not `%s`\n", arg.str);
+                            fprintf(stderr, "expected basic type name, not `%s`\n", arg.sym);
                             exit(1);
                         }
                     } else {
@@ -1440,38 +1457,38 @@ static web49_instr_t web49_readwat_instr(web49_readwat_expr_t code) {
                     imm.varuint1 = 0;
                     break;
                 case WEB49_IMMEDIATE_VARUINT32:
-                    imm.varuint32 = (uint32_t)web49_readwat_expr_to_u64(code.fun_args[0].str);
+                    imm.varuint32 = (uint32_t)web49_readwat_expr_to_u64(code.fun_args[0].sym);
                     break;
                 case WEB49_IMMEDIATE_VARUINT64:
-                    imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(code.fun_args[0].str);
+                    imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(code.fun_args[0].sym);
                     break;
                 case WEB49_IMMEDIATE_VARINT32:
-                    imm.varuint64 = (int32_t)web49_readwat_expr_to_i64(code.fun_args[0].str);
+                    imm.varuint64 = (int32_t)web49_readwat_expr_to_i64(code.fun_args[0].sym);
                     break;
                 case WEB49_IMMEDIATE_VARINT64:
-                    imm.varuint64 = (int64_t)web49_readwat_expr_to_i64(code.fun_args[0].str);
+                    imm.varuint64 = (int64_t)web49_readwat_expr_to_i64(code.fun_args[0].sym);
                     break;
                 case WEB49_IMMEDIATE_UINT32:
-                    imm.varuint32 = (uint32_t)web49_readwat_expr_to_u64(code.fun_args[0].str);
+                    imm.varuint32 = (uint32_t)web49_readwat_expr_to_u64(code.fun_args[0].sym);
                     break;
                 case WEB49_IMMEDIATE_UINT64:
-                    imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(code.fun_args[0].str);
+                    imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(code.fun_args[0].sym);
                     break;
                 case WEB49_IMMEDIATE_BR_TABLE: {
                     uint64_t i = 0;
                     uint64_t alloc = 0;
-                    while (i < code.fun_nargs && isdigit(code.fun_args[i + 1].str[0])) {
+                    while (i < code.fun_nargs && isdigit(code.fun_args[i + 1].sym[0])) {
                         if (imm.br_table.num_targets + 2 >= alloc) {
                             alloc = (imm.br_table.num_targets + 2) * 2;
                             imm.br_table.targets = web49_realloc(imm.br_table.targets, sizeof(uint64_t) * alloc);
                         }
-                        imm.br_table.targets[imm.br_table.num_targets++] = web49_readwat_expr_to_u64(code.fun_args[i++].str);
+                        imm.br_table.targets[imm.br_table.num_targets++] = web49_readwat_expr_to_u64(code.fun_args[i++].sym);
                     }
-                    imm.br_table.default_target = web49_readwat_expr_to_u64(code.fun_args[i].str);
+                    imm.br_table.default_target = web49_readwat_expr_to_u64(code.fun_args[i].sym);
                     break;
                 }
                 case WEB49_IMMEDIATE_CALL_INDIRECT:
-                    imm.call_indirect.index = (uint64_t)web49_readwat_expr_to_u64(code.fun_args[0].fun_args[0].str);
+                    imm.call_indirect.index = (uint64_t)web49_readwat_expr_to_u64(code.fun_args[0].fun_args[0].sym);
                     break;
                 case WEB49_IMMEDIATE_MEMORY_IMMEDIATE: {
                     switch (web49_wat_instr_mem_size[opcode]) {
@@ -1494,9 +1511,9 @@ static web49_instr_t web49_readwat_instr(web49_readwat_expr_t code) {
                     uint64_t i = 0;
                 redo:;
                     web49_readwat_expr_t arg = code.fun_args[i];
-                    if (arg.tag == WEB49_READWAT_EXPR_TAG_STR) {
-                        if (!strncmp(arg.str, "align=", 6)) {
-                            uint64_t n = web49_readwat_expr_to_u64(&arg.str[6]);
+                    if (arg.tag == WEB49_READWAT_EXPR_TAG_SYM) {
+                        if (!strncmp(arg.sym, "align=", 6)) {
+                            uint64_t n = web49_readwat_expr_to_u64(&arg.sym[6]);
                             uint64_t nat_align = imm.memory_immediate.align;
                             switch (n) {
                                 case 1:
@@ -1521,8 +1538,8 @@ static web49_instr_t web49_readwat_instr(web49_readwat_expr_t code) {
                             i += 1;
                             goto redo;
                         }
-                        if (!strncmp(arg.str, "offset=", 7)) {
-                            imm.memory_immediate.offset = web49_readwat_expr_to_u64(&arg.str[7]);
+                        if (!strncmp(arg.sym, "offset=", 7)) {
+                            imm.memory_immediate.offset = web49_readwat_expr_to_u64(&arg.sym[7]);
                             i += 1;
                             goto redo;
                         }
@@ -1535,7 +1552,7 @@ static web49_instr_t web49_readwat_instr(web49_readwat_expr_t code) {
                 .immediate = imm,
             };
         } else {
-            fprintf(stderr, "unexpected word: `%s` byte=%zu\n", code.str, (size_t)code.start);
+            fprintf(stderr, "unexpected word: `%s` byte=%zu\n", code.sym, (size_t)code.start);
             exit(1);
         }
     } else {
@@ -1549,19 +1566,19 @@ static void web49_readwat_state_global_entry(web49_readwat_state_t *out, web49_r
     web49_section_global_entry_t entry;
     for (uint64_t i = 0; i < expr.fun_nargs; i++) {
         web49_readwat_expr_t arg = expr.fun_args[i];
-        if (arg.tag == WEB49_READWAT_EXPR_TAG_STR) {
-            if (!strcmp(arg.str, "i32")) {
+        if (arg.tag == WEB49_READWAT_EXPR_TAG_SYM) {
+            if (!strcmp(arg.sym, "i32")) {
                 entry.global.content_type = WEB49_TYPE_I32;
-            } else if (!strcmp(arg.str, "i64")) {
+            } else if (!strcmp(arg.sym, "i64")) {
                 entry.global.content_type = WEB49_TYPE_I64;
-            } else if (!strcmp(arg.str, "f32")) {
+            } else if (!strcmp(arg.sym, "f32")) {
                 entry.global.content_type = WEB49_TYPE_F32;
-            } else if (!strcmp(arg.str, "f64")) {
+            } else if (!strcmp(arg.sym, "f64")) {
                 entry.global.content_type = WEB49_TYPE_F64;
-            } else if (!strcmp(arg.str, "funcref")) {
+            } else if (!strcmp(arg.sym, "funcref")) {
                 entry.global.content_type = WEB49_TYPE_ANYFUNC;
             } else {
-                fprintf(stderr, "expected a global type, not `%s`\n", arg.str);
+                fprintf(stderr, "expected a global type, not `%s`\n", arg.sym);
                 exit(1);
             }
         } else {
@@ -1571,18 +1588,18 @@ static void web49_readwat_state_global_entry(web49_readwat_state_t *out, web49_r
                     exit(0);
                 }
                 entry.global.is_mutable = true;
-                if (!strcmp(arg.fun_args[0].str, "i32")) {
+                if (!strcmp(arg.fun_args[0].sym, "i32")) {
                     entry.global.content_type = WEB49_TYPE_I32;
-                } else if (!strcmp(arg.fun_args[0].str, "i64")) {
+                } else if (!strcmp(arg.fun_args[0].sym, "i64")) {
                     entry.global.content_type = WEB49_TYPE_I64;
-                } else if (!strcmp(arg.fun_args[0].str, "f32")) {
+                } else if (!strcmp(arg.fun_args[0].sym, "f32")) {
                     entry.global.content_type = WEB49_TYPE_F32;
-                } else if (!strcmp(arg.fun_args[0].str, "f64")) {
+                } else if (!strcmp(arg.fun_args[0].sym, "f64")) {
                     entry.global.content_type = WEB49_TYPE_F64;
-                } else if (!strcmp(arg.fun_args[0].str, "funcref")) {
+                } else if (!strcmp(arg.fun_args[0].sym, "funcref")) {
                     entry.global.content_type = WEB49_TYPE_ANYFUNC;
                 } else {
-                    fprintf(stderr, "expected a global (mut typename), not (mut %s)\n", arg.str);
+                    fprintf(stderr, "expected a global (mut typename), not (mut %s)\n", arg.sym);
                     exit(1);
                 }
                 if (arg.fun_nargs > 1) {
@@ -1600,34 +1617,61 @@ static void web49_readwat_state_global_entry(web49_readwat_state_t *out, web49_r
     }
     out->sglobal.entries[out->sglobal.num_entries++] = entry;
 }
+
 static void web49_readwat_state_export_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr) {
     web49_section_export_entry_t entry;
-    entry.field_str = expr.fun_args[0].str;
+    entry.field_str = web49_readwat_sym_to_str(expr.fun_args[0]);
     if (expr.fun_args[1].tag != WEB49_READWAT_EXPR_TAG_FUN) {
         fprintf(stderr, "expected paren after `(export \"...\"`, but was missing paren\n");
         exit(1);
     }
-    if (!strcmp(expr.fun_args[1].str, "func")) {
+    if (!strcmp(expr.fun_args[1].sym, "func")) {
         entry.kind = WEB49_EXTERNAL_KIND_FUNCTION;
-    } else if (!strcmp(expr.fun_args[1].str, "table")) {
+    } else if (!strcmp(expr.fun_args[1].sym, "table")) {
         entry.kind = WEB49_EXTERNAL_KIND_TABLE;
-    } else if (!strcmp(expr.fun_args[1].str, "memory")) {
+    } else if (!strcmp(expr.fun_args[1].sym, "memory")) {
         entry.kind = WEB49_EXTERNAL_KIND_MEMORY;
-    } else if (!strcmp(expr.fun_args[1].str, "global")) {
+    } else if (!strcmp(expr.fun_args[1].sym, "global")) {
         entry.kind = WEB49_EXTERNAL_KIND_GLOBAL;
     } else {
-        fprintf(stderr, "expected `func` or `table` or `memory` or `global`, not `%s`\n", expr.fun_args[1].str);
+        fprintf(stderr, "expected `func` or `table` or `memory` or `global`, not `%s`\n", expr.fun_args[1].sym);
     }
-    entry.index = web49_readwat_expr_to_u64(expr.fun_args[1].fun_args[0].str);
+    entry.index = web49_readwat_expr_to_u64(expr.fun_args[1].fun_args[0].sym);
     if (out->sexport.num_entries + 2 >= out->alloc_export) {
         out->alloc_export = (out->sexport.num_entries + 2) * 2;
         out->sexport.entries = web49_realloc(out->sexport.entries, sizeof(web49_section_export_entry_t) * out->alloc_export);
     }
     out->sexport.entries[out->sexport.num_entries++] = entry;
 }
+
 static void web49_readwat_state_elem_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr) {
+    web49_section_element_entry_t entry;
+    entry.index = out->selement.num_entries;
+    entry.offset = web49_readwat_instr(expr.fun_args[0]);
+    entry.num_elems = 0;
+    entry.elems = web49_malloc(sizeof(uint64_t) * expr.fun_nargs);
+    for (uint64_t i = 2; i < expr.fun_nargs; i++) {
+        entry.elems[entry.num_elems++] = web49_readwat_expr_to_u64(expr.fun_args[i].sym);
+    }
+    if (out->selement.num_entries + 2 >= out->alloc_element) {
+        out->alloc_element = (out->selement.num_entries + 2) * 2;
+        out->selement.entries = web49_realloc(out->selement.entries, sizeof(web49_section_element_entry_t) * out->alloc_element);
+    }
+    out->selement.entries[out->selement.num_entries++] = entry;
 }
+
 static void web49_readwat_state_data_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr) {
+    web49_section_data_entry_t entry;
+    entry.index = out->sdata.num_entries;
+    entry.offset = web49_readwat_instr(expr.fun_args[0]);
+    uint64_t data_alloc = 16;
+    entry.size = expr.fun_args[expr.fun_nargs-1].len_str;
+    entry.data = expr.fun_args[expr.fun_nargs-1].str;
+    if (out->sdata.num_entries + 2 >= out->alloc_data) {
+        out->alloc_data = (out->sdata.num_entries + 2) * 2;
+        out->sdata.entries = web49_realloc(out->sdata.entries, sizeof(web49_section_element_entry_t) * out->alloc_data);
+    }
+    out->sdata.entries[out->sdata.num_entries++] = entry;
 }
 
 static void web49_readwat_state_toplevel(web49_readwat_state_t *out, web49_readwat_expr_t expr) {
