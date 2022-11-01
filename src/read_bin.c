@@ -228,7 +228,7 @@ web49_type_t web49_readbin_type(FILE *in, web49_external_kind_t tag) {
             .tag = tag,
         };
     }
-    fprintf(stderr, "unknown external kind: %zu", (size_t)tag);
+    fprintf(stderr, "unknown external kind: %zu\n", (size_t)tag);
     exit(1);
 }
 
@@ -683,7 +683,7 @@ web49_section_t web49_readbin_section(FILE *in, web49_section_header_t header) {
             .data_section = web49_readbin_section_data(in),
         };
     }
-    fprintf(stderr, "unknown section kind: 0x%zX starting at %zX", (size_t)id, (size_t)ftell(in));
+    fprintf(stderr, "unknown section kind: 0x%zX starting at %zX\n", (size_t)id, (size_t)ftell(in));
     exit(1);
 }
 
@@ -701,11 +701,14 @@ web49_module_t web49_readbin_module(FILE *in) {
         if (header.id >= WEB49_SECTION_HIGH_ID) {
             header.id = WEB49_SECTION_ID_CUSTOM;
         }
+        if (feof(in)) {
+            break;
+        }
         size_t a = ftell(in);
         sections[num_sections] = web49_readbin_section(in, header);
         size_t b = ftell(in);
         if (header.size != b - a) {
-            fprintf(stderr, "read wrong number of bytes (read: %zu) (section size: %zu) ", (size_t)header.size, b - a);
+            fprintf(stderr, "read wrong number of bytes (read: %zu) (section size: %zu)\n", (size_t)header.size, b - a);
             exit(1);
         }
         num_sections += 1;

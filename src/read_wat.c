@@ -1018,7 +1018,7 @@ static void web49_readwat_state_import_entry(web49_readwat_state_t *out, web49_r
             } else if (!strcmp(func.fun_fun, "type")) {
                 entry.func_type.data = web49_readwat_expr_to_u64(func.fun_args[0].sym);
             } else {
-                fprintf(stderr, "expected $name or (type ...)");
+                fprintf(stderr, "expected $name or (type ...)\n");
                 exit(1);
             }
         }
@@ -1423,7 +1423,7 @@ static void web49_readwat_state_table_entry(web49_readwat_state_t *out, web49_re
         } else if (!strcmp(arg.sym, "funcref")) {
             entry.element_type = WEB49_TYPE_ANYFUNC;
         } else {
-            fprintf(stderr, "expected a type, not `%s`", arg.sym);
+            fprintf(stderr, "expected a type, not `%s`\n", arg.sym);
             exit(1);
         }
     }
@@ -1572,6 +1572,7 @@ static web49_instr_t web49_readwat_instr(web49_readwat_expr_t code) {
         }
     } else {
         fprintf(stderr, "unexpected expr: (%s ...) byte=%zu\n", code.fun_fun, (size_t)code.start);
+        exit(1);
     }
     fprintf(stderr, "expected an instruction\n");
     exit(1);
@@ -1744,7 +1745,7 @@ web49_module_t web49_readwat_module(FILE *in) {
     web49_readwat_expr_t expr = web49_readwat_expr(in);
     web49_readwat_state_toplevel(&state, expr);
     uint64_t num_sections = 0;
-    web49_section_t *sections = web49_malloc(sizeof(web49_section_t) * 12);
+    web49_section_t *sections = web49_malloc(sizeof(web49_section_t) * 16);
     if (state.stype.num_entries != 0) {
         sections[num_sections++] = (web49_section_t){
             .header = (web49_section_header_t){
