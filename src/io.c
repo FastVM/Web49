@@ -1,8 +1,5 @@
 
 #include "io.h"
-#include <math.h>
-#include <stdarg.h>
-#include <stdio.h>
 
 web49_io_input_t web49_io_input_open(const char *filename) {
     FILE *file = fopen(filename, "rb");
@@ -11,7 +8,7 @@ web49_io_input_t web49_io_input_open(const char *filename) {
         exit(1);
     }
     fseek(file, 0, SEEK_END);
-    size_t len = (size_t) ftell(file);
+    size_t len = (size_t)ftell(file);
     fseek(file, 0, SEEK_SET);
     uint8_t *str = web49_malloc(sizeof(uint8_t) * len);
     if (fread(str, 1, len, file) != len) {
@@ -19,7 +16,7 @@ web49_io_input_t web49_io_input_open(const char *filename) {
         exit(1);
     }
     fclose(file);
-    return (web49_io_input_t) {
+    return (web49_io_input_t){
         .byte_index = 0,
         .byte_len = len,
         .byte_buf = str,
@@ -37,7 +34,7 @@ size_t web49_io_input_fread(web49_io_input_t *in, size_t size, void *data) {
     return size;
 }
 char web49_io_input_fgetc(web49_io_input_t *in) {
-    return (char) in->byte_buf[in->byte_index++];
+    return (char)in->byte_buf[in->byte_index++];
 }
 void web49_io_input_rewind(web49_io_input_t *in) {
     in->byte_index -= 1;
@@ -58,7 +55,7 @@ void web49_io_output_fprintf(web49_io_output_t *out, const char *format, ...) {
     }
     va_list ap;
     va_start(ap, format);
-    out->byte_index += vsnprintf((char *) &out->byte_buf[out->byte_index], out->byte_index - out->byte_alloc, format, ap);
+    out->byte_index += vsnprintf((char *)&out->byte_buf[out->byte_index], out->byte_index - out->byte_alloc, format, ap);
     va_end(ap);
 }
 void web49_io_output_write_len_str(web49_io_output_t *out, size_t len, const char *str) {

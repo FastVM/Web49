@@ -1,34 +1,5 @@
 #include "./write_wat.h"
-
-#include <ctype.h>
-#include <stdint.h>
-#include <stdio.h>
-
-static size_t web49_wat_instr_mem_size[WEB49_MAX_OPCODE_NUM] = {
-    [WEB49_OPCODE_I32_LOAD] = 4,
-    [WEB49_OPCODE_I64_LOAD] = 8,
-    [WEB49_OPCODE_F32_LOAD] = 4,
-    [WEB49_OPCODE_F64_LOAD] = 8,
-    [WEB49_OPCODE_I32_LOAD8_S] = 1,
-    [WEB49_OPCODE_I32_LOAD8_U] = 1,
-    [WEB49_OPCODE_I32_LOAD16_S] = 2,
-    [WEB49_OPCODE_I32_LOAD16_U] = 2,
-    [WEB49_OPCODE_I64_LOAD8_S] = 1,
-    [WEB49_OPCODE_I64_LOAD8_U] = 1,
-    [WEB49_OPCODE_I64_LOAD16_S] = 2,
-    [WEB49_OPCODE_I64_LOAD16_U] = 2,
-    [WEB49_OPCODE_I64_LOAD32_S] = 4,
-    [WEB49_OPCODE_I64_LOAD32_U] = 4,
-    [WEB49_OPCODE_I32_STORE] = 4,
-    [WEB49_OPCODE_I64_STORE] = 8,
-    [WEB49_OPCODE_F32_STORE] = 4,
-    [WEB49_OPCODE_F64_STORE] = 8,
-    [WEB49_OPCODE_I32_STORE8] = 1,
-    [WEB49_OPCODE_I32_STORE16] = 2,
-    [WEB49_OPCODE_I64_STORE8] = 1,
-    [WEB49_OPCODE_I64_STORE16] = 2,
-    [WEB49_OPCODE_I64_STORE32] = 4,
-};
+#include "tables.h"
 
 void web49_wat_print_lang_type(web49_io_output_t *out, web49_lang_type_t ltype) {
     switch (ltype) {
@@ -665,7 +636,7 @@ void web49_wat_print_instr_depth(web49_io_output_t *out, web49_instr_t instr, ui
             if (instr.immediate.memory_immediate.offset != 0) {
                 web49_io_output_fprintf(out, " offset=%" PRIu64, instr.immediate.memory_immediate.offset);
             }
-            size_t nat_size = web49_wat_instr_mem_size[instr.opcode];
+            size_t nat_size = web49_opcode_memsize[instr.opcode];
             size_t size = (size_t)1 << instr.immediate.memory_immediate.align;
             if (size != nat_size) {
                 web49_io_output_fprintf(out, " align=%zu", size);
