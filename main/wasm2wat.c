@@ -5,13 +5,9 @@
 int web49_file_main(const char *inarg, const char *outarg) {
     web49_io_input_t infile = web49_io_input_open(inarg);
     web49_module_t mod = web49_readbin_module(&infile);
-    if (outarg == NULL) {
-        web49_wat_print_module(stdout, mod);
-    } else {
-        FILE *outfile = fopen(outarg, "wb");
-        web49_wat_print_module(outfile, mod);
-        fclose(outfile);
-    }
+    web49_io_output_t outfile = {0};
+    web49_wat_print_module(&outfile, mod);
+    web49_file_output_dump(outfile, outarg);
     return 0;
 }
 

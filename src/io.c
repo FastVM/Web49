@@ -1,7 +1,9 @@
 
 #include "io.h"
 #include <math.h>
+#include <stdarg.h>
 #include <stdio.h>
+#include <vadefs.h>
 
 web49_io_input_t web49_io_input_open(const char *filename) {
     FILE *file = fopen(filename, "rb");
@@ -40,4 +42,23 @@ char web49_io_input_fgetc(web49_io_input_t *in) {
 }
 void web49_io_input_rewind(web49_io_input_t *in) {
     in->byte_index -= 1;
+}
+void web49_file_output_dump(web49_io_output_t out, const char *filename) {
+    FILE *file = fopen(filename, "wb");
+    if (file == NULL) {
+        fprintf(stderr, "cannot open file: %s\n", filename);
+        exit(1);
+    }
+    fwrite(out.byte_buf, 1, out.byte_index, file);
+    fclose(file);
+}
+void web49_io_output_fprintf(web49_io_output_t *out, const char *format, ...) {
+    if (out->byte_index + (2048) >= out->byte_alloc) {
+        out->byte_alloc = (out->byte_index + 2048) * 2;
+        out->byte_buf = web49_realloc(out->byte_buf, sizeof(uint8_t) * out->byte_alloc);
+    }
+    va_list ap;
+    va_start(ap, format);
+    out->byte_index += vsnprintf((char *) &out->byte_buf[out->byte_index], out->byte_index - out->byte_alloc, format, ap);
+    va_end(ap);
 }
