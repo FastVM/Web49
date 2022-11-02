@@ -30,5 +30,8 @@ void web49_io_input_rewind(web49_io_input_t *in);
 
 void web49_file_output_dump(web49_io_output_t out, const char *filename);
 void web49_io_output_fprintf(web49_io_output_t *out, const char *format, ...);
+void web49_io_output_write_len_str(web49_io_output_t *out, size_t len, const char *str);
+
+#define web49_io_output_write_str(out, str) web49_io_output_write_len_str(out, strlen(str), str);
 
 #endif
