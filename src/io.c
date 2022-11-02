@@ -55,7 +55,7 @@ void web49_io_output_fprintf(web49_io_output_t *out, const char *format, ...) {
     }
     va_list ap;
     va_start(ap, format);
-    out->byte_index += vsnprintf((char *)&out->byte_buf[out->byte_index], out->byte_index - out->byte_alloc, format, ap);
+    out->byte_index += vsnprintf((char *)&out->byte_buf[out->byte_index], out->byte_alloc - out->byte_index, format, ap);
     va_end(ap);
 }
 void web49_io_output_write_len_str(web49_io_output_t *out, size_t len, const char *str) {

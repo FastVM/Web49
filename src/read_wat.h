@@ -4,6 +4,91 @@
 
 #include "ast.h"
 #include "io.h"
+enum {
+    WEB49_READWAT_EXPR_TAG_INIT,
+    WEB49_READWAT_EXPR_TAG_FUN,
+    WEB49_READWAT_EXPR_TAG_SYM,
+    WEB49_READWAT_EXPR_TAG_STR,
+};
+
+struct web49_readwat_table_t;
+typedef struct web49_readwat_table_t web49_readwat_table_t;
+
+struct web49_readwat_state_t;
+typedef struct web49_readwat_state_t web49_readwat_state_t;
+
+struct web49_readwat_expr_t;
+typedef struct web49_readwat_expr_t web49_readwat_expr_t;
+
+uint64_t web49_readwat_expr_to_u64(const char *expr);
+int64_t web49_readwat_expr_to_i64(const char *expr);
+void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
+void web49_readwat_state_import_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
+void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
+void web49_readwat_state_table_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
+void web49_readwat_state_global_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
+void web49_readwat_state_export_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
+void web49_readwat_state_elem_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
+void web49_readwat_state_data_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
+void web49_readwat_state_memory_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
+
+struct web49_readwat_table_t {
+    uint64_t len;
+    const char **key;
+    uint64_t *value;
+    uint64_t alloc;
+};
+
+struct web49_readwat_state_t {
+    uint64_t num_func_imports;
+
+    web49_readwat_table_t func_table;
+    web49_readwat_table_t type_table;
+    web49_readwat_table_t import_table;
+    web49_readwat_table_t export_table;
+    web49_readwat_table_t data_table;
+    web49_readwat_table_t global_table;
+
+    uint64_t alloc_type;
+    uint64_t alloc_import;
+    uint64_t alloc_function;
+    uint64_t alloc_table;
+    uint64_t alloc_global;
+    uint64_t alloc_memory;
+    uint64_t alloc_export;
+    uint64_t alloc_element;
+    uint64_t alloc_code;
+    uint64_t alloc_data;
+
+    web49_section_type_t stype;
+    web49_section_import_t simport;
+    web49_section_function_t sfunction;
+    web49_section_table_t stable;
+    web49_section_global_t sglobal;
+    web49_section_memory_t smemory;
+    web49_section_export_t sexport;
+    web49_section_element_t selement;
+    web49_section_code_t scode;
+    web49_section_data_t sdata;
+};
+
+struct web49_readwat_expr_t {
+    uint64_t start;
+    uint64_t end;
+    union {
+        struct {
+            const char *fun_fun;
+            uint64_t fun_nargs;
+            web49_readwat_expr_t *fun_args;
+        };
+        struct {
+            uint64_t len_str;
+            uint8_t *str;
+        };
+        const char *sym;
+    };
+    uint8_t tag;
+};
 
 const char *web49_readwat_name(web49_io_input_t *in);
 web49_module_t web49_readwat_module(web49_io_input_t *in);

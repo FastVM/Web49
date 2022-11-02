@@ -5,15 +5,15 @@ EXE_RUN =
 EMCC ?= emcc
 EMCC_CFLAGS = 
 EMCC_OPT = -O2
-WASM_INTERP = wasmer
+INTERP = wasmer
 HYPERFINE = hyperfine
 
 OPT ?= -O2
 
-PROG_SRCS := main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c
+PROG_SRCS := main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c main/miniwasm.c
 PROG_OBJS := $(PROG_SRCS:%.c=%.o)
 
-WEB49_SRCS := src/read_bin.c src/read_wat.c src/write_wat.c src/write_bin.c src/io.c src/tables.c
+WEB49_SRCS := src/read_bin.c src/read_wat.c src/write_wat.c src/write_bin.c src/io.c src/tables.c src/interp/interp.c
 WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
 
 OBJS := $(WEB49_OBJS)
@@ -23,13 +23,17 @@ TEST_TXT := $(TEST_SRCS:test/%.c=test/out.%.txt)
 
 default: all
 
-all: bins test
+all: bins
 
-bins: bin/wasm2wat$(EXE) bin/wat2wasm$(EXE) bin/wasm2wasm$(EXE)
+bins: bin/wasm2wat$(EXE) bin/wat2wasm$(EXE) bin/wasm2wasm$(EXE) bin/miniwasm$(EXE)
 
 test: $(TEST_TXT)
 
 # bin
+
+bin/miniwasm$(EXE): main/miniwasm.o $(OBJS)
+	@mkdir -p bin
+	$(CC) $(OPT) main/miniwasm.o $(OBJS) -o $(@) $(LDFLAGS)
 
 bin/wat2wasm$(EXE): main/wat2wasm.o $(OBJS)
 	@mkdir -p bin
@@ -48,11 +52,11 @@ bin/wasm2wasm$(EXE): main/wasm2wasm.o $(OBJS)
 $(TEST_TXT): bins $(@:test/out.%.txt:test/%.c)
 	@echo $(@) 
 	$(EMCC) -s PURE_WASI=1 -s SINGLE_FILE=1 -s WASM=1 $(EMCC_OPT) $(@:test/out.%.txt=test/%.c) -o $(@:test/out.%.txt=test/out.%.0.wasm) $(EMCC_CFLAGS)
-	$(EXE_RUN) ./bin/wasm2wat$(EXE) $(@:test/out.%.txt=test/out.%.0.wasm) -o $(@:test/out.%.txt=test/out.%.1.wat)
-	$(EXE_RUN) ./bin/wat2wasm$(EXE) $(@:test/out.%.txt=test/out.%.1.wat) -o $(@:test/out.%.txt=test/out.%.2.wasm)
-	$(EXE_RUN) ./bin/wasm2wat$(EXE) $(@:test/out.%.txt=test/out.%.2.wasm) -o $(@:test/out.%.txt=test/out.%.3.wat)
-	$(EXE_RUN) ./bin/wat2wasm$(EXE) $(@:test/out.%.txt=test/out.%.3.wat) -o $(@:test/out.%.txt=test/out.%.4.wasm)
-	$(HYPERFINE) "$(WASM_INTERP) $(@:test/out.%.txt=test/out.%.4.wasm) 1> $(@) 2> $(@:test/out.%.txt=test/out.%.time.txt);"
+	# $(EXE_RUN) ./bin/wasm2wat$(EXE) $(@:test/out.%.txt=test/out.%.0.wasm) -o $(@:test/out.%.txt=test/out.%.1.wat)
+	# $(EXE_RUN) ./bin/wat2wasm$(EXE) $(@:test/out.%.txt=test/out.%.1.wat) -o $(@:test/out.%.txt=test/out.%.2.wasm)
+	# $(EXE_RUN) ./bin/wasm2wat$(EXE) $(@:test/out.%.txt=test/out.%.2.wasm) -o $(@:test/out.%.txt=test/out.%.3.wat)
+	# $(EXE_RUN) ./bin/wat2wasm$(EXE) $(@:test/out.%.txt=test/out.%.3.wat) -o $(@:test/out.%.txt=test/out.%.4.wasm)
+	$(HYPERFINE)  --shell=none "$(INTERP) $(@:test/out.%.txt=test/out.%.0.wasm)"
 
 # util
 
