@@ -3,7 +3,6 @@
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <vadefs.h>
 
 web49_io_input_t web49_io_input_open(const char *filename) {
     FILE *file = fopen(filename, "rb");
