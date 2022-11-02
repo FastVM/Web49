@@ -28,6 +28,7 @@ static void web49_readwat_state_global_entry(web49_readwat_state_t *out, web49_r
 static void web49_readwat_state_export_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
 static void web49_readwat_state_elem_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
 static void web49_readwat_state_data_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
+static void web49_readwat_state_memory_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
 
 struct web49_readwat_table_t {
     uint64_t len;
@@ -118,7 +119,7 @@ redo:;
         while (web49_io_input_fgetc(in) != '\n') {
         }
     }
-    uint64_t alloc = 16;
+    uint64_t alloc = 8;
     char *buf = web49_malloc(sizeof(char) * alloc);
     uint64_t len = 0;
     while (true) {
@@ -599,7 +600,7 @@ static void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_rea
                         case WEB49_IMMEDIATE_NONE:
                             break;
                         case WEB49_IMMEDIATE_BLOCK_TYPE:
-                            if (expr.fun_args[i].tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(expr.fun_args[i + 1].fun_fun, "result")) {
+                            if (expr.fun_args[i+1].tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(expr.fun_args[i + 1].fun_fun, "result")) {
                                 web49_readwat_expr_t arg = expr.fun_args[i + 1].fun_args[0];
                                 if (arg.tag != WEB49_READWAT_EXPR_TAG_SYM) {
                                     fprintf(stderr, "expected basic type\n");
@@ -1061,7 +1062,6 @@ static void web49_readwat_state_elem_entry(web49_readwat_state_t *out, web49_rea
 
 static void web49_readwat_state_data_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr) {
     web49_section_data_entry_t entry;
-    entry.index = out->sdata.num_entries;
     entry.offset = web49_readwat_instr(expr.fun_args[0]);
     uint64_t data_alloc = 16;
     entry.size = expr.fun_args[expr.fun_nargs - 1].len_str;
@@ -1071,6 +1071,24 @@ static void web49_readwat_state_data_entry(web49_readwat_state_t *out, web49_rea
         out->sdata.entries = web49_realloc(out->sdata.entries, sizeof(web49_section_element_entry_t) * out->alloc_data);
     }
     out->sdata.entries[out->sdata.num_entries++] = entry;
+}
+
+static void web49_readwat_state_memory_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr) {
+    web49_type_memory_t entry;
+    if (expr.fun_nargs == 1) {
+        entry.initial = web49_readwat_expr_to_u64(expr.fun_args[0].sym);
+    } else if (expr.fun_nargs == 2) {
+        entry.initial = web49_readwat_expr_to_u64(expr.fun_args[0].sym);
+        entry.maximum = web49_readwat_expr_to_u64(expr.fun_args[1].sym);
+    } else {
+        fprintf(stderr, "(memory ...) expected two args after `memory`, not %zu\n", (size_t) expr.fun_nargs);
+        exit(1);
+    }
+    if (out->smemory.num_entries + 2 >= out->alloc_memory) {
+        out->alloc_memory = (out->smemory.num_entries + 2) * 2;
+        out->smemory.entries = web49_realloc(out->smemory.entries, sizeof(web49_section_element_entry_t) * out->alloc_memory);
+    }
+    out->smemory.entries[out->smemory.num_entries++] = entry;
 }
 
 static void web49_readwat_state_toplevel(web49_readwat_state_t *out, web49_readwat_expr_t expr) {
@@ -1113,6 +1131,9 @@ static void web49_readwat_state_toplevel(web49_readwat_state_t *out, web49_readw
         }
         if (!strcmp(type.fun_fun, "data")) {
             web49_readwat_state_data_entry(out, type);
+        }
+        if (!strcmp(type.fun_fun, "memory")) {
+            web49_readwat_state_memory_entry(out, type);
         }
     }
     for (uint64_t i = 0; i < expr.fun_nargs; i++) {
@@ -1165,15 +1186,6 @@ web49_module_t web49_readwat_module(web49_io_input_t *in) {
             .table_section = state.stable,
         };
     }
-    if (state.sglobal.num_entries != 0) {
-        sections[num_sections++] = (web49_section_t){
-            .header = (web49_section_header_t){
-                .id = WEB49_SECTION_ID_GLOBAL,
-                .size_known = false,
-            },
-            .global_section = state.sglobal,
-        };
-    }
     if (state.smemory.num_entries != 0) {
         sections[num_sections++] = (web49_section_t){
             .header = (web49_section_header_t){
@@ -1181,6 +1193,15 @@ web49_module_t web49_readwat_module(web49_io_input_t *in) {
                 .size_known = false,
             },
             .memory_section = state.smemory,
+        };
+    }
+    if (state.sglobal.num_entries != 0) {
+        sections[num_sections++] = (web49_section_t){
+            .header = (web49_section_header_t){
+                .id = WEB49_SECTION_ID_GLOBAL,
+                .size_known = false,
+            },
+            .global_section = state.sglobal,
         };
     }
     if (state.sexport.num_entries != 0) {

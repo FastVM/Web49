@@ -25,7 +25,7 @@ void web49_writebin_type_memory(web49_writebin_buf_t *out, web49_type_memory_t t
     uint8_t flags = type.maximum != UINT64_MAX ? 1 : 0;
     web49_writebin_byte(out, flags);
     web49_writebin_uleb(out, type.initial);
-    if (flags & 1) {
+    if (flags == 1) {
         web49_writebin_uleb(out, type.maximum);
     }
 }
@@ -298,7 +298,7 @@ void web49_writebin_section_data(web49_writebin_buf_t *out, web49_section_t sect
     web49_writebin_uleb(out, section.data_section.num_entries);
     for (uint64_t i = 0; i < section.data_section.num_entries; i++) {
         web49_section_data_entry_t entry = section.data_section.entries[i];
-        web49_writebin_uleb(out, entry.index);
+        web49_writebin_byte(out, 0);
         web49_writebin_init_expr(out, entry.offset);
         web49_writebin_uleb(out, entry.size);
         web49_writebin_fwrite(out, entry.size, entry.data);

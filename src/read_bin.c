@@ -1,5 +1,6 @@
 
 #include "./read_bin.h"
+#include <stdio.h>
 #include "tables.h"
 
 uint64_t web49_readbin_uleb(web49_io_input_t *in) {
@@ -151,7 +152,7 @@ web49_type_memory_t web49_readbin_type_memory(web49_io_input_t *in) {
     uint64_t flags = web49_readbin_uleb(in);
     return (web49_type_memory_t){
         .initial = web49_readbin_uleb(in),
-        .maximum = (flags & 1) ? web49_readbin_uleb(in) : UINT64_MAX,
+        .maximum = (flags == 1) ? web49_readbin_uleb(in) : UINT64_MAX,
     };
 }
 
@@ -414,13 +415,20 @@ web49_section_data_t web49_readbin_section_data(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
     web49_section_data_entry_t *entries = web49_malloc(sizeof(web49_section_data_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
-        uint64_t index = web49_readbin_uleb(in);
+        uint64_t tag = web49_readbin_byte(in);
         web49_instr_t offset = web49_readbin_init_expr(in);
+        if (tag == 1) {
+            fprintf(stderr, "passive data mode not yet implemented\n");
+            exit(1);
+        }
+        if (tag == 2) {
+            fprintf(stderr, "multiple memories for data not yet implemented\n");
+            exit(1);
+        }
         uint64_t size = web49_readbin_uleb(in);
         uint8_t *data = web49_malloc(sizeof(uint8_t) * size);
         web49_io_input_fread(in, (size), data);
         entries[i] = (web49_section_data_entry_t){
-            .index = index,
             .offset = offset,
             .size = size,
             .data = data,

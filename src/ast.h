@@ -567,7 +567,6 @@ struct web49_section_code_t {
 };
 
 struct web49_section_data_entry_t {
-    uint64_t index;
     web49_instr_t offset;
     uint64_t size;
     uint8_t *data;

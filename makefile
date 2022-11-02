@@ -1,5 +1,12 @@
 
 EXE = .exe
+EXE_RUN = 
+
+EMCC ?= emcc
+EMCC_CFLAGS = 
+EMCC_OPT = -O2
+WASM_INTERP = wasmer
+HYPERFINE = hyperfine
 
 OPT ?= -O2
 
@@ -11,13 +18,18 @@ WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
 
 OBJS := $(WEB49_OBJS)
 
+TEST_SRCS := test/fib35.c
+TEST_TXT := $(TEST_SRCS:test/%.c=test/out.%.txt)
+
 default: all
 
-all: bin/wasm2wat$(EXE) bin/wat2wasm$(EXE) bin/wasm2wasm$(EXE)
+all: bins test
 
-format: .dummy
-	find . -name '*.c' | xargs -I FILENAME clang-format -style=file -i FILENAME
-	find . -name '*.h' | xargs -I FILENAME clang-format -style=file -i FILENAME
+bins: bin/wasm2wat$(EXE) bin/wat2wasm$(EXE) bin/wasm2wasm$(EXE)
+
+test: $(TEST_TXT)
+
+# bin
 
 bin/wat2wasm$(EXE): main/wat2wasm.o $(OBJS)
 	@mkdir -p bin
@@ -31,9 +43,22 @@ bin/wasm2wasm$(EXE): main/wasm2wasm.o $(OBJS)
 	@mkdir -p bin
 	$(CC) $(OPT) main/wasm2wasm.o $(OBJS) -o $(@) $(LDFLAGS)
 
-# clean
+# test
 
-clean: gcc-pgo-clean clang-pgo-clean objs-clean
+$(TEST_TXT): bins $(@:test/out.%.txt:test/%.c)
+	@echo $(@) 
+	$(EMCC) -s PURE_WASI=1 -s SINGLE_FILE=1 -s WASM=1 $(EMCC_OPT) $(@:test/out.%.txt=test/%.c) -o $(@:test/out.%.txt=test/out.%.0.wasm) $(EMCC_CFLAGS)
+	$(EXE_RUN) ./bin/wasm2wat$(EXE) $(@:test/out.%.txt=test/out.%.0.wasm) -o $(@:test/out.%.txt=test/out.%.1.wat)
+	$(EXE_RUN) ./bin/wat2wasm$(EXE) $(@:test/out.%.txt=test/out.%.1.wat) -o $(@:test/out.%.txt=test/out.%.2.wasm)
+	$(EXE_RUN) ./bin/wasm2wat$(EXE) $(@:test/out.%.txt=test/out.%.2.wasm) -o $(@:test/out.%.txt=test/out.%.3.wat)
+	$(EXE_RUN) ./bin/wat2wasm$(EXE) $(@:test/out.%.txt=test/out.%.3.wat) -o $(@:test/out.%.txt=test/out.%.4.wasm)
+	$(HYPERFINE) "$(WASM_INTERP) $(@:test/out.%.txt=test/out.%.4.wasm) 1> $(@) 2> $(@:test/out.%.txt=test/out.%.time.txt);"
+
+# util
+
+format: .dummy
+	find . -name '*.c' | xargs -I FILENAME clang-format -style=file -i FILENAME
+	find . -name '*.h' | xargs -I FILENAME clang-format -style=file -i FILENAME
 
 # intermediate files
 
