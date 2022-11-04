@@ -8,7 +8,7 @@ typedef uint64_t web49_interp_instr_t;
 enum web49_interp_instr_enum_t {
     WEB49_INTERP_INSTR_DROP,
     WEB49_INTERP_INSTR_RETURN,
-    
+
     WEB49_INTERP_INSTR_SET_GLOBAL,
     WEB49_INTERP_INSTR_GET_GLOBAL,
     WEB49_INTERP_INSTR_TEE_LOCAL,
@@ -48,6 +48,7 @@ enum web49_interp_instr_enum_t {
 
     WEB49_INTERP_INSTR_I64_EXTEND_I32_U,
     WEB49_INTERP_INSTR_I64_EXTEND_I32_S,
+    WEB49_INTERP_INSTR_I32_WRAP_I64,
 
     WEB49_INTERP_INSTR_I64_ADD,
     WEB49_INTERP_INSTR_I64_SUB,
@@ -83,6 +84,8 @@ enum web49_interp_instr_enum_t {
     WEB49_INTERP_INSTR_I64_STORE,
     WEB49_INTERP_INSTR_I64_LOAD,
 
+    WEB49_INTERP_INSTR_F64_LOAD,
+
     WEB49_INTERP_INSTR_DATA_CONST,
 
     WEB49_INTERP_INSTR_CALL,
@@ -98,7 +101,7 @@ enum web49_interp_instr_enum_t {
     WEB49_INTERP_INSTR_BR,
     WEB49_INTERP_INSTR_BR_TABLE,
 
-    WEB49_INTERP_INSTR_WASI_EXIT,
+    WEB49_INTERP_INSTR_WASI_PROC_EXIT,
     WEB49_INTERP_INSTR_WASI_FD_WRITE,
     WEB49_INTERP_INSTR_WASI_FD_CLOSE,
     WEB49_INTERP_INSTR_WASI_FD_SEEK,
@@ -143,6 +146,8 @@ union web49_interp_opcode_t {
 };
 
 struct web49_interp_block_t {
+    uint64_t nlocals;
+    uint64_t nparams;
     web49_interp_opcode_t *code;
 };
 

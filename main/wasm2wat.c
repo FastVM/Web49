@@ -14,7 +14,7 @@ int web49_file_main(const char *inarg, const char *outarg) {
 int main(int argc, const char **argv) {
     const char *inarg = NULL;
     const char *outarg = NULL;
-    for (size_t i = 1; i < argc; i += 1) {
+    for (int i = 1; i < argc; i += 1) {
         if (!strcmp(argv[i], "-o")) {
             i += 1;
             outarg = argv[i];

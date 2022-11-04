@@ -5,7 +5,7 @@ size_t fib(size_t n) {
     if (n < 2) {
         return n;
     } else {
-        return fib(n-2) + fib(n-1);
+        return fib(n - 2) + fib(n - 1);
     }
 }
 

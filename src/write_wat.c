@@ -1,4 +1,5 @@
 #include "./write_wat.h"
+
 #include "tables.h"
 
 void web49_wat_print_lang_type(web49_io_output_t *out, web49_lang_type_t ltype) {
@@ -104,10 +105,6 @@ void web49_wat_print_instr_depth(web49_io_output_t *out, web49_instr_t instr, ui
             }
             break;
     }
-}
-
-void web49_wat_print_section_custom(web49_io_output_t *out, web49_module_t mod, web49_section_custom_t scustom) {
-    // fprintf(stderr, "unsupported: custom section type\n");
 }
 
 void web49_wat_print_section_type(web49_io_output_t *out, web49_module_t mod, web49_section_type_t stype) {
@@ -329,15 +326,8 @@ void web49_wat_print_section_code(web49_io_output_t *out, web49_module_t mod, we
 }
 
 void web49_wat_print_section_data(web49_io_output_t *out, web49_module_t mod, web49_section_data_t sdata) {
-    web49_section_type_t type_section;
-    for (uint64_t i = 0; i < mod.num_sections; i++) {
-        if (mod.sections[i].header.id == WEB49_SECTION_ID_TYPE) {
-            type_section = mod.sections[i].type_section;
-        }
-    }
     for (uint64_t i = 0; i < sdata.num_entries; i++) {
         web49_section_data_entry_t data = sdata.entries[i];
-        // web49_section_type_entry_t type = type_section.entries[data.index];
         web49_io_output_fprintf(out, "\n  (data (;%" PRIu64 ";) (", i);
         web49_wat_print_instr(out, data.offset);
         web49_io_output_write_str(out, ") \"");
@@ -368,7 +358,6 @@ void web49_wat_print_section_data(web49_io_output_t *out, web49_module_t mod, we
 void web49_wat_print_section(web49_io_output_t *out, web49_module_t mod, web49_section_t section) {
     switch (section.header.id) {
         case WEB49_SECTION_ID_CUSTOM: {
-            web49_wat_print_section_custom(out, mod, section.custom_section);
             break;
         }
         case WEB49_SECTION_ID_TYPE: {

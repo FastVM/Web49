@@ -1,6 +1,6 @@
 #include "../src/ast.h"
-#include "../src/read_bin.h"
 #include "../src/interp/interp.h"
+#include "../src/read_bin.h"
 
 int web49_file_main(const char *inarg) {
     web49_io_input_t infile = web49_io_input_open(inarg);
@@ -11,7 +11,7 @@ int web49_file_main(const char *inarg) {
 
 int main(int argc, const char **argv) {
     const char *inarg = NULL;
-    for (size_t i = 1; i < argc; i += 1) {
+    for (int i = 1; i < argc; i += 1) {
         if (inarg == NULL) {
             inarg = argv[i];
         } else {

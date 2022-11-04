@@ -2,7 +2,6 @@
 
 #include "tables.h"
 
-
 void web49_readwat_table_set(web49_readwat_table_t *restrict table, const char *key, uint64_t value) {
     if (table->len + 2 >= table->alloc) {
         table->alloc = (table->len + 2) * 2;
@@ -24,7 +23,6 @@ uint64_t web49_readwat_table_get(web49_readwat_table_t *restrict table, const ch
 }
 
 const char *web49_readwat_name(web49_io_input_t *in) {
-redo:;
     char first = web49_io_input_fgetc(in);
     if (first == ';') {
         if (web49_io_input_fgetc(in) != ';') {
@@ -515,7 +513,7 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                         case WEB49_IMMEDIATE_NONE:
                             break;
                         case WEB49_IMMEDIATE_BLOCK_TYPE:
-                            if (expr.fun_args[i+1].tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(expr.fun_args[i + 1].fun_fun, "result")) {
+                            if (expr.fun_args[i + 1].tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(expr.fun_args[i + 1].fun_fun, "result")) {
                                 web49_readwat_expr_t arg = expr.fun_args[i + 1].fun_args[0];
                                 if (arg.tag != WEB49_READWAT_EXPR_TAG_SYM) {
                                     fprintf(stderr, "expected basic type\n");
@@ -561,7 +559,7 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                         case WEB49_IMMEDIATE_BR_TABLE: {
                             i += 1;
                             uint64_t alloc = 0;
-                            while (i < expr.fun_nargs && isdigit(expr.fun_args[i + 1].sym[0])) {
+                            while (i + 1 < expr.fun_nargs && isdigit(expr.fun_args[i + 1].sym[0])) {
                                 if (imm.br_table.num_targets + 2 >= alloc) {
                                     alloc = (imm.br_table.num_targets + 2) * 2;
                                     imm.br_table.targets = web49_realloc(imm.br_table.targets, sizeof(uint64_t) * alloc);
@@ -791,7 +789,7 @@ web49_instr_t web49_readwat_instr(web49_readwat_expr_t code) {
                 case WEB49_IMMEDIATE_BR_TABLE: {
                     uint64_t i = 0;
                     uint64_t alloc = 0;
-                    while (i < code.fun_nargs && isdigit(code.fun_args[i + 1].sym[0])) {
+                    while (i + 1 < code.fun_nargs && isdigit(code.fun_args[i + 1].sym[0])) {
                         if (imm.br_table.num_targets + 2 >= alloc) {
                             alloc = (imm.br_table.num_targets + 2) * 2;
                             imm.br_table.targets = web49_realloc(imm.br_table.targets, sizeof(uint64_t) * alloc);
@@ -898,7 +896,7 @@ void web49_readwat_state_global_entry(web49_readwat_state_t *out, web49_readwat_
             }
         } else {
             if (!strcmp(arg.fun_fun, "mut")) {
-                if (arg.fun_nargs < 0) {
+                if (arg.fun_nargs < 1) {
                     fprintf(stderr, "expected word after (mut\n");
                     exit(0);
                 }
@@ -978,7 +976,6 @@ void web49_readwat_state_elem_entry(web49_readwat_state_t *out, web49_readwat_ex
 void web49_readwat_state_data_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr) {
     web49_section_data_entry_t entry;
     entry.offset = web49_readwat_instr(expr.fun_args[0]);
-    uint64_t data_alloc = 16;
     entry.size = expr.fun_args[expr.fun_nargs - 1].len_str;
     entry.data = expr.fun_args[expr.fun_nargs - 1].str;
     if (out->sdata.num_entries + 2 >= out->alloc_data) {
@@ -996,7 +993,7 @@ void web49_readwat_state_memory_entry(web49_readwat_state_t *out, web49_readwat_
         entry.initial = web49_readwat_expr_to_u64(expr.fun_args[0].sym);
         entry.maximum = web49_readwat_expr_to_u64(expr.fun_args[1].sym);
     } else {
-        fprintf(stderr, "(memory ...) expected two args after `memory`, not %zu\n", (size_t) expr.fun_nargs);
+        fprintf(stderr, "(memory ...) expected two args after `memory`, not %zu\n", (size_t)expr.fun_nargs);
         exit(1);
     }
     if (out->smemory.num_entries + 2 >= out->alloc_memory) {

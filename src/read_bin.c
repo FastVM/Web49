@@ -1,6 +1,8 @@
 
 #include "./read_bin.h"
+
 #include <stdio.h>
+
 #include "tables.h"
 
 uint64_t web49_readbin_uleb(web49_io_input_t *in) {
@@ -376,7 +378,7 @@ web49_section_code_t web49_readbin_section_code(web49_io_input_t *in) {
     web49_section_code_entry_t *entries = web49_malloc(sizeof(web49_section_code_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
         uint64_t body_len = web49_readbin_uleb(in);
-        long end = web49_io_input_ftell(in) + (long)body_len;
+        size_t end = web49_io_input_ftell(in) + (long)body_len;
         uint64_t num_locals = web49_readbin_uleb(in);
         web49_section_code_entry_local_t *locals = web49_malloc(sizeof(web49_section_code_entry_local_t) * num_locals);
         for (uint64_t j = 0; j < num_locals; j++) {
