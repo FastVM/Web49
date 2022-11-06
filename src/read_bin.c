@@ -1,8 +1,6 @@
 
 #include "./read_bin.h"
 
-#include <stdio.h>
-
 #include "tables.h"
 
 uint64_t web49_readbin_uleb(web49_io_input_t *in) {

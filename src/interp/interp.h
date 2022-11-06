@@ -132,10 +132,14 @@ union web49_interp_data_t {
 
 struct web49_interp_t {
     web49_interp_data_t *stack;
+    web49_interp_data_t *locals;
     web49_interp_block_t **funcs;
+    web49_interp_block_t **table;
     web49_section_type_entry_t *ftypes;
     uint64_t global_alloc;
     web49_interp_data_t *globals;
+    uint8_t *memory;
+    uint64_t nreturns;
 };
 
 union web49_interp_opcode_t {
@@ -148,6 +152,8 @@ union web49_interp_opcode_t {
 struct web49_interp_block_t {
     uint64_t nlocals;
     uint64_t nparams;
+    uint64_t nreturns;
+    uint64_t ncode;
     web49_interp_opcode_t *code;
 };
 

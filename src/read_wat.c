@@ -195,7 +195,7 @@ void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_readwat_ex
     uint64_t alloc_params = 0;
 
     uint64_t num_returns = 0;
-    web49_lang_type_t return_type;
+    web49_lang_type_t return_type = 0;
 
     for (uint64_t i = 0; i < expr.fun_nargs; i++) {
         web49_readwat_expr_t func = expr.fun_args[i];
@@ -399,7 +399,7 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                     web49_lang_type_t *params = NULL;
                     uint64_t alloc_params = 0;
                     uint64_t num_returns = 0;
-                    web49_lang_type_t return_type;
+                    web49_lang_type_t return_type = 0;
                     web49_readwat_expr_t paramres = expr.fun_args[i++];
                     if (!strcmp(paramres.fun_fun, "param")) {
                         for (uint64_t k = 0; k < paramres.fun_nargs; k++) {
