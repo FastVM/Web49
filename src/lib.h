@@ -16,6 +16,7 @@
 
 #define web49_bump(size) (malloc(size))
 #define web49_malloc(size) (malloc(size))
+#define web49_alloc0(size) (calloc(1, size))
 #define web49_realloc(ptr, size) (realloc(ptr, size))
 #define web49_free(ptr) (free((void *)ptr))
 

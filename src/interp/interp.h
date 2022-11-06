@@ -105,6 +105,8 @@ enum web49_interp_instr_enum_t {
     WEB49_INTERP_INSTR_WASI_FD_WRITE,
     WEB49_INTERP_INSTR_WASI_FD_CLOSE,
     WEB49_INTERP_INSTR_WASI_FD_SEEK,
+
+    WEB49_INTERP_MAX_INSTR,
 };
 
 union web49_interp_data_t;

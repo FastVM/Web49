@@ -1035,8 +1035,7 @@ void web49_interp_module(web49_module_t mod) {
     web49_section_type_entry_t *ftypes = web49_malloc(sizeof(web49_section_type_entry_t) * num_funcs);
     web49_interp_data_t *globals = web49_malloc(sizeof(web49_interp_data_t) * (global_section.num_entries));
     web49_interp_data_t *stack = web49_malloc(sizeof(web49_interp_data_t) * (1 << 16));
-    uint8_t *memory = web49_malloc(1 << 24);
-    memset(memory, 0, 1<<24);
+    uint8_t *memory = web49_alloc0(1 << 24);
     web49_interp_t interp = (web49_interp_t){
         .locals = stack,
         .stack = stack,
