@@ -95,6 +95,7 @@ struct web49_interp_t {
     uint8_t *memory;
     uint64_t nreturns;
     web49_interp_data_t *returns;
+    const char **args;
 };
 
 union web49_interp_opcode_t {
