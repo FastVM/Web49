@@ -1076,7 +1076,8 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
                     case 1: whence = SEEK_CUR; break;
                     case 2: whence = SEEK_END; break;
                 }
-                interp.stack++->i32_u = lseek(fd, offset, whence);
+                *(uint32_t *)&interp.memory[result] = lseek(fd, offset, whence);
+                interp.stack++->i32_u = 0;
                 break;
             }
             default:
