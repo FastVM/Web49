@@ -47,6 +47,7 @@ struct web49_interp_t {
     web49_section_type_entry_t *ftypes;
     uint64_t global_alloc;
     web49_interp_data_t *globals;
+    uint64_t memsize;
     uint8_t *memory;
     uint64_t nreturns;
     web49_interp_data_t *returns;
@@ -76,5 +77,6 @@ struct web49_interp_instr_buf_t {
 web49_interp_block_t *web49_interp_import(web49_interp_t *interp, const char *mod, const char *sym);
 web49_interp_block_t *web49_interp_read_block(web49_interp_t *interp, web49_interp_instr_buf_t *instrs, size_t nreturns);
 void web49_interp_module(web49_module_t mod);
+const char *web49_interp_opcode_to_name(size_t opcode);
 
 #endif
