@@ -2,23 +2,105 @@
 
 #include "../tables.h"
 
+#include <unistd.h>
+
 const char *web49_interp_opcode_to_name(size_t opcode) {
     if (opcode < WEB49_MAX_OPCODE_NUM) {
         return web49_opcode_to_name(opcode);
-    } else if (WEB49_OPCODE_END_WITH) {
+    } else if (opcode == WEB49_OPCODE_END_WITH) {
         return "end_with";
-    } else if (WEB49_OPCODE_BLOCK_RETURNS) {
+    } else if (opcode == WEB49_OPCODE_BLOCK_RETURNS) {
         return "block_returns";
-    } else if (WEB49_OPCODE_IF_RETURNS) {
+    } else if (opcode == WEB49_OPCODE_IF_RETURNS) {
         return "if_returns";
-    } else if (WEB49_OPCODE_WASI_PROC_EXIT) {
-        return "proc_exit";
-    } else if (WEB49_OPCODE_WASI_FD_WRITE) {
-        return "fd_write";
-    } else if (WEB49_OPCODE_WASI_FD_CLOSE) {
-        return "fd_close";
-    } else if (WEB49_OPCODE_WASI_FD_SEEK) {
+    } else if (opcode == WEB49_OPCODE_WASI_FD_SEEK) {
         return "fd_seek";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_FILESTAT_GET) {
+        return "fd_filestat_get";
+    } else if (opcode == WEB49_OPCODE_WASI_PATH_FILESTAT_GET) {
+        return "path_filestat_get";
+    } else if (opcode == WEB49_OPCODE_WASI_ARGS_SIZES_GET) {
+        return "args_sizes_get";
+    } else if (opcode == WEB49_OPCODE_WASI_CLOCK_RES_GET) {
+        return "clock_res_get";
+    } else if (opcode == WEB49_OPCODE_WASI_CLOCK_TIME_GET) {
+        return "clock_time_get";
+    } else if (opcode == WEB49_OPCODE_WASI_ENVIRON_GET) {
+        return "environ_get";
+    } else if (opcode == WEB49_OPCODE_WASI_ENVIRON_SIZES_GET) {
+        return "environ_sizes_get";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_ADVISE) {
+        return "fd_advise";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_ALLOCATE) {
+        return "fd_allocate";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_CLOSE) {
+        return "fd_close";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_DATASYNC) {
+        return "fd_datasync";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_FDSTAT_GET) {
+        return "fd_fdstat_get";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_FDSTAT_SET_FLAGS) {
+        return "fd_fdstat_set_flags";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_FDSTAT_SET_RIGHTS) {
+        return "fd_fdstat_set_rights";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_FILESTAT_SET_SIZE) {
+        return "fd_filestat_set_size";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_FILESTAT_SET_TIMES) {
+        return "fd_filestat_set_times";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_PREAD) {
+        return "fd_pread";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_PRESTAT_GET) {
+        return "fd_prestat_get";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_PRESTAT_DIR_NAME) {
+        return "fd_prestat_dir_name";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_PWRITE) {
+        return "fd_pwrite";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_READ) {
+        return "fd_read";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_READDIR) {
+        return "fd_readdir";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_RENUMBER) {
+        return "fd_renumber";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_SYNC) {
+        return "fd_sync";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_TELL) {
+        return "fd_tell";
+    } else if (opcode == WEB49_OPCODE_WASI_FD_WRITE) {
+        return "fd_write";
+    } else if (opcode == WEB49_OPCODE_WASI_PATH_CREATE_DIRECTORY) {
+        return "path_create_directory";
+    } else if (opcode == WEB49_OPCODE_WASI_PATH_FILESTAT_SET_TIMES) {
+        return "path_filestat_set_times";
+    } else if (opcode == WEB49_OPCODE_WASI_PATH_LINK) {
+        return "path_link";
+    } else if (opcode == WEB49_OPCODE_WASI_PATH_OPEN) {
+        return "path_open";
+    } else if (opcode == WEB49_OPCODE_WASI_PATH_READLINK) {
+        return "path_readlink";
+    } else if (opcode == WEB49_OPCODE_WASI_PATH_REMOVE_DIRECTORY) {
+        return "path_remove_directory";
+    } else if (opcode == WEB49_OPCODE_WASI_PATH_RENAME) {
+        return "path_rename";
+    } else if (opcode == WEB49_OPCODE_WASI_PATH_SYMLINK) {
+        return "path_symlink";
+    } else if (opcode == WEB49_OPCODE_WASI_PATH_UNLINK_FILE) {
+        return "path_unlink_file";
+    } else if (opcode == WEB49_OPCODE_WASI_POLL_ONEOFF) {
+        return "poll_oneoff";
+    } else if (opcode == WEB49_OPCODE_WASI_PROC_EXIT) {
+        return "proc_exit";
+    } else if (opcode == WEB49_OPCODE_WASI_PROC_RAISE) {
+        return "proc_raise";
+    } else if (opcode == WEB49_OPCODE_WASI_RANDOM_GET) {
+        return "random_get";
+    } else if (opcode == WEB49_OPCODE_WASI_SCHED_YIELD) {
+        return "sched_yield";
+    } else if (opcode == WEB49_OPCODE_WASI_SOCK_RECV) {
+        return "sock_recv";
+    } else if (opcode == WEB49_OPCODE_WASI_SOCK_SEND) {
+        return "sock_send";
+    } else if (opcode == WEB49_OPCODE_WASI_SOCK_SHUTDOWN) {
+        return "sock_shutdown";
     } else {
         return NULL;
     }
@@ -34,9 +116,181 @@ web49_interp_block_t *web49_interp_import(web49_interp_t *interp, const char *mo
             iit = WEB49_OPCODE_WASI_PROC_EXIT;
             nargs = 1;
             nreturns = 0;
+        } else if (!strcmp(sym, "fd_seek")) {
+            iit = WEB49_OPCODE_WASI_FD_SEEK;
+            nargs = 4;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_filestat_get")) {
+            iit = WEB49_OPCODE_WASI_FD_FILESTAT_GET;
+            nargs = 5;
+            nreturns = 1;
+        } else if (!strcmp(sym, "path_filestat_get")) {
+            iit = WEB49_OPCODE_WASI_PATH_FILESTAT_GET;
+            nargs = 2;
+            nreturns = 1;
+        } else if (!strcmp(sym, "args_get")) {
+            iit = WEB49_OPCODE_WASI_ARGS_GET;
+            nargs = 2;
+            nreturns = 1;
+        } else if (!strcmp(sym, "args_sizes_get")) {
+            iit = WEB49_OPCODE_WASI_ARGS_SIZES_GET;
+            nargs = 2;
+            nreturns = 1;
+        } else if (!strcmp(sym, "clock_res_get")) {
+            iit = WEB49_OPCODE_WASI_CLOCK_RES_GET;
+            nargs = 2;
+            nreturns = 1;
+        } else if (!strcmp(sym, "clock_time_get")) {
+            iit = WEB49_OPCODE_WASI_CLOCK_TIME_GET;
+            nargs = 3;
+            nreturns = 1;
+        } else if (!strcmp(sym, "environ_get")) {
+            iit = WEB49_OPCODE_WASI_ENVIRON_GET;
+            nargs = 2;
+            nreturns = 1;
+        } else if (!strcmp(sym, "environ_sizes_get")) {
+            iit = WEB49_OPCODE_WASI_ENVIRON_SIZES_GET;
+            nargs = 2;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_advise")) {
+            iit = WEB49_OPCODE_WASI_FD_ADVISE;
+            nargs =4 ;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_allocate")) {
+            iit = WEB49_OPCODE_WASI_FD_ALLOCATE;
+            nargs = 3;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_close")) {
+            iit = WEB49_OPCODE_WASI_FD_CLOSE;
+            nargs = 1;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_datasync")) {
+            iit = WEB49_OPCODE_WASI_FD_DATASYNC;
+            nargs = 1;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_fdstat_get")) {
+            iit = WEB49_OPCODE_WASI_FD_FDSTAT_GET;
+            nargs = 2;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_fdstat_set_flags")) {
+            iit = WEB49_OPCODE_WASI_FD_FDSTAT_SET_FLAGS;
+            nargs = 2;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_fdstat_set_rights")) {
+            iit = WEB49_OPCODE_WASI_FD_FDSTAT_SET_RIGHTS;
+            nargs = 3;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_filestat_set_size")) {
+            iit = WEB49_OPCODE_WASI_FD_FILESTAT_SET_SIZE;
+            nargs = 2;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_filestat_set_times")) {
+            iit = WEB49_OPCODE_WASI_FD_FILESTAT_SET_TIMES;
+            nargs = 4;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_pread")) {
+            iit = WEB49_OPCODE_WASI_FD_PREAD;
+            nargs = 5;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_prestat_get")) {
+            iit = WEB49_OPCODE_WASI_FD_PRESTAT_GET;
+            nargs = 2;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_prestat_dir_name")) {
+            iit = WEB49_OPCODE_WASI_FD_PRESTAT_DIR_NAME;
+            nargs = 3;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_pwrite")) {
+            iit = WEB49_OPCODE_WASI_FD_PWRITE;
+            nargs = 5;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_read")) {
+            iit = WEB49_OPCODE_WASI_FD_READ;
+            nargs = 4;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_readdir")) {
+            iit = WEB49_OPCODE_WASI_FD_READDIR;
+            nargs = 5;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_renumber")) {
+            iit = WEB49_OPCODE_WASI_FD_RENUMBER;
+            nargs = 2;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_sync")) {
+            iit = WEB49_OPCODE_WASI_FD_SYNC;
+            nargs = 1;
+            nreturns = 1;
+        } else if (!strcmp(sym, "fd_tell")) {
+            iit = WEB49_OPCODE_WASI_FD_TELL;
+            nargs = 2;
+            nreturns = 1;
         } else if (!strcmp(sym, "fd_write")) {
             iit = WEB49_OPCODE_WASI_FD_WRITE;
             nargs = 4;
+            nreturns = 1;
+        } else if (!strcmp(sym, "path_create_directory")) {
+            iit = WEB49_OPCODE_WASI_PATH_CREATE_DIRECTORY;
+            nargs = 3;
+            nreturns = 1;
+        } else if (!strcmp(sym, "path_filestat_set_times")) {
+            iit = WEB49_OPCODE_WASI_PATH_FILESTAT_SET_TIMES;
+            nargs = 7;
+            nreturns = 1;
+        } else if (!strcmp(sym, "path_link")) {
+            iit = WEB49_OPCODE_WASI_PATH_LINK;
+            nargs = 7;
+            nreturns = 1;
+        } else if (!strcmp(sym, "path_open")) {
+            iit = WEB49_OPCODE_WASI_PATH_OPEN;
+            nargs = 9;
+            nreturns = 1;
+        } else if (!strcmp(sym, "path_readlink")) {
+            iit = WEB49_OPCODE_WASI_PATH_READLINK;
+            nargs = 6;
+            nreturns = 1;
+        } else if (!strcmp(sym, "path_remove_directory")) {
+            iit = WEB49_OPCODE_WASI_PATH_REMOVE_DIRECTORY;
+            nargs = 3;
+            nreturns = 1;
+        } else if (!strcmp(sym, "path_rename")) {
+            iit = WEB49_OPCODE_WASI_PATH_RENAME;
+            nargs = 6;
+            nreturns = 1;
+        } else if (!strcmp(sym, "path_symlink")) {
+            iit = WEB49_OPCODE_WASI_PATH_SYMLINK;
+            nargs = 6;
+            nreturns = 1;
+        } else if (!strcmp(sym, "path_unlink_file")) {
+            iit = WEB49_OPCODE_WASI_PATH_UNLINK_FILE;
+            nargs = 3;
+            nreturns = 1;
+        } else if (!strcmp(sym, "poll_oneoff")) {
+            iit = WEB49_OPCODE_WASI_POLL_ONEOFF;
+            nargs = 4;
+            nreturns = 1;
+        } else if (!strcmp(sym, "proc_raise")) {
+            iit = WEB49_OPCODE_WASI_PROC_RAISE;
+            nargs = 1;
+            nreturns = 1;
+        } else if (!strcmp(sym, "random_get")) {
+            iit = WEB49_OPCODE_WASI_RANDOM_GET;
+            nargs = 2;
+            nreturns = 1;
+        } else if (!strcmp(sym, "sched_yield")) {
+            iit = WEB49_OPCODE_WASI_SCHED_YIELD;
+            nargs = 0;
+            nreturns = 1;
+        } else if (!strcmp(sym, "sock_recv")) {
+            iit = WEB49_OPCODE_WASI_SOCK_RECV;
+            nargs = 6;
+            nreturns = 1;
+        } else if (!strcmp(sym, "sock_send")) {
+            iit = WEB49_OPCODE_WASI_SOCK_SEND;
+            nargs = 5;
+            nreturns = 1;
+        } else if (!strcmp(sym, "sock_shutdown")) {
+            iit = WEB49_OPCODE_WASI_SOCK_SHUTDOWN;
+            nargs = 2;
             nreturns = 1;
         } else {
             fprintf(stderr, "unknown wasi import symbol: %s\n", sym);
@@ -796,14 +1050,7 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
                     for (size_t i = 0; i < iovs_len; i++) {
                         uint32_t ptr = *(uint32_t *)&interp.memory[iovs + i * 8];
                         uint32_t len = *(uint32_t *)&interp.memory[iovs + i * 8 + 4];
-                        for (size_t i = 0; i < len; i++) {
-                            char chr = (char)interp.memory[ptr + i];
-                            if (!isprint(chr) && !isspace(chr)) {
-                                continue;
-                            }
-                            fprintf(stdout, "%c", chr);
-                            *(uint32_t *)&interp.memory[nwritten] += 1;
-                        }
+                        *(uint32_t *)&interp.memory[nwritten] += write(fd, &interp.memory[ptr], len);
                     }
                 } else {
                     fprintf(stdout, "| .fd = 0x%zx\n", (size_t)fd);
@@ -814,13 +1061,22 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
                 break;
             }
             case WEB49_OPCODE_WASI_FD_CLOSE: {
-                fprintf(stderr, "unimplemented: wasi_fd_close\n");
-                exit(1);
+                uint32_t fd = interp.locals[0].i32_u;
+                interp.stack++->i32_u = close(fd);
                 break;
             }
             case WEB49_OPCODE_WASI_FD_SEEK: {
-                fprintf(stderr, "unimplemented: wasi_fd_seek\n");
-                exit(1);
+                uint32_t fd = interp.locals[0].i32_u;
+                uint32_t offset = interp.locals[1].i32_u;
+                uint32_t wasi_whence = interp.locals[2].i32_u;
+                uint32_t result = interp.locals[3].i32_u;
+                int whence = -1;
+                switch (wasi_whence) {
+                    case 0: whence = SEEK_SET; break;
+                    case 1: whence = SEEK_CUR; break;
+                    case 2: whence = SEEK_END; break;
+                }
+                interp.stack++->i32_u = lseek(fd, offset, whence);
                 break;
             }
             default:

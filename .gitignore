@@ -12,4 +12,4 @@ bin/*
 .DS_Store
 *.wasm
 *.wat
-.vscode
+.vscode/*
