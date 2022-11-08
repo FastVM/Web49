@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - run: make CC=cc OPT='-O3 -fomit-frame-pointer' 
+      - run: make CC=cc OPT='-O3 -fomit-frame-pointer' EXE=
       - uses: actions/upload-artifact@v3
         with:
           name: web49-mac-release
