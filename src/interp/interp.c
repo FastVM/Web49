@@ -25,6 +25,7 @@ const char *web49_interp_opcode_to_name(size_t opcode) {
 }
 
 web49_interp_block_t *web49_interp_import(web49_interp_t *interp, const char *mod, const char *sym) {
+    (void) interp;
     if (!strcmp(mod, "wasi_snapshot_preview1")) {
         size_t iit;
         uint64_t nargs = UINT64_MAX;
@@ -823,7 +824,7 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
                 break;
             }
             default:
-                fprintf(stderr, "unhandled: %" PRIu64 " @%zu\n", web49_interp_opcode_to_name(head[-1].opcode), &head[-1] - block->code);
+                fprintf(stderr, "unhandled: %s @%zu\n", web49_interp_opcode_to_name(head[-1].opcode), &head[-1] - block->code);
                 __builtin_trap();
         }
         // fprintf(stderr, "- OP\n");
