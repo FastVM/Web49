@@ -78,6 +78,9 @@ union web49_interp_data_t {
 
     uint64_t i64_u;
     uint32_t i32_u;
+
+    float f32;
+    double f64;
 };
 
 struct web49_interp_t {
