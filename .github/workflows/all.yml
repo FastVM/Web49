@@ -1,0 +1,66 @@
+name: Builds
+on: [push]
+jobs:
+  linux-web49:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - run: make CC=cc OPT='-O3 -fomit-frame-pointer' all EXE=
+      - uses: actions/upload-artifact@v2
+        with:
+          name: web49-linux-release
+          path:  | 
+            bin/wasm2wat
+            bin/wat2wasm
+            bin/wasm2wasm
+            bin/miniwasm
+  linux-web49-warnings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - run: make CC=cc OPT='-g3' CFLAGS='-Wall -Wextra -Werror' EXE=
+      - uses: actions/upload-artifact@v2
+        with:
+          name: web49-linux-debug
+          path:  | 
+            bin/wasm2wat
+            bin/wat2wasm
+            bin/wasm2wasm
+            bin/miniwasm
+  macos-web49:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - run: make CC=cc OPT='-O3 -fomit-frame-pointer' 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: web49-mac-release
+          path: | 
+            bin/wasm2wat
+            bin/wat2wasm
+            bin/wasm2wasm
+            bin/miniwasm
+  windows-web49-gcc:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
+      - run: make CC=cc OPT='-O3 -fomit-frame-pointer' EXE=.exe
+      - uses: actions/upload-artifact@v2
+        with:
+          name: web49-windows-release
+          path:  | 
+            bin/wasm2wat.exe
+            bin/wat2wasm.exe
+            bin/wasm2wasm.exe
+            bin/miniwasm.exe
