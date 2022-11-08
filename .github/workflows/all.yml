@@ -4,7 +4,7 @@ jobs:
   linux-web49:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - run: make CC=cc OPT='-O3 -fomit-frame-pointer' all EXE=
@@ -19,7 +19,7 @@ jobs:
   linux-web49-warnings:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - run: make CC=cc OPT='-g3' CFLAGS='-Wall -Wextra -Werror -Wno-unused-parameter' EXE=
@@ -34,7 +34,7 @@ jobs:
   macos-web49:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - run: make CC=cc OPT='-O3 -fomit-frame-pointer' 
@@ -49,7 +49,7 @@ jobs:
   windows-web49-gcc:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - uses: egor-tensin/setup-mingw@v2
