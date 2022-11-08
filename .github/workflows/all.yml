@@ -8,7 +8,7 @@ jobs:
         with:
           submodules: true
       - run: make CC=cc OPT='-O3 -fomit-frame-pointer' all EXE=
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: web49-linux-release
           path:  | 
@@ -23,7 +23,7 @@ jobs:
         with:
           submodules: true
       - run: make CC=cc OPT='-g3' CFLAGS='-Wall -Wextra -Werror -Wno-unused-parameter' EXE=
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: web49-linux-debug
           path:  | 
@@ -38,7 +38,7 @@ jobs:
         with:
           submodules: true
       - run: make CC=cc OPT='-O3 -fomit-frame-pointer' 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: web49-mac-release
           path: | 
@@ -56,7 +56,7 @@ jobs:
         with:
           platform: x64
       - run: make CC=cc OPT='-O3 -fomit-frame-pointer' EXE=.exe
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: web49-windows-release
           path:  | 
