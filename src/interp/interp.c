@@ -811,18 +811,21 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
                 break;
             }
             case WEB49_OPCODE_I64_SHL: {
-                fprintf(stderr, "unimplemented: i64_shl\n");
-                exit(1);
+                uint64_t rhs = (--interp.stack)->i64_u;
+                uint64_t lhs = (--interp.stack)->i64_u;
+                interp.stack++->i64_u = (lhs << rhs);
                 break;
             }
             case WEB49_OPCODE_I64_SHR_U: {
-                fprintf(stderr, "unimplemented: i64_shr_u\n");
-                exit(1);
+                uint64_t rhs = (--interp.stack)->i64_u;
+                uint64_t lhs = (--interp.stack)->i64_u;
+                interp.stack++->i64_u = (lhs >> rhs);
                 break;
             }
             case WEB49_OPCODE_I64_SHR_S: {
-                fprintf(stderr, "unimplemented: i64_shr_s\n");
-                exit(1);
+                uint64_t rhs = (--interp.stack)->i64_u;
+                int64_t lhs = (--interp.stack)->i64_s;
+                interp.stack++->i64_s = (lhs >> rhs);
                 break;
             }
             case WEB49_OPCODE_I64_EQZ: {
@@ -830,18 +833,21 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
                 break;
             }
             case WEB49_OPCODE_I64_AND: {
-                fprintf(stderr, "unimplemented: i64_and\n");
-                exit(1);
+                uint64_t rhs = (--interp.stack)->i64_u;
+                uint64_t lhs = (--interp.stack)->i64_u;
+                interp.stack++->i64_u = (uint64_t)(lhs & rhs);
                 break;
             }
             case WEB49_OPCODE_I64_OR: {
-                fprintf(stderr, "unimplemented: i64_or\n");
-                exit(1);
+                uint64_t rhs = (--interp.stack)->i64_u;
+                uint64_t lhs = (--interp.stack)->i64_u;
+                interp.stack++->i64_u = (uint64_t)(lhs | rhs);
                 break;
             }
             case WEB49_OPCODE_I64_XOR: {
-                fprintf(stderr, "unimplemented: i64_xor\n");
-                exit(1);
+                uint64_t rhs = (--interp.stack)->i64_u;
+                uint64_t lhs = (--interp.stack)->i64_u;
+                interp.stack++->i64_u = (uint64_t)(lhs ^ rhs);
                 break;
             }
             case WEB49_OPCODE_I64_STORE8: {
@@ -915,7 +921,7 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
                 break;
             }
             case WEB49_OPCODE_F64_CONST: {
-                interp.stack[-1].f64 = head++->data.f64;
+                interp.stack++->f64 = head++->data.f64;
                 break;
             }
             case WEB49_OPCODE_F64_ABS: {
@@ -988,8 +994,26 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
                 interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
                 break;
             }
+            case WEB49_OPCODE_I32_TRUNC_S_F64: {
+                interp.stack[-1].i32_s = (int32_t)interp.stack[-1].f64;
+            }
+            case WEB49_OPCODE_I32_TRUNC_U_F64: {
+                interp.stack[-1].i32_u = (uint32_t)interp.stack[-1].f64;
+            }
+            case WEB49_OPCODE_F64_CONVERT_S_I32: {
+                interp.stack[-1].f64 = (double)interp.stack[-1].i32_s;
+                break;
+            }
+            case WEB49_OPCODE_F64_CONVERT_U_I32: {
+                interp.stack[-1].f64 = (double)interp.stack[-1].i32_u;
+                break;
+            }
             case WEB49_OPCODE_F64_CONVERT_S_I64: {
                 interp.stack[-1].f64 = (double)interp.stack[-1].i64_s;
+                break;
+            }
+            case WEB49_OPCODE_F64_CONVERT_U_I64: {
+                interp.stack[-1].f64 = (double)interp.stack[-1].i64_u;
                 break;
             }
             case WEB49_OPCODE_F64_REINTERPRET_I64: {
@@ -1018,7 +1042,6 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
                 break;
             }
             case WEB49_OPCODE_I32_CONST: {
-                // fprintf(stderr, "const %zi\n", (ptrdiff_t) head->data.i32_s);
                 interp.stack++->i32_s = head++->data.i32_s;
                 break;
             }
@@ -1236,7 +1259,7 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
                 uint32_t head = buf;
                 for (size_t i = 0; interp.args[i] != NULL; i++) {
                     *(uint32_t *)&interp.memory[argv+argc*4] = head;
-                    strcpy(&interp.memory[head], interp.args[i]);
+                    strcpy((char*)&interp.memory[head], interp.args[i]);
                     head += strlen(interp.args[i]) + 1;
                     argc += 1;
                 }
@@ -1277,12 +1300,16 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
                 switch (wasi_clock_id) {
                     case 0:
                         clock_id = CLOCK_REALTIME;
+                        break;
                     case 1:
                         clock_id = CLOCK_MONOTONIC;
+                        break;
                     case 2:
                         clock_id = CLOCK_PROCESS_CPUTIME_ID;
+                        break;
                     case 3:
                         clock_id = CLOCK_THREAD_CPUTIME_ID;
+                        break;
                 }
                 struct timespec ts;
                 clock_gettime(clock_id, &ts);
@@ -1311,7 +1338,7 @@ ret:;
     return val;
 }
 
-void web49_interp_module(web49_module_t mod) {
+void web49_interp_module(web49_module_t mod, const char **args) {
     web49_section_type_t type_section = {0};
     web49_section_import_t import_section = {0};
     web49_section_code_t code_section = {0};
@@ -1368,14 +1395,9 @@ void web49_interp_module(web49_module_t mod) {
     web49_section_type_entry_t *ftypes = web49_malloc(sizeof(web49_section_type_entry_t) * num_funcs);
     web49_interp_data_t *globals = web49_malloc(sizeof(web49_interp_data_t) * (global_section.num_entries));
     web49_interp_data_t *stack = web49_alloc0(sizeof(web49_interp_data_t) * (1 << 16));
-    uint64_t memsize = 1 << 28;
+    uint64_t memsize = 1 << 24;
     uint8_t *memory = web49_alloc0(memsize);
     web49_interp_data_t *returns = web49_alloc0(256);
-    const char *args[] = {
-        "web49",
-        "./test/coremark.wasm",
-        NULL,
-    };
     web49_interp_t interp = (web49_interp_t){
         .locals = stack,
         .stack = stack,

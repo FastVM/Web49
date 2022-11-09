@@ -121,7 +121,7 @@ struct web49_interp_instr_buf_t {
 
 web49_interp_block_t *web49_interp_import(web49_interp_t *interp, const char *mod, const char *sym);
 web49_interp_block_t *web49_interp_read_block(web49_interp_t *interp, web49_interp_instr_buf_t *instrs, size_t nreturns);
-void web49_interp_module(web49_module_t mod);
+void web49_interp_module(web49_module_t mod, const char **args);
 const char *web49_interp_opcode_to_name(size_t opcode);
 
 #endif
