@@ -15,8 +15,8 @@ int main(int argc, const char **argv) {
     for (int i = 1; i <= argc; i += 1) {
         if (inarg == NULL) {
             inarg = argv[i];
-        } else {
             args = &argv[i];
+        } else {
             break;
         }
     }

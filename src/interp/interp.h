@@ -106,11 +106,12 @@ union web49_interp_opcode_t {
 };
 
 struct web49_interp_block_t {
+    web49_interp_opcode_t *code;
     uint64_t nlocals;
     uint64_t nparams;
     uint64_t nreturns;
     uint64_t ncode;
-    web49_interp_opcode_t *code;
+    int64_t func;
 };
 
 struct web49_interp_instr_buf_t {
@@ -120,7 +121,7 @@ struct web49_interp_instr_buf_t {
 };
 
 web49_interp_block_t *web49_interp_import(web49_interp_t *interp, const char *mod, const char *sym);
-web49_interp_block_t *web49_interp_read_block(web49_interp_t *interp, web49_interp_instr_buf_t *instrs, size_t nreturns);
+web49_interp_block_t *web49_interp_read_block(web49_section_type_t type_section, web49_interp_instr_buf_t *instrs, size_t nreturns);
 void web49_interp_module(web49_module_t mod, const char **args);
 const char *web49_interp_opcode_to_name(size_t opcode);
 
