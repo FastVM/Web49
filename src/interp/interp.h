@@ -99,7 +99,7 @@ struct web49_interp_t {
 };
 
 union web49_interp_opcode_t {
-    uint64_t opcode;
+    void *opcode;
     web49_interp_data_t *ptr;
     web49_interp_data_t data;
     web49_interp_block_t *block;
@@ -107,10 +107,14 @@ union web49_interp_opcode_t {
 
 struct web49_interp_block_t {
     web49_interp_opcode_t *code;
-    uint32_t nlocals;
-    uint16_t nparams;
-    uint16_t nreturns;
-    web49_section_code_entry_t *entry;
+    uint32_t nlocals: 32;
+    uint16_t nparams: 16;
+    uint16_t nreturns: 15;
+    bool is_code: 1;
+    union {
+        web49_section_code_entry_t *code_entry;
+        web49_section_import_entry_t *import_entry;
+    };
 };
 
 struct web49_interp_instr_buf_t {
@@ -120,10 +124,12 @@ struct web49_interp_instr_buf_t {
 };
 
 struct web49_read_block_state_t {
+    void *ptrs;
     web49_interp_instr_buf_t instrs;
+    web49_interp_opcode_t **bufs;
 };
 
-void web49_interp_import(const char *mod, const char *sym, web49_interp_block_t *block);
+void web49_interp_import(void **ptrs, const char *mod, const char *sym, web49_interp_block_t *block);
 void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block_t *block);
 void web49_interp_module(web49_module_t mod, const char **args);
 const char *web49_interp_opcode_to_name(size_t opcode);
