@@ -108,8 +108,7 @@ const char *web49_interp_opcode_to_name(size_t opcode) {
     }
 }
 
-web49_interp_block_t *web49_interp_import(web49_interp_t *interp, const char *mod, const char *sym) {
-    (void)interp;
+void web49_interp_import(const char *mod, const char *sym, web49_interp_block_t *block) {
     if (!strcmp(mod, "wasi_snapshot_preview1")) {
         size_t iit;
         uint64_t nargs = UINT64_MAX;
@@ -301,25 +300,24 @@ web49_interp_block_t *web49_interp_import(web49_interp_t *interp, const char *mo
         web49_interp_opcode_t *instrs = web49_malloc(sizeof(web49_interp_opcode_t) * 2);
         instrs[0].opcode = iit;
         instrs[1].opcode = WEB49_OPCODE_RETURN;
-        web49_interp_block_t *block = web49_malloc(sizeof(web49_interp_block_t));
         block->code = instrs;
         block->nlocals = 0;
         block->nreturns = nreturns;
         block->nparams = nargs;
-        return block;
+        return;
     }
     fprintf(stderr, "unknown import module: %s\n", mod);
     exit(1);
 }
 
-
-web49_interp_block_t *web49_interp_read_block(web49_read_block_state_t *state) {
+void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block_t *block) {
     web49_interp_instr_buf_t *instrs = &state->instrs;
     bool isfunc = instrs->head == 0;
     uint64_t alloc = 128;
     web49_interp_opcode_t *code = web49_malloc(sizeof(web49_interp_opcode_t) * alloc);
     uint64_t ncode = 0;
-    while (instrs->head < instrs->len) {
+    // while (instrs->head < instrs->len) {
+    while (true) {
         web49_instr_t cur = instrs->instrs[instrs->head++];
         if (cur.opcode == WEB49_OPCODE_END || cur.opcode == WEB49_OPCODE_ELSE) {
             break;
@@ -334,13 +332,16 @@ web49_interp_block_t *web49_interp_read_block(web49_read_block_state_t *state) {
         if (cur.immediate.id == WEB49_IMMEDIATE_BLOCK_TYPE && cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
             if (cur.opcode == WEB49_OPCODE_BLOCK) {
                 code[ncode++].opcode = WEB49_OPCODE_BLOCK_RETURNS;
-                code[ncode++].block = web49_interp_read_block(state);
+                code[ncode].block = web49_malloc(sizeof(web49_interp_block_t));
+                web49_interp_read_block(state, code[ncode++].block);
                 continue;
             } else if (cur.opcode == WEB49_OPCODE_IF) {
                 code[ncode++].opcode = WEB49_OPCODE_IF_RETURNS;
-                code[ncode++].block = web49_interp_read_block(state);
+                code[ncode].block = web49_malloc(sizeof(web49_interp_block_t));
+                web49_interp_read_block(state, code[ncode++].block);
                 if (instrs->instrs[instrs->head - 1].opcode == WEB49_OPCODE_ELSE) {
-                    code[ncode++].block = web49_interp_read_block(state);
+                    code[ncode].block = web49_malloc(sizeof(web49_interp_block_t));
+                    web49_interp_read_block(state, code[ncode++].block);
                 } else {
                     fprintf(stderr, "if returns one value, has empty else. this will not work.");
                     __builtin_trap();
@@ -394,12 +395,15 @@ web49_interp_block_t *web49_interp_read_block(web49_read_block_state_t *state) {
                 __builtin_trap();
         }
         if (cur.opcode == WEB49_OPCODE_BLOCK || cur.opcode == WEB49_OPCODE_LOOP) {
-            code[ncode++].block = web49_interp_read_block(state);
+            code[ncode].block = web49_malloc(sizeof(web49_interp_block_t));
+            web49_interp_read_block(state, code[ncode++].block);
         }
         if (cur.opcode == WEB49_OPCODE_IF) {
-            code[ncode++].block = web49_interp_read_block(state);
+            code[ncode].block = web49_malloc(sizeof(web49_interp_block_t));
+            web49_interp_read_block(state, code[ncode++].block);
             if (instrs->instrs[instrs->head - 1].opcode == WEB49_OPCODE_ELSE) {
-                code[ncode++].block = web49_interp_read_block(state);
+                code[ncode].block = web49_malloc(sizeof(web49_interp_block_t));
+                web49_interp_read_block(state, code[ncode++].block);
             } else {
                 web49_interp_opcode_t *instrs = web49_malloc(sizeof(web49_interp_opcode_t));
                 instrs[0].opcode = WEB49_OPCODE_END;
@@ -416,1303 +420,1547 @@ web49_interp_block_t *web49_interp_read_block(web49_read_block_state_t *state) {
     } else {
         code[ncode++].opcode = WEB49_OPCODE_END;
     }
-    web49_interp_block_t *block = web49_malloc(sizeof(web49_interp_block_t));
     block->code = code;
-    block->nlocals = 0;
-    block->nparams = 0;
-    return block;
 }
 
-int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *block) {
-    web49_interp_opcode_t *head = block->code;
-    while (true) {
-        switch (head++->opcode) {
-            case WEB49_OPCODE_UNREACHABLE: {
-                fprintf(stderr, "unreachable was reached\n");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_NOP: {
-                break;
-            }
-            case WEB49_OPCODE_BLOCK: {
-                int32_t ret = web49_interp_block_run(interp, head++->block);
-                if (ret >= 0) {
-                    return ret - 1;
-                }
-                break;
-            }
-            case WEB49_OPCODE_LOOP: {
-                while (true) {
-                    int32_t ret = web49_interp_block_run(interp, head->block);
-                    if (ret == -1) {
-                        continue;
-                    } else if (ret >= 0) {
-                        return ret - 1;
-                    } else {
-                        break;
-                    }
-                }
-                head += 1;
-                break;
-            }
-            case WEB49_OPCODE_IF: {
-                int32_t ret;
-                if ((--interp.stack)->i32_u) {
-                    ret = web49_interp_block_run(interp, head[0].block);
-                } else {
-                    ret = web49_interp_block_run(interp, head[1].block);
-                }
-                if (ret >= 0) {
-                    return ret - 1;
-                }
-                head += 2;
-                break;
-            }
-            case WEB49_OPCODE_ELSE: {
-                fprintf(stderr, "no impl for: %s\n", "else");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_END: {
-                interp.returns[0] = interp.stack[-1];
-                return INT32_MIN;
-            }
-            case WEB49_OPCODE_BR: {
-                interp.returns[0] = interp.stack[-1];
-                return head[0].data.i32_u - 1;
-            }
-            case WEB49_OPCODE_BR_IF: {
-                if ((--interp.stack)->i32_u) {
-                    interp.returns[0] = interp.stack[-1];
-                    return head[0].data.i32_u - 1;
-                }
-                head += 1;
-                break;
-            }
-            case WEB49_OPCODE_BR_TABLE: {
-                web49_interp_data_t data = *--interp.stack;
-                uint32_t max = head++->data.i32_u;
-                interp.returns[0] = interp.stack[-1];
-                if (data.i32_u >= max) {
-                    return head[max].data.i32_u - 1;
-                } else {
-                    return head[data.i32_u].data.i32_u - 1;
-                }
-                break;
-            }
-            case WEB49_OPCODE_RETURN: {
-                interp.returns[0] = interp.stack[-1];
-                return INT32_MAX;
-            }
-            case WEB49_OPCODE_CALL: {
-                uint32_t funcno = head++->data.i32_u;
-                web49_interp_block_t *func = interp.funcs[funcno];
-                web49_interp_data_t *old_locals = interp.locals;
-                web49_interp_data_t *old_stack = interp.stack;
-                interp.locals = interp.stack - func->nparams;
-                memset(interp.stack, 0, func->nlocals * sizeof(web49_interp_data_t));
-                interp.stack += func->nlocals;
-                web49_interp_block_run(interp, func);
-                interp.stack = old_stack - func->nparams;
-                switch (func->nreturns) {
-                case 0:
-                    break;
-                case 1:
-                    *interp.stack++ = interp.returns[0];
-                    break;
-                default:
-                    __builtin_unreachable();
-                }
-                interp.locals = old_locals;
-                break;
-            }
-            case WEB49_OPCODE_CALL_INDIRECT: {
-                uint32_t funcno = (--interp.stack)->i32_u;
-                web49_interp_block_t *func = interp.table[funcno];
-                web49_interp_data_t *old_locals = interp.locals;
-                web49_interp_data_t *old_stack = interp.stack;
-                interp.locals = interp.stack - func->nparams;
-                memset(interp.stack, 0, func->nlocals * sizeof(web49_interp_data_t));
-                interp.stack += func->nlocals;
-                web49_interp_block_run(interp, func);
-                interp.stack = old_stack - func->nparams;
-                switch (func->nreturns) {
-                case 0:
-                    break;
-                case 1:
-                    *interp.stack++ = interp.returns[0];
-                    break;
-                default:
-                    __builtin_unreachable();
-                }
-                interp.locals = old_locals;
-                break;
-            }
-            case WEB49_OPCODE_DROP: {
-                interp.stack -= 1;
-                break;
-            }
-            case WEB49_OPCODE_SELECT: {
-                web49_interp_data_t cond = *--interp.stack;
-                web49_interp_data_t iff = *--interp.stack;
-                web49_interp_data_t ift = *--interp.stack;
-                if (cond.i32_u) {
-                    *interp.stack++ = ift;
-                } else {
-                    *interp.stack++ = iff;
-                }
-                break;
-            }
-            case WEB49_OPCODE_GET_LOCAL: {
-                *interp.stack++ = interp.locals[head++->data.i32_u];
-                break;
-            }
-            case WEB49_OPCODE_SET_LOCAL: {
-                interp.locals[head++->data.i32_u] = *--interp.stack;
-                break;
-            }
-            case WEB49_OPCODE_TEE_LOCAL: {
-                interp.locals[head++->data.i32_u] = interp.stack[-1];
-                break;
-            }
-            case WEB49_OPCODE_GET_GLOBAL: {
-                *interp.stack++ = interp.globals[head++->data.i32_u];
-                break;
-            }
-            case WEB49_OPCODE_SET_GLOBAL: {
-                interp.globals[head++->data.i32_u] = *--interp.stack;
-                break;
-            }
-            case WEB49_OPCODE_I32_LOAD: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->i32_u = *(uint32_t *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_I64_LOAD: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->i64_u = *(uint64_t *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_F32_LOAD: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->f32 = *(float *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_F64_LOAD: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->f64 = *(double *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_I32_LOAD8_S: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->i32_s = (int32_t) *(int8_t *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_I32_LOAD8_U: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->i32_u = (uint32_t) *(uint8_t *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_I32_LOAD16_S: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->i32_s = (int32_t) *(int16_t *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_I32_LOAD16_U: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->i32_u = (uint32_t) *(uint16_t *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_I64_LOAD8_S: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->i64_s = (int64_t) *(int8_t *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_I64_LOAD8_U: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->i64_u = (uint64_t) *(uint8_t *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_I64_LOAD16_S: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->i64_s = (int64_t) *(int16_t *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_I64_LOAD16_U: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->i64_u = (uint64_t) *(uint16_t *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_I64_LOAD32_S: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->i64_s = (int64_t) *(int32_t *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_I64_LOAD32_U: {
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                interp.stack++->i64_u = (uint64_t) *(uint32_t *)&interp.memory[ptr + off];
-                break;
-            }
-            case WEB49_OPCODE_I32_STORE: {
-                uint32_t val = (--interp.stack)->i32_u;
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                *(uint32_t *)&interp.memory[ptr + off] = (uint32_t)val;
-                break;
-            }
-            case WEB49_OPCODE_I64_STORE: {
-                uint64_t val = (--interp.stack)->i64_u;
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                *(uint64_t *)&interp.memory[ptr + off] = (uint64_t)val;
-                break;
-            }
-            case WEB49_OPCODE_F32_STORE: {
-                float val = (--interp.stack)->f32;
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                *(float *)&interp.memory[ptr + off] = (float)val;
-                break;
-            }
-            case WEB49_OPCODE_F64_STORE: {
-                double val = (--interp.stack)->f64;
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                *(double *)&interp.memory[ptr + off] = (double)val;
-                break;
-            }
-            case WEB49_OPCODE_I32_STORE8: {
-                uint32_t val = (--interp.stack)->i32_u;
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                *(uint8_t *)&interp.memory[ptr + off] = (uint8_t)val;
-                break;
-            }
-            case WEB49_OPCODE_I32_STORE16: {
-                uint32_t val = (--interp.stack)->i32_u;
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                *(uint16_t *)&interp.memory[ptr + off] = (uint16_t)val;
-                break;
-            }
-            case WEB49_OPCODE_I64_STORE8: {
-                uint64_t val = (--interp.stack)->i64_u;
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                *(uint8_t *)&interp.memory[ptr + off] = (uint8_t)val;
-                break;
-            }
-            case WEB49_OPCODE_I64_STORE16: {
-                uint64_t val = (--interp.stack)->i64_u;
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                *(uint16_t *)&interp.memory[ptr + off] = (uint16_t)val;
-                break;
-            }
-            case WEB49_OPCODE_I64_STORE32: {
-                uint64_t val = (--interp.stack)->i64_u;
-                uint32_t ptr = (--interp.stack)->i32_u;
-                uint32_t off = head++->data.i32_u;
-                *(uint32_t *)&interp.memory[ptr + off] = (uint32_t)val;
-                break;
-            }
-            case WEB49_OPCODE_MEMORY_SIZE: {
-                interp.stack++->i32_u = (interp.memsize) / (1<<16);
-                break;
-            }
-            case WEB49_OPCODE_MEMORY_GROW: {
-                uint32_t oldsize = (interp.memsize) / (1<<16);
-                uint32_t newsize = (--interp.stack)->i32_u;
-                interp.memory = web49_realloc(interp.memory, (oldsize + newsize) * (1<<16));
-                interp.stack++->i32_u = oldsize;
-                break;
-            }
-            case WEB49_OPCODE_I32_CONST: {
-                interp.stack++->i32_s = head++->data.i32_s;
-                break;
-            }
-            case WEB49_OPCODE_I64_CONST: {
-                interp.stack++->i64_s = head++->data.i64_s;
-                break;
-            }
-            case WEB49_OPCODE_F32_CONST: {
-                interp.stack++->f32 = head++->data.f32;
-                break;
-            }
-            case WEB49_OPCODE_F64_CONST: {
-                interp.stack++->f64 = head++->data.f64;
-                break;
-            }
-            case WEB49_OPCODE_I32_EQZ: {
-                interp.stack[-1].i32_u = interp.stack[-1].i32_u == 0 ? 1 : 0;
-                break;
-            }
-            case WEB49_OPCODE_I32_EQ: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (uint32_t)(lhs == rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_NE: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (uint32_t)(lhs != rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_LT_S: {
-                int32_t rhs = (--interp.stack)->i32_s;
-                int32_t lhs = (--interp.stack)->i32_s;
-                interp.stack++->i32_u = (uint32_t)(lhs < rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_LT_U: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (uint32_t)(lhs < rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_GT_S: {
-                int32_t rhs = (--interp.stack)->i32_s;
-                int32_t lhs = (--interp.stack)->i32_s;
-                interp.stack++->i32_u = (uint32_t)(lhs > rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_GT_U: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (uint32_t)(lhs > rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_LE_S: {
-                int32_t rhs = (--interp.stack)->i32_s;
-                int32_t lhs = (--interp.stack)->i32_s;
-                interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_LE_U: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_GE_S: {
-                int32_t rhs = (--interp.stack)->i32_s;
-                int32_t lhs = (--interp.stack)->i32_s;
-                interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_GE_U: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_EQZ: {
-                interp.stack[-1].i32_u = interp.stack[-1].i64_u == 0 ? 1 : 0;
-                break;
-            }
-            case WEB49_OPCODE_I64_EQ: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i32_u = (uint32_t)(lhs == rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_NE: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i32_u = (uint32_t)(lhs != rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_LT_S: {
-                int64_t rhs = (--interp.stack)->i64_s;
-                int64_t lhs = (--interp.stack)->i64_s;
-                interp.stack++->i32_u = (uint32_t)(lhs < rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_LT_U: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i32_u = (uint32_t)(lhs < rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_GT_S: {
-                int64_t rhs = (--interp.stack)->i64_s;
-                int64_t lhs = (--interp.stack)->i64_s;
-                interp.stack++->i32_u = (uint32_t)(lhs > rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_GT_U: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i32_u = (uint32_t)(lhs > rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_LE_S: {
-                int64_t rhs = (--interp.stack)->i64_s;
-                int64_t lhs = (--interp.stack)->i64_s;
-                interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_LE_U: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_GE_S: {
-                int64_t rhs = (--interp.stack)->i64_s;
-                int64_t lhs = (--interp.stack)->i64_s;
-                interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_GE_U: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
-                break;
-            }
-            case WEB49_OPCODE_F32_EQ: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->i32_u = (uint32_t)(lhs == rhs);
-                break;
-            }
-            case WEB49_OPCODE_F32_NE: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->i32_u = (uint32_t)(lhs != rhs);
-                break;
-            }
-            case WEB49_OPCODE_F32_LT: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->i32_u = (uint32_t)(lhs < rhs);
-                break;
-            }
-            case WEB49_OPCODE_F32_GT: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->i32_u = (uint32_t)(lhs > rhs);
-                break;
-            }
-            case WEB49_OPCODE_F32_LE: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
-                break;
-            }
-            case WEB49_OPCODE_F32_GE: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
-                break;
-            }
-            case WEB49_OPCODE_F64_EQ: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->i32_u = (uint32_t)(lhs == rhs);
-                break;
-            }
-            case WEB49_OPCODE_F64_NE: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->i32_u = (uint32_t)(lhs != rhs);
-                break;
-            }
-            case WEB49_OPCODE_F64_LT: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->i32_u = (uint32_t)(lhs < rhs);
-                break;
-            }
-            case WEB49_OPCODE_F64_GT: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->i32_u = (uint32_t)(lhs > rhs);
-                break;
-            }
-            case WEB49_OPCODE_F64_LE: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
-                break;
-            }
-            case WEB49_OPCODE_F64_GE: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_CLZ: {
-                double arg = (--interp.stack)->f64;
-                interp.stack++->i32_u = __builtin_clz(arg);
-                break;
-            }
-            case WEB49_OPCODE_I32_CTZ: {
-                double arg = (--interp.stack)->f64;
-                interp.stack++->i32_u = __builtin_ctz(arg);
-                break;
-            }
-            case WEB49_OPCODE_I32_POPCNT: {
-                double arg = (--interp.stack)->f64;
-                interp.stack++->i32_u = __builtin_popcount(arg);
-                break;
-            }
-            case WEB49_OPCODE_I32_ADD: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (lhs + rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_SUB: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (lhs - rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_MUL: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (lhs * rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_DIV_S: {
-                int32_t rhs = (--interp.stack)->i32_s;
-                int32_t lhs = (--interp.stack)->i32_s;
-                interp.stack++->i32_s = (lhs / rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_DIV_U: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (lhs / rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_REM_S: {
-                int32_t rhs = (--interp.stack)->i32_s;
-                int32_t lhs = (--interp.stack)->i32_s;
-                interp.stack++->i32_s = (lhs % rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_REM_U: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (lhs % rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_AND: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (uint32_t)(lhs & rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_OR: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (uint32_t)(lhs | rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_XOR: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (uint32_t)(lhs ^ rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_SHL: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (lhs << rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_SHR_S: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                int32_t lhs = (--interp.stack)->i32_s;
-                interp.stack++->i64_s = (lhs >> rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_SHR_U: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (lhs >> rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_ROTL: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (lhs >> rhs) | (lhs << (32 - rhs));
-                break;
-            }
-            case WEB49_OPCODE_I32_ROTR: {
-                uint32_t rhs = (--interp.stack)->i32_u;
-                uint32_t lhs = (--interp.stack)->i32_u;
-                interp.stack++->i32_u = (lhs << rhs) | (lhs >> (32 - rhs));
-                break;
-            }
-            case WEB49_OPCODE_I64_ADD: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i64_u = (lhs + rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_SUB: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i64_u = (lhs - rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_MUL: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i64_u = (lhs * rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_DIV_S: {
-                int64_t rhs = (--interp.stack)->i64_s;
-                int64_t lhs = (--interp.stack)->i64_s;
-                interp.stack++->i64_s = (lhs / rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_DIV_U: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i64_u = (lhs / rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_REM_S: {
-                int64_t rhs = (--interp.stack)->i64_s;
-                int64_t lhs = (--interp.stack)->i64_s;
-                interp.stack++->i64_s = (lhs % rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_REM_U: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i64_u = (lhs % rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_AND: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i64_u = (uint64_t)(lhs & rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_OR: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i64_u = (uint64_t)(lhs | rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_XOR: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i64_u = (uint64_t)(lhs ^ rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_SHL: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i64_u = (lhs << rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_SHR_S: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                int64_t lhs = (--interp.stack)->i64_s;
-                interp.stack++->i64_s = (lhs >> rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_SHR_U: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i64_u = (lhs >> rhs);
-                break;
-            }
-            case WEB49_OPCODE_I64_ROTL: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i64_u = (lhs >> rhs) | (lhs << (64 - rhs));
-                break;
-            }
-            case WEB49_OPCODE_I64_ROTR: {
-                uint64_t rhs = (--interp.stack)->i64_u;
-                uint64_t lhs = (--interp.stack)->i64_u;
-                interp.stack++->i64_u = (lhs << rhs) | (lhs >> (64 - rhs));
-                break;
-            }
-            case WEB49_OPCODE_F32_ABS: {
-                interp.stack[-1].f32 = fabsf(interp.stack[-1].f32);
-                break;
-            }
-            case WEB49_OPCODE_F32_NEG: {
-                interp.stack[-1].f32 = -interp.stack[-1].f32;
-                break;
-            }
-            case WEB49_OPCODE_F32_CEIL: {
-                interp.stack[-1].f32 = ceilf(interp.stack[-1].f32);
-                break;
-            }
-            case WEB49_OPCODE_F32_FLOOR: {
-                interp.stack[-1].f32 = floorf(interp.stack[-1].f32);
-                break;
-            }
-            case WEB49_OPCODE_F32_TRUNC: {
-                interp.stack[-1].f32 = truncf(interp.stack[-1].f32);
-                break;
-            }
-            case WEB49_OPCODE_F32_NEAREST: {
-                interp.stack[-1].f32 = nearbyintf(interp.stack[-1].f32);
-                break;
-            }
-            case WEB49_OPCODE_F32_SQRT: {
-                interp.stack[-1].f32 = sqrt(interp.stack[-1].f32);
-                break;
-            }
-            case WEB49_OPCODE_F32_ADD: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->f32 = lhs + rhs;
-                break;
-            }
-            case WEB49_OPCODE_F32_SUB: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->f32 = lhs - rhs;
-                break;
-            }
-            case WEB49_OPCODE_F32_MUL: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->f32 = lhs * rhs;
-                break;
-            }
-            case WEB49_OPCODE_F32_DIV: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->f32 = lhs / rhs;
-                break;
-            }
-            case WEB49_OPCODE_F32_MIN: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->f32 = fminf(lhs, rhs);
-                break;
-            }
-            case WEB49_OPCODE_F32_MAX: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->f32 = fmaxf(lhs, rhs);
-                break;
-            }
-            case WEB49_OPCODE_F32_COPYSIGN: {
-                float rhs = (--interp.stack)->f32;
-                float lhs = (--interp.stack)->f32;
-                interp.stack++->f32 = copysignf(lhs, rhs);
-                break;
-            }
-            case WEB49_OPCODE_F64_ABS: {
-                interp.stack[-1].f64 = fabs(interp.stack[-1].f64);
-                break;
-            }
-            case WEB49_OPCODE_F64_NEG: {
-                interp.stack[-1].f64 = -interp.stack[-1].f64;
-                break;
-            }
-            case WEB49_OPCODE_F64_CEIL: {
-                interp.stack[-1].f64 = ceil(interp.stack[-1].f64);
-                break;
-            }
-            case WEB49_OPCODE_F64_FLOOR: {
-                interp.stack[-1].f64 = floor(interp.stack[-1].f64);
-                break;
-            }
-            case WEB49_OPCODE_F64_TRUNC: {
-                interp.stack[-1].f64 = trunc(interp.stack[-1].f64);
-                break;
-            }
-            case WEB49_OPCODE_F64_NEAREST: {
-                interp.stack[-1].f64 = nearbyint(interp.stack[-1].f64);
-                break;
-            }
-            case WEB49_OPCODE_F64_SQRT: {
-                interp.stack[-1].f64 = sqrt(interp.stack[-1].f64);
-                break;
-            }
-            case WEB49_OPCODE_F64_ADD: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->f64 = lhs + rhs;
-                break;
-            }
-            case WEB49_OPCODE_F64_SUB: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->f64 = lhs - rhs;
-                break;
-            }
-            case WEB49_OPCODE_F64_MUL: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->f64 = lhs * rhs;
-                break;
-            }
-            case WEB49_OPCODE_F64_DIV: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->f64 = lhs / rhs;
-                break;
-            }
-            case WEB49_OPCODE_F64_MIN: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->f64 = fmin(lhs, rhs);
-                break;
-            }
-            case WEB49_OPCODE_F64_MAX: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->f64 = fmax(lhs, rhs);
-                break;
-            }
-            case WEB49_OPCODE_F64_COPYSIGN: {
-                double rhs = (--interp.stack)->f64;
-                double lhs = (--interp.stack)->f64;
-                interp.stack++->f64 = copysign(lhs, rhs);
-                break;
-            }
-            case WEB49_OPCODE_I32_WRAP_I64: {
-                interp.stack[-1].i32_s = (int32_t)interp.stack[-1].i64_s;
-                break;
-            }
-            case WEB49_OPCODE_I32_TRUNC_S_F32: {
-                interp.stack[-1].i32_s = (int32_t)interp.stack[-1].f32;
-                break;
-            }
-            case WEB49_OPCODE_I32_TRUNC_U_F32: {
-                interp.stack[-1].i32_u = (uint32_t)interp.stack[-1].f32;
-                break;
-            }
-            case WEB49_OPCODE_I32_TRUNC_S_F64: {
-                interp.stack[-1].i32_s = (int32_t)interp.stack[-1].f64;
-                break;
-            }
-            case WEB49_OPCODE_I32_TRUNC_U_F64: {
-                interp.stack[-1].i32_u = (uint32_t)interp.stack[-1].f64;
-                break;
-            }
-            case WEB49_OPCODE_I64_EXTEND_S_I32: {
-                interp.stack[-1].i64_s = (int64_t)interp.stack[-1].i64_s;
-                break;
-            }
-            case WEB49_OPCODE_I64_EXTEND_U_I32: {
-                interp.stack[-1].i64_u = (uint64_t)interp.stack[-1].i64_u;
-                break;
-            }
-            case WEB49_OPCODE_I64_TRUNC_S_F32: {
-                interp.stack[-1].i64_s = (int64_t)interp.stack[-1].f32;
-                break;
-            }
-            case WEB49_OPCODE_I64_TRUNC_U_F32: {
-                interp.stack[-1].i64_u = (uint64_t)interp.stack[-1].f32;
-                break;
-            }
-            case WEB49_OPCODE_I64_TRUNC_S_F64: {
-                interp.stack[-1].i64_u = (int64_t)interp.stack[-1].f64;
-                break;
-            }
-            case WEB49_OPCODE_I64_TRUNC_U_F64: {
-                interp.stack[-1].i64_u = (uint64_t)interp.stack[-1].f64;
-                break;
-            }
-            case WEB49_OPCODE_F32_CONVERT_S_I32: {
-                interp.stack[-1].f32 = (float)interp.stack[-1].i32_s;
-                break;
-            }
-            case WEB49_OPCODE_F32_CONVERT_U_I32: {
-                interp.stack[-1].f32 = (float)interp.stack[-1].i32_u;
-                break;
-            }
-            case WEB49_OPCODE_F32_CONVERT_S_I64: {
-                interp.stack[-1].f32 = (float)interp.stack[-1].i64_s;
-                break;
-            }
-            case WEB49_OPCODE_F32_CONVERT_U_I64: {
-                interp.stack[-1].f32 = (float)interp.stack[-1].i64_u;
-                break;
-            }
-            case WEB49_OPCODE_F32_DEMOTE_F64: {
-                interp.stack[-1].f32 = (float)interp.stack[-1].f64;
-                break;
-            }
-            case WEB49_OPCODE_F64_CONVERT_S_I32: {
-                interp.stack[-1].f64 = (double)interp.stack[-1].i32_s;
-                break;
-            }
-            case WEB49_OPCODE_F64_CONVERT_U_I32: {
-                interp.stack[-1].f64 = (double)interp.stack[-1].i32_u;
-                break;
-            }
-            case WEB49_OPCODE_F64_CONVERT_S_I64: {
-                interp.stack[-1].f64 = (double)interp.stack[-1].i64_s;
-                break;
-            }
-            case WEB49_OPCODE_F64_CONVERT_U_I64: {
-                interp.stack[-1].f64 = (double)interp.stack[-1].i64_u;
-                break;
-            }
-            case WEB49_OPCODE_F64_PROMOTE_F32: {
-                interp.stack[-1].f64 = (double)interp.stack[-1].f32;
-            }
-            case WEB49_OPCODE_I32_REINTERPRET_F32: {
-                break;
-            }
-            case WEB49_OPCODE_I64_REINTERPRET_F64: {
-                break;
-            }
-            case WEB49_OPCODE_F32_REINTERPRET_I32: {
-                break;
-            }
-            case WEB49_OPCODE_F64_REINTERPRET_I64: {
-                break;
-            }
-            case WEB49_OPCODE_MEMORY_INIT: {
-                fprintf(stderr, "no impl for: %s\n", "memory_init");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_MEMORY_COPY: {
-                fprintf(stderr, "no impl for: %s\n", "memory_copy");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_MEMORY_FILL: {
-                fprintf(stderr, "no impl for: %s\n", "memory_fill");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_DATA_DROP: {
-                fprintf(stderr, "no impl for: %s\n", "data_drop");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_TABLE_INIT: {
-                fprintf(stderr, "no impl for: %s\n", "table_init");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_ELEM_DROP: {
-                fprintf(stderr, "no impl for: %s\n", "elem_drop");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_TABLE_COPY: {
-                fprintf(stderr, "no impl for: %s\n", "table_copy");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_BLOCK_RETURNS: {
-                int32_t ret = web49_interp_block_run(interp, head++->block);
-                if (ret >= 0) {
-                    return ret - 1;
-                }
-                *interp.stack++ = interp.returns[0];
-                break;
-            }
-            case WEB49_OPCODE_IF_RETURNS: {
-                int32_t ret;
-                if ((--interp.stack)->i32_u) {
-                    ret = web49_interp_block_run(interp, head[0].block);
-                } else {
-                    ret = web49_interp_block_run(interp, head[1].block);
-                }
-                if (ret >= 0) {
-                    return ret - 1;
-                }
-                *interp.stack++ = interp.returns[0];
-                head += 2;
-                break;
-            }
-            case WEB49_OPCODE_WASI_FD_SEEK: {
-                uint32_t fd = interp.locals[0].i32_u;
-                uint32_t offset = interp.locals[1].i32_u;
-                uint32_t wasi_whence = interp.locals[2].i32_u;
-                uint32_t result = interp.locals[3].i32_u;
-                int whence = -1;
-                switch (wasi_whence) {
-                    case 0:
-                        whence = SEEK_SET;
-                        break;
-                    case 1:
-                        whence = SEEK_CUR;
-                        break;
-                    case 2:
-                        whence = SEEK_END;
-                        break;
-                }
-                *(uint32_t *)&interp.memory[result] = lseek(fd, offset, whence);
-                interp.stack++->i32_u = 0;
-                break;
-            }
-            case WEB49_OPCODE_WASI_FD_FILESTAT_GET: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_filestat_get");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_PATH_FILESTAT_GET: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_path_filestat_get");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_ARGS_GET: {
-                uint32_t argv = interp.locals[0].i32_u;
-                uint32_t buf = interp.locals[1].i32_u;
+#define LABEL(name) DO_ ## name:
+#define NEXT() goto *ptrs[head++->opcode]
 
-                uint32_t argc = 0;
-                uint32_t head = buf;
-                for (size_t i = 0; interp.args[i] != NULL; i++) {
-                    *(uint32_t *)&interp.memory[argv + argc * 4] = head;
-                    size_t memlen = strlen(interp.args[i]) + 1;
-                    memcpy(&interp.memory[head], interp.args[i], memlen);
-                    head += memlen;
-                    argc += 1;
-                }
-                *(uint32_t *)&interp.memory[argv + argc * 4] = 0;
-                interp.stack++->i32_u = 0;
-                break;
-            }
-            case WEB49_OPCODE_WASI_ARGS_SIZES_GET: {
-                uint32_t argc = interp.locals[0].i32_u;
-                uint32_t buf_size = interp.locals[1].i32_u;
-                uint32_t buf_len = 0;
-                size_t i = 0;
-                while (interp.args[i] != NULL) {
-                    buf_len += strlen(interp.args[i]) + 1;
-                    i += 1;
-                }
-                *(uint32_t *)&interp.memory[argc] = i;
-                *(uint32_t *)&interp.memory[buf_size] = buf_len;
-                interp.stack++->i32_u = 0;
-                break;
-            }
-            case WEB49_OPCODE_WASI_CLOCK_RES_GET: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_clock_res_get");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_CLOCK_TIME_GET: {
-                uint32_t wasi_clock_id = interp.locals[0].i32_u;
-                uint64_t precision = interp.locals[1].i64_u;
-                uint32_t time = interp.locals[2].i32_u;
-                int clock_id = -1;
-                switch (wasi_clock_id) {
-                    case 0:
-                        clock_id = CLOCK_REALTIME;
-                        break;
-                    case 1:
-                        clock_id = CLOCK_MONOTONIC;
-                        break;
-                    case 2:
-                        clock_id = CLOCK_PROCESS_CPUTIME_ID;
-                        break;
-                    case 3:
-                        clock_id = CLOCK_THREAD_CPUTIME_ID;
-                        break;
-                }
-                struct timespec ts;
-                clock_gettime(clock_id, &ts);
-                *(uint64_t *)&interp.memory[time] = (uint64_t) ts.tv_sec * 1000000000 + (uint64_t) ts.tv_nsec;
-                // fprintf(stderr, "%zu / %zu\n", (size_t) *(uint64_t *)&interp.memory[time], (size_t) precision);
-                interp.stack++->i32_u = 0;
-                break;
-            }
-            case WEB49_OPCODE_WASI_ENVIRON_GET: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_environ_get");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_ENVIRON_SIZES_GET: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_environ_sizes_get");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_ADVISE: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_advise");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_ALLOCATE: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_allocate");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_CLOSE: {
-                uint32_t fd = interp.locals[0].i32_u;
-                interp.stack++->i32_u = close(fd);
-                break;
-            }
-            case WEB49_OPCODE_WASI_FD_DATASYNC: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_datasync");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_FDSTAT_GET: {
-                uint32_t fd = interp.locals[0].i32_u;
-                uint32_t fdstat = interp.locals[1].i32_u;
-                struct stat fd_stat;
-                fstat(fd, &fd_stat);
-                int mode = fd_stat.st_mode;
-                uint16_t fs_filetype = (S_ISBLK(mode) ? 1 : 0) | (S_ISCHR(mode) ? 2 : 0) | (S_ISDIR(mode) ? 3 : 0) | (S_ISREG(mode) ? 4 : 0) | (S_ISLNK(mode) ? 7 : 0);
-                uint16_t fs_flags = 0;
-                uint64_t fs_rights_base = UINT64_MAX;
-                uint64_t fs_rights_inheriting = UINT64_MAX;
-                if (fd <= 2) {
-                    fs_rights_base &= ~(4 | 32);
-                }
-                *(uint16_t *)&interp.memory[fdstat + 0] = fs_filetype;
-                *(uint16_t *)&interp.memory[fdstat + 2] = fs_flags;
-                *(uint32_t *)&interp.memory[fdstat + 4] = 0;
-                *(uint64_t *)&interp.memory[fdstat + 8] = fs_rights_base;
-                *(uint64_t *)&interp.memory[fdstat + 16] = fs_rights_inheriting;
-                interp.stack++->i32_u = 0;
-                break;
-            }
-            case WEB49_OPCODE_WASI_FD_FDSTAT_SET_FLAGS: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_fdstat_set_flags");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_FDSTAT_SET_RIGHTS: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_fdstat_set_rights");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_FILESTAT_SET_SIZE: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_filestat_set_size");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_FILESTAT_SET_TIMES: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_filestat_set_times");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_PREAD: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_pread");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_PRESTAT_GET: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_prestat_get");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_PRESTAT_DIR_NAME: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_prestat_dir_name");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_PWRITE: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_pwrite");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_READ: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_read");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_READDIR: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_readdir");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_RENUMBER: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_renumber");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_SYNC: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_sync");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_TELL: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_fd_tell");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_FD_WRITE: {
-                uint32_t fd = interp.locals[0].i32_u;
-                uint32_t iovs = interp.locals[1].i32_u;
-                uint32_t iovs_len = interp.locals[2].i32_u;
-                uint32_t nwritten = interp.locals[3].i32_u;
-                *(uint32_t *)&interp.memory[nwritten] = 0;
-                for (size_t i = 0; i < iovs_len; i++) {
-                    uint32_t ptr = *(uint32_t *)&interp.memory[iovs + i * 8];
-                    uint32_t len = *(uint32_t *)&interp.memory[iovs + i * 8 + 4];
-                    // fprintf(stderr, ".ptr = %zu, .len = %zu\n", (size_t) ptr, (size_t) len);
-                    *(uint32_t *)&interp.memory[nwritten] += write(fd, &interp.memory[ptr], len);
-                }
-                // interp.stack++->i32_u = *(uint32_t *)&interp.memory[nwritten];
-                interp.stack++->i32_u = 0;
-                break;
-            }
-            case WEB49_OPCODE_WASI_PATH_CREATE_DIRECTORY: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_path_create_directory");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_PATH_FILESTAT_SET_TIMES: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_path_filestat_set_times");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_PATH_LINK: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_path_link");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_PATH_OPEN: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_path_open");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_PATH_READLINK: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_path_readlink");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_PATH_REMOVE_DIRECTORY: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_path_remove_directory");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_PATH_RENAME: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_path_rename");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_PATH_SYMLINK: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_path_symlink");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_PATH_UNLINK_FILE: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_path_unlink_file");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_POLL_ONEOFF: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_poll_oneoff");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_PROC_EXIT: {
-                exit(interp.locals[0].i32_u);
-                break;
-            }
-            case WEB49_OPCODE_WASI_PROC_RAISE: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_proc_raise");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_RANDOM_GET: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_random_get");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_SCHED_YIELD: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_sched_yield");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_SOCK_RECV: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_sock_recv");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_SOCK_SEND: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_sock_send");
-                __builtin_trap();
-            }
-            case WEB49_OPCODE_WASI_SOCK_SHUTDOWN: {
-                fprintf(stderr, "no impl for: wasi %s", "wasi_sock_shutdown");
-                __builtin_trap();
-            }
-            default:
-                fprintf(stderr, "unhandled: %s (opcode: %zu) @%zu\n", web49_interp_opcode_to_name(head[-1].opcode), (size_t)head[-1].opcode, &head[-1] - block->code);
-                __builtin_trap();
+int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *block) {
+    static void *ptrs[WEB49_MAX_OPCODE_INTERP_NUM] = {
+        [WEB49_OPCODE_UNREACHABLE] = &&DO_WEB49_OPCODE_UNREACHABLE,
+        [WEB49_OPCODE_NOP] = &&DO_WEB49_OPCODE_NOP,
+        [WEB49_OPCODE_BLOCK] = &&DO_WEB49_OPCODE_BLOCK,
+        [WEB49_OPCODE_LOOP] = &&DO_WEB49_OPCODE_LOOP,
+        [WEB49_OPCODE_IF] = &&DO_WEB49_OPCODE_IF,
+        [WEB49_OPCODE_ELSE] = &&DO_WEB49_OPCODE_ELSE,
+        [WEB49_OPCODE_END] = &&DO_WEB49_OPCODE_END,
+        [WEB49_OPCODE_BR] = &&DO_WEB49_OPCODE_BR,
+        [WEB49_OPCODE_BR_IF] = &&DO_WEB49_OPCODE_BR_IF,
+        [WEB49_OPCODE_BR_TABLE] = &&DO_WEB49_OPCODE_BR_TABLE,
+        [WEB49_OPCODE_RETURN] = &&DO_WEB49_OPCODE_RETURN,
+        [WEB49_OPCODE_CALL] = &&DO_WEB49_OPCODE_CALL,
+        [WEB49_OPCODE_CALL_INDIRECT] = &&DO_WEB49_OPCODE_CALL_INDIRECT,
+        [WEB49_OPCODE_DROP] = &&DO_WEB49_OPCODE_DROP,
+        [WEB49_OPCODE_SELECT] = &&DO_WEB49_OPCODE_SELECT,
+        [WEB49_OPCODE_GET_LOCAL] = &&DO_WEB49_OPCODE_GET_LOCAL,
+        [WEB49_OPCODE_SET_LOCAL] = &&DO_WEB49_OPCODE_SET_LOCAL,
+        [WEB49_OPCODE_TEE_LOCAL] = &&DO_WEB49_OPCODE_TEE_LOCAL,
+        [WEB49_OPCODE_GET_GLOBAL] = &&DO_WEB49_OPCODE_GET_GLOBAL,
+        [WEB49_OPCODE_SET_GLOBAL] = &&DO_WEB49_OPCODE_SET_GLOBAL,
+        [WEB49_OPCODE_I32_LOAD] = &&DO_WEB49_OPCODE_I32_LOAD,
+        [WEB49_OPCODE_I64_LOAD] = &&DO_WEB49_OPCODE_I64_LOAD,
+        [WEB49_OPCODE_F32_LOAD] = &&DO_WEB49_OPCODE_F32_LOAD,
+        [WEB49_OPCODE_F64_LOAD] = &&DO_WEB49_OPCODE_F64_LOAD,
+        [WEB49_OPCODE_I32_LOAD8_S] = &&DO_WEB49_OPCODE_I32_LOAD8_S,
+        [WEB49_OPCODE_I32_LOAD8_U] = &&DO_WEB49_OPCODE_I32_LOAD8_U,
+        [WEB49_OPCODE_I32_LOAD16_S] = &&DO_WEB49_OPCODE_I32_LOAD16_S,
+        [WEB49_OPCODE_I32_LOAD16_U] = &&DO_WEB49_OPCODE_I32_LOAD16_U,
+        [WEB49_OPCODE_I64_LOAD8_S] = &&DO_WEB49_OPCODE_I64_LOAD8_S,
+        [WEB49_OPCODE_I64_LOAD8_U] = &&DO_WEB49_OPCODE_I64_LOAD8_U,
+        [WEB49_OPCODE_I64_LOAD16_S] = &&DO_WEB49_OPCODE_I64_LOAD16_S,
+        [WEB49_OPCODE_I64_LOAD16_U] = &&DO_WEB49_OPCODE_I64_LOAD16_U,
+        [WEB49_OPCODE_I64_LOAD32_S] = &&DO_WEB49_OPCODE_I64_LOAD32_S,
+        [WEB49_OPCODE_I64_LOAD32_U] = &&DO_WEB49_OPCODE_I64_LOAD32_U,
+        [WEB49_OPCODE_I32_STORE] = &&DO_WEB49_OPCODE_I32_STORE,
+        [WEB49_OPCODE_I64_STORE] = &&DO_WEB49_OPCODE_I64_STORE,
+        [WEB49_OPCODE_F32_STORE] = &&DO_WEB49_OPCODE_F32_STORE,
+        [WEB49_OPCODE_F64_STORE] = &&DO_WEB49_OPCODE_F64_STORE,
+        [WEB49_OPCODE_I32_STORE8] = &&DO_WEB49_OPCODE_I32_STORE8,
+        [WEB49_OPCODE_I32_STORE16] = &&DO_WEB49_OPCODE_I32_STORE16,
+        [WEB49_OPCODE_I64_STORE8] = &&DO_WEB49_OPCODE_I64_STORE8,
+        [WEB49_OPCODE_I64_STORE16] = &&DO_WEB49_OPCODE_I64_STORE16,
+        [WEB49_OPCODE_I64_STORE32] = &&DO_WEB49_OPCODE_I64_STORE32,
+        [WEB49_OPCODE_MEMORY_SIZE] = &&DO_WEB49_OPCODE_MEMORY_SIZE,
+        [WEB49_OPCODE_MEMORY_GROW] = &&DO_WEB49_OPCODE_MEMORY_GROW,
+        [WEB49_OPCODE_I32_CONST] = &&DO_WEB49_OPCODE_I32_CONST,
+        [WEB49_OPCODE_I64_CONST] = &&DO_WEB49_OPCODE_I64_CONST,
+        [WEB49_OPCODE_F32_CONST] = &&DO_WEB49_OPCODE_F32_CONST,
+        [WEB49_OPCODE_F64_CONST] = &&DO_WEB49_OPCODE_F64_CONST,
+        [WEB49_OPCODE_I32_EQZ] = &&DO_WEB49_OPCODE_I32_EQZ,
+        [WEB49_OPCODE_I32_EQ] = &&DO_WEB49_OPCODE_I32_EQ,
+        [WEB49_OPCODE_I32_NE] = &&DO_WEB49_OPCODE_I32_NE,
+        [WEB49_OPCODE_I32_LT_S] = &&DO_WEB49_OPCODE_I32_LT_S,
+        [WEB49_OPCODE_I32_LT_U] = &&DO_WEB49_OPCODE_I32_LT_U,
+        [WEB49_OPCODE_I32_GT_S] = &&DO_WEB49_OPCODE_I32_GT_S,
+        [WEB49_OPCODE_I32_GT_U] = &&DO_WEB49_OPCODE_I32_GT_U,
+        [WEB49_OPCODE_I32_LE_S] = &&DO_WEB49_OPCODE_I32_LE_S,
+        [WEB49_OPCODE_I32_LE_U] = &&DO_WEB49_OPCODE_I32_LE_U,
+        [WEB49_OPCODE_I32_GE_S] = &&DO_WEB49_OPCODE_I32_GE_S,
+        [WEB49_OPCODE_I32_GE_U] = &&DO_WEB49_OPCODE_I32_GE_U,
+        [WEB49_OPCODE_I64_EQZ] = &&DO_WEB49_OPCODE_I64_EQZ,
+        [WEB49_OPCODE_I64_EQ] = &&DO_WEB49_OPCODE_I64_EQ,
+        [WEB49_OPCODE_I64_NE] = &&DO_WEB49_OPCODE_I64_NE,
+        [WEB49_OPCODE_I64_LT_S] = &&DO_WEB49_OPCODE_I64_LT_S,
+        [WEB49_OPCODE_I64_LT_U] = &&DO_WEB49_OPCODE_I64_LT_U,
+        [WEB49_OPCODE_I64_GT_S] = &&DO_WEB49_OPCODE_I64_GT_S,
+        [WEB49_OPCODE_I64_GT_U] = &&DO_WEB49_OPCODE_I64_GT_U,
+        [WEB49_OPCODE_I64_LE_S] = &&DO_WEB49_OPCODE_I64_LE_S,
+        [WEB49_OPCODE_I64_LE_U] = &&DO_WEB49_OPCODE_I64_LE_U,
+        [WEB49_OPCODE_I64_GE_S] = &&DO_WEB49_OPCODE_I64_GE_S,
+        [WEB49_OPCODE_I64_GE_U] = &&DO_WEB49_OPCODE_I64_GE_U,
+        [WEB49_OPCODE_F32_EQ] = &&DO_WEB49_OPCODE_F32_EQ,
+        [WEB49_OPCODE_F32_NE] = &&DO_WEB49_OPCODE_F32_NE,
+        [WEB49_OPCODE_F32_LT] = &&DO_WEB49_OPCODE_F32_LT,
+        [WEB49_OPCODE_F32_GT] = &&DO_WEB49_OPCODE_F32_GT,
+        [WEB49_OPCODE_F32_LE] = &&DO_WEB49_OPCODE_F32_LE,
+        [WEB49_OPCODE_F32_GE] = &&DO_WEB49_OPCODE_F32_GE,
+        [WEB49_OPCODE_F64_EQ] = &&DO_WEB49_OPCODE_F64_EQ,
+        [WEB49_OPCODE_F64_NE] = &&DO_WEB49_OPCODE_F64_NE,
+        [WEB49_OPCODE_F64_LT] = &&DO_WEB49_OPCODE_F64_LT,
+        [WEB49_OPCODE_F64_GT] = &&DO_WEB49_OPCODE_F64_GT,
+        [WEB49_OPCODE_F64_LE] = &&DO_WEB49_OPCODE_F64_LE,
+        [WEB49_OPCODE_F64_GE] = &&DO_WEB49_OPCODE_F64_GE,
+        [WEB49_OPCODE_I32_CLZ] = &&DO_WEB49_OPCODE_I32_CLZ,
+        [WEB49_OPCODE_I32_CTZ] = &&DO_WEB49_OPCODE_I32_CTZ,
+        [WEB49_OPCODE_I32_POPCNT] = &&DO_WEB49_OPCODE_I32_POPCNT,
+        [WEB49_OPCODE_I32_ADD] = &&DO_WEB49_OPCODE_I32_ADD,
+        [WEB49_OPCODE_I32_SUB] = &&DO_WEB49_OPCODE_I32_SUB,
+        [WEB49_OPCODE_I32_MUL] = &&DO_WEB49_OPCODE_I32_MUL,
+        [WEB49_OPCODE_I32_DIV_S] = &&DO_WEB49_OPCODE_I32_DIV_S,
+        [WEB49_OPCODE_I32_DIV_U] = &&DO_WEB49_OPCODE_I32_DIV_U,
+        [WEB49_OPCODE_I32_REM_S] = &&DO_WEB49_OPCODE_I32_REM_S,
+        [WEB49_OPCODE_I32_REM_U] = &&DO_WEB49_OPCODE_I32_REM_U,
+        [WEB49_OPCODE_I32_AND] = &&DO_WEB49_OPCODE_I32_AND,
+        [WEB49_OPCODE_I32_OR] = &&DO_WEB49_OPCODE_I32_OR,
+        [WEB49_OPCODE_I32_XOR] = &&DO_WEB49_OPCODE_I32_XOR,
+        [WEB49_OPCODE_I32_SHL] = &&DO_WEB49_OPCODE_I32_SHL,
+        [WEB49_OPCODE_I32_SHR_S] = &&DO_WEB49_OPCODE_I32_SHR_S,
+        [WEB49_OPCODE_I32_SHR_U] = &&DO_WEB49_OPCODE_I32_SHR_U,
+        [WEB49_OPCODE_I32_ROTL] = &&DO_WEB49_OPCODE_I32_ROTL,
+        [WEB49_OPCODE_I32_ROTR] = &&DO_WEB49_OPCODE_I32_ROTR,
+        [WEB49_OPCODE_I64_CLZ] = &&DO_WEB49_OPCODE_I64_CLZ,
+        [WEB49_OPCODE_I64_CTZ] = &&DO_WEB49_OPCODE_I64_CTZ,
+        [WEB49_OPCODE_I64_POPCNT] = &&DO_WEB49_OPCODE_I64_POPCNT,
+        [WEB49_OPCODE_I64_ADD] = &&DO_WEB49_OPCODE_I64_ADD,
+        [WEB49_OPCODE_I64_SUB] = &&DO_WEB49_OPCODE_I64_SUB,
+        [WEB49_OPCODE_I64_MUL] = &&DO_WEB49_OPCODE_I64_MUL,
+        [WEB49_OPCODE_I64_DIV_S] = &&DO_WEB49_OPCODE_I64_DIV_S,
+        [WEB49_OPCODE_I64_DIV_U] = &&DO_WEB49_OPCODE_I64_DIV_U,
+        [WEB49_OPCODE_I64_REM_S] = &&DO_WEB49_OPCODE_I64_REM_S,
+        [WEB49_OPCODE_I64_REM_U] = &&DO_WEB49_OPCODE_I64_REM_U,
+        [WEB49_OPCODE_I64_AND] = &&DO_WEB49_OPCODE_I64_AND,
+        [WEB49_OPCODE_I64_OR] = &&DO_WEB49_OPCODE_I64_OR,
+        [WEB49_OPCODE_I64_XOR] = &&DO_WEB49_OPCODE_I64_XOR,
+        [WEB49_OPCODE_I64_SHL] = &&DO_WEB49_OPCODE_I64_SHL,
+        [WEB49_OPCODE_I64_SHR_S] = &&DO_WEB49_OPCODE_I64_SHR_S,
+        [WEB49_OPCODE_I64_SHR_U] = &&DO_WEB49_OPCODE_I64_SHR_U,
+        [WEB49_OPCODE_I64_ROTL] = &&DO_WEB49_OPCODE_I64_ROTL,
+        [WEB49_OPCODE_I64_ROTR] = &&DO_WEB49_OPCODE_I64_ROTR,
+        [WEB49_OPCODE_F32_ABS] = &&DO_WEB49_OPCODE_F32_ABS,
+        [WEB49_OPCODE_F32_NEG] = &&DO_WEB49_OPCODE_F32_NEG,
+        [WEB49_OPCODE_F32_CEIL] = &&DO_WEB49_OPCODE_F32_CEIL,
+        [WEB49_OPCODE_F32_FLOOR] = &&DO_WEB49_OPCODE_F32_FLOOR,
+        [WEB49_OPCODE_F32_TRUNC] = &&DO_WEB49_OPCODE_F32_TRUNC,
+        [WEB49_OPCODE_F32_NEAREST] = &&DO_WEB49_OPCODE_F32_NEAREST,
+        [WEB49_OPCODE_F32_SQRT] = &&DO_WEB49_OPCODE_F32_SQRT,
+        [WEB49_OPCODE_F32_ADD] = &&DO_WEB49_OPCODE_F32_ADD,
+        [WEB49_OPCODE_F32_SUB] = &&DO_WEB49_OPCODE_F32_SUB,
+        [WEB49_OPCODE_F32_MUL] = &&DO_WEB49_OPCODE_F32_MUL,
+        [WEB49_OPCODE_F32_DIV] = &&DO_WEB49_OPCODE_F32_DIV,
+        [WEB49_OPCODE_F32_MIN] = &&DO_WEB49_OPCODE_F32_MIN,
+        [WEB49_OPCODE_F32_MAX] = &&DO_WEB49_OPCODE_F32_MAX,
+        [WEB49_OPCODE_F32_COPYSIGN] = &&DO_WEB49_OPCODE_F32_COPYSIGN,
+        [WEB49_OPCODE_F64_ABS] = &&DO_WEB49_OPCODE_F64_ABS,
+        [WEB49_OPCODE_F64_NEG] = &&DO_WEB49_OPCODE_F64_NEG,
+        [WEB49_OPCODE_F64_CEIL] = &&DO_WEB49_OPCODE_F64_CEIL,
+        [WEB49_OPCODE_F64_FLOOR] = &&DO_WEB49_OPCODE_F64_FLOOR,
+        [WEB49_OPCODE_F64_TRUNC] = &&DO_WEB49_OPCODE_F64_TRUNC,
+        [WEB49_OPCODE_F64_NEAREST] = &&DO_WEB49_OPCODE_F64_NEAREST,
+        [WEB49_OPCODE_F64_SQRT] = &&DO_WEB49_OPCODE_F64_SQRT,
+        [WEB49_OPCODE_F64_ADD] = &&DO_WEB49_OPCODE_F64_ADD,
+        [WEB49_OPCODE_F64_SUB] = &&DO_WEB49_OPCODE_F64_SUB,
+        [WEB49_OPCODE_F64_MUL] = &&DO_WEB49_OPCODE_F64_MUL,
+        [WEB49_OPCODE_F64_DIV] = &&DO_WEB49_OPCODE_F64_DIV,
+        [WEB49_OPCODE_F64_MIN] = &&DO_WEB49_OPCODE_F64_MIN,
+        [WEB49_OPCODE_F64_MAX] = &&DO_WEB49_OPCODE_F64_MAX,
+        [WEB49_OPCODE_F64_COPYSIGN] = &&DO_WEB49_OPCODE_F64_COPYSIGN,
+        [WEB49_OPCODE_I32_WRAP_I64] = &&DO_WEB49_OPCODE_I32_WRAP_I64,
+        [WEB49_OPCODE_I32_TRUNC_S_F32] = &&DO_WEB49_OPCODE_I32_TRUNC_S_F32,
+        [WEB49_OPCODE_I32_TRUNC_U_F32] = &&DO_WEB49_OPCODE_I32_TRUNC_U_F32,
+        [WEB49_OPCODE_I32_TRUNC_S_F64] = &&DO_WEB49_OPCODE_I32_TRUNC_S_F64,
+        [WEB49_OPCODE_I32_TRUNC_U_F64] = &&DO_WEB49_OPCODE_I32_TRUNC_U_F64,
+        [WEB49_OPCODE_I64_EXTEND_S_I32] = &&DO_WEB49_OPCODE_I64_EXTEND_S_I32,
+        [WEB49_OPCODE_I64_EXTEND_U_I32] = &&DO_WEB49_OPCODE_I64_EXTEND_U_I32,
+        [WEB49_OPCODE_I64_TRUNC_S_F32] = &&DO_WEB49_OPCODE_I64_TRUNC_S_F32,
+        [WEB49_OPCODE_I64_TRUNC_U_F32] = &&DO_WEB49_OPCODE_I64_TRUNC_U_F32,
+        [WEB49_OPCODE_I64_TRUNC_S_F64] = &&DO_WEB49_OPCODE_I64_TRUNC_S_F64,
+        [WEB49_OPCODE_I64_TRUNC_U_F64] = &&DO_WEB49_OPCODE_I64_TRUNC_U_F64,
+        [WEB49_OPCODE_F32_CONVERT_S_I32] = &&DO_WEB49_OPCODE_F32_CONVERT_S_I32,
+        [WEB49_OPCODE_F32_CONVERT_U_I32] = &&DO_WEB49_OPCODE_F32_CONVERT_U_I32,
+        [WEB49_OPCODE_F32_CONVERT_S_I64] = &&DO_WEB49_OPCODE_F32_CONVERT_S_I64,
+        [WEB49_OPCODE_F32_CONVERT_U_I64] = &&DO_WEB49_OPCODE_F32_CONVERT_U_I64,
+        [WEB49_OPCODE_F32_DEMOTE_F64] = &&DO_WEB49_OPCODE_F32_DEMOTE_F64,
+        [WEB49_OPCODE_F64_CONVERT_S_I32] = &&DO_WEB49_OPCODE_F64_CONVERT_S_I32,
+        [WEB49_OPCODE_F64_CONVERT_U_I32] = &&DO_WEB49_OPCODE_F64_CONVERT_U_I32,
+        [WEB49_OPCODE_F64_CONVERT_S_I64] = &&DO_WEB49_OPCODE_F64_CONVERT_S_I64,
+        [WEB49_OPCODE_F64_CONVERT_U_I64] = &&DO_WEB49_OPCODE_F64_CONVERT_U_I64,
+        [WEB49_OPCODE_F64_PROMOTE_F32] = &&DO_WEB49_OPCODE_F64_PROMOTE_F32,
+        [WEB49_OPCODE_I32_REINTERPRET_F32] = &&DO_WEB49_OPCODE_I32_REINTERPRET_F32,
+        [WEB49_OPCODE_I64_REINTERPRET_F64] = &&DO_WEB49_OPCODE_I64_REINTERPRET_F64,
+        [WEB49_OPCODE_F32_REINTERPRET_I32] = &&DO_WEB49_OPCODE_F32_REINTERPRET_I32,
+        [WEB49_OPCODE_F64_REINTERPRET_I64] = &&DO_WEB49_OPCODE_F64_REINTERPRET_I64,
+        [WEB49_OPCODE_MEMORY_INIT] = &&DO_WEB49_OPCODE_MEMORY_INIT,
+        [WEB49_OPCODE_MEMORY_COPY] = &&DO_WEB49_OPCODE_MEMORY_COPY,
+        [WEB49_OPCODE_MEMORY_FILL] = &&DO_WEB49_OPCODE_MEMORY_FILL,
+        [WEB49_OPCODE_DATA_DROP] = &&DO_WEB49_OPCODE_DATA_DROP,
+        [WEB49_OPCODE_TABLE_INIT] = &&DO_WEB49_OPCODE_TABLE_INIT,
+        [WEB49_OPCODE_ELEM_DROP] = &&DO_WEB49_OPCODE_ELEM_DROP,
+        [WEB49_OPCODE_TABLE_COPY] = &&DO_WEB49_OPCODE_TABLE_COPY,
+        [WEB49_OPCODE_BLOCK_RETURNS] = &&DO_WEB49_OPCODE_BLOCK_RETURNS,
+        [WEB49_OPCODE_IF_RETURNS] = &&DO_WEB49_OPCODE_IF_RETURNS,
+        [WEB49_OPCODE_WASI_FD_SEEK] = &&DO_WEB49_OPCODE_WASI_FD_SEEK,
+        [WEB49_OPCODE_WASI_FD_FILESTAT_GET] = &&DO_WEB49_OPCODE_WASI_FD_FILESTAT_GET,
+        [WEB49_OPCODE_WASI_PATH_FILESTAT_GET] = &&DO_WEB49_OPCODE_WASI_PATH_FILESTAT_GET,
+        [WEB49_OPCODE_WASI_ARGS_GET] = &&DO_WEB49_OPCODE_WASI_ARGS_GET,
+        [WEB49_OPCODE_WASI_ARGS_SIZES_GET] = &&DO_WEB49_OPCODE_WASI_ARGS_SIZES_GET,
+        [WEB49_OPCODE_WASI_CLOCK_RES_GET] = &&DO_WEB49_OPCODE_WASI_CLOCK_RES_GET,
+        [WEB49_OPCODE_WASI_CLOCK_TIME_GET] = &&DO_WEB49_OPCODE_WASI_CLOCK_TIME_GET,
+        [WEB49_OPCODE_WASI_ENVIRON_GET] = &&DO_WEB49_OPCODE_WASI_ENVIRON_GET,
+        [WEB49_OPCODE_WASI_ENVIRON_SIZES_GET] = &&DO_WEB49_OPCODE_WASI_ENVIRON_SIZES_GET,
+        [WEB49_OPCODE_WASI_FD_ADVISE] = &&DO_WEB49_OPCODE_WASI_FD_ADVISE,
+        [WEB49_OPCODE_WASI_FD_ALLOCATE] = &&DO_WEB49_OPCODE_WASI_FD_ALLOCATE,
+        [WEB49_OPCODE_WASI_FD_CLOSE] = &&DO_WEB49_OPCODE_WASI_FD_CLOSE,
+        [WEB49_OPCODE_WASI_FD_DATASYNC] = &&DO_WEB49_OPCODE_WASI_FD_DATASYNC,
+        [WEB49_OPCODE_WASI_FD_FDSTAT_GET] = &&DO_WEB49_OPCODE_WASI_FD_FDSTAT_GET,
+        [WEB49_OPCODE_WASI_FD_FDSTAT_SET_FLAGS] = &&DO_WEB49_OPCODE_WASI_FD_FDSTAT_SET_FLAGS,
+        [WEB49_OPCODE_WASI_FD_FDSTAT_SET_RIGHTS] = &&DO_WEB49_OPCODE_WASI_FD_FDSTAT_SET_RIGHTS,
+        [WEB49_OPCODE_WASI_FD_FILESTAT_SET_SIZE] = &&DO_WEB49_OPCODE_WASI_FD_FILESTAT_SET_SIZE,
+        [WEB49_OPCODE_WASI_FD_FILESTAT_SET_TIMES] = &&DO_WEB49_OPCODE_WASI_FD_FILESTAT_SET_TIMES,
+        [WEB49_OPCODE_WASI_FD_PREAD] = &&DO_WEB49_OPCODE_WASI_FD_PREAD,
+        [WEB49_OPCODE_WASI_FD_PRESTAT_GET] = &&DO_WEB49_OPCODE_WASI_FD_PRESTAT_GET,
+        [WEB49_OPCODE_WASI_FD_PRESTAT_DIR_NAME] = &&DO_WEB49_OPCODE_WASI_FD_PRESTAT_DIR_NAME,
+        [WEB49_OPCODE_WASI_FD_PWRITE] = &&DO_WEB49_OPCODE_WASI_FD_PWRITE,
+        [WEB49_OPCODE_WASI_FD_READ] = &&DO_WEB49_OPCODE_WASI_FD_READ,
+        [WEB49_OPCODE_WASI_FD_READDIR] = &&DO_WEB49_OPCODE_WASI_FD_READDIR,
+        [WEB49_OPCODE_WASI_FD_RENUMBER] = &&DO_WEB49_OPCODE_WASI_FD_RENUMBER,
+        [WEB49_OPCODE_WASI_FD_SYNC] = &&DO_WEB49_OPCODE_WASI_FD_SYNC,
+        [WEB49_OPCODE_WASI_FD_TELL] = &&DO_WEB49_OPCODE_WASI_FD_TELL,
+        [WEB49_OPCODE_WASI_FD_WRITE] = &&DO_WEB49_OPCODE_WASI_FD_WRITE,
+        [WEB49_OPCODE_WASI_PATH_CREATE_DIRECTORY] = &&DO_WEB49_OPCODE_WASI_PATH_CREATE_DIRECTORY,
+        [WEB49_OPCODE_WASI_PATH_FILESTAT_SET_TIMES] = &&DO_WEB49_OPCODE_WASI_PATH_FILESTAT_SET_TIMES,
+        [WEB49_OPCODE_WASI_PATH_LINK] = &&DO_WEB49_OPCODE_WASI_PATH_LINK,
+        [WEB49_OPCODE_WASI_PATH_OPEN] = &&DO_WEB49_OPCODE_WASI_PATH_OPEN,
+        [WEB49_OPCODE_WASI_PATH_READLINK] = &&DO_WEB49_OPCODE_WASI_PATH_READLINK,
+        [WEB49_OPCODE_WASI_PATH_REMOVE_DIRECTORY] = &&DO_WEB49_OPCODE_WASI_PATH_REMOVE_DIRECTORY,
+        [WEB49_OPCODE_WASI_PATH_RENAME] = &&DO_WEB49_OPCODE_WASI_PATH_RENAME,
+        [WEB49_OPCODE_WASI_PATH_SYMLINK] = &&DO_WEB49_OPCODE_WASI_PATH_SYMLINK,
+        [WEB49_OPCODE_WASI_PATH_UNLINK_FILE] = &&DO_WEB49_OPCODE_WASI_PATH_UNLINK_FILE,
+        [WEB49_OPCODE_WASI_POLL_ONEOFF] = &&DO_WEB49_OPCODE_WASI_POLL_ONEOFF,
+        [WEB49_OPCODE_WASI_PROC_EXIT] = &&DO_WEB49_OPCODE_WASI_PROC_EXIT,
+        [WEB49_OPCODE_WASI_PROC_RAISE] = &&DO_WEB49_OPCODE_WASI_PROC_RAISE,
+        [WEB49_OPCODE_WASI_RANDOM_GET] = &&DO_WEB49_OPCODE_WASI_RANDOM_GET,
+        [WEB49_OPCODE_WASI_SCHED_YIELD] = &&DO_WEB49_OPCODE_WASI_SCHED_YIELD,
+        [WEB49_OPCODE_WASI_SOCK_RECV] = &&DO_WEB49_OPCODE_WASI_SOCK_RECV,
+        [WEB49_OPCODE_WASI_SOCK_SEND] = &&DO_WEB49_OPCODE_WASI_SOCK_SEND,
+        [WEB49_OPCODE_WASI_SOCK_SHUTDOWN] = &&DO_WEB49_OPCODE_WASI_SOCK_SHUTDOWN,
+    };
+    if (block->code == NULL) {
+        web49_section_code_entry_t *entry = block->entry;
+        web49_interp_instr_buf_t buf;
+        buf.head = 0;
+        buf.len = entry->num_instrs;
+        buf.instrs = entry->instrs;
+        web49_read_block_state_t state;
+        state.instrs = buf;
+        web49_interp_read_block(&state, block);
+    }
+    web49_interp_opcode_t *head = block->code;
+    NEXT();
+    LABEL(WEB49_OPCODE_UNREACHABLE) {
+        fprintf(stderr, "unreachable was reached\n");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_NOP) {
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_BLOCK) {
+        int32_t ret = web49_interp_block_run(interp, head++->block);
+        if (ret >= 0) {
+            return ret - 1;
         }
-        // fprintf(stderr, "- OP\n");
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_LOOP) {
+        while (true) {
+            int32_t ret = web49_interp_block_run(interp, head->block);
+            if (ret == -1) {
+                continue;
+            } else if (ret >= 0) {
+                return ret - 1;
+            } else {
+                break;
+            }
+        }
+        head += 1;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_IF) {
+        int32_t ret;
+        if ((--interp.stack)->i32_u) {
+            ret = web49_interp_block_run(interp, head[0].block);
+        } else {
+            ret = web49_interp_block_run(interp, head[1].block);
+        }
+        if (ret >= 0) {
+            return ret - 1;
+        }
+        head += 2;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_ELSE) {
+        fprintf(stderr, "no impl for: %s\n", "else");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_END) {
+        interp.returns[0] = interp.stack[-1];
+        return INT32_MIN;
+    }
+    LABEL(WEB49_OPCODE_BR) {
+        interp.returns[0] = interp.stack[-1];
+        return head[0].data.i32_u - 1;
+    }
+    LABEL(WEB49_OPCODE_BR_IF) {
+        if ((--interp.stack)->i32_u) {
+            interp.returns[0] = interp.stack[-1];
+            return head[0].data.i32_u - 1;
+        }
+        head += 1;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_BR_TABLE) {
+        web49_interp_data_t data = *--interp.stack;
+        uint32_t max = head++->data.i32_u;
+        interp.returns[0] = interp.stack[-1];
+        if (data.i32_u >= max) {
+            return head[max].data.i32_u - 1;
+        } else {
+            return head[data.i32_u].data.i32_u - 1;
+        }
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_RETURN) {
+        interp.returns[0] = interp.stack[-1];
+        return INT32_MAX;
+    }
+    LABEL(WEB49_OPCODE_CALL) {
+        uint32_t funcno = head++->data.i32_u;
+        web49_interp_block_t *func = &interp.funcs[funcno];
+        web49_interp_data_t *old_locals = interp.locals;
+        web49_interp_data_t *old_stack = interp.stack;
+        interp.locals = interp.stack - func->nparams;
+        memset(interp.stack, 0, func->nlocals * sizeof(web49_interp_data_t));
+        interp.stack += func->nlocals;
+        web49_interp_block_run(interp, func);
+        interp.stack = old_stack - func->nparams;
+        switch (func->nreturns) {
+            case 0:
+                break;
+            case 1:
+                *interp.stack++ = interp.returns[0];
+                break;
+            default:
+                __builtin_unreachable();
+        }
+        interp.locals = old_locals;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_CALL_INDIRECT) {
+        uint32_t funcno = (--interp.stack)->i32_u;
+        web49_interp_block_t *func = interp.table[funcno];
+        web49_interp_data_t *old_locals = interp.locals;
+        web49_interp_data_t *old_stack = interp.stack;
+        interp.locals = interp.stack - func->nparams;
+        memset(interp.stack, 0, func->nlocals * sizeof(web49_interp_data_t));
+        interp.stack += func->nlocals;
+        web49_interp_block_run(interp, func);
+        interp.stack = old_stack - func->nparams;
+        switch (func->nreturns) {
+            case 0:
+                break;
+            case 1:
+                *interp.stack++ = interp.returns[0];
+                break;
+            default:
+                __builtin_unreachable();
+        }
+        interp.locals = old_locals;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_DROP) {
+        interp.stack -= 1;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_SELECT) {
+        web49_interp_data_t cond = *--interp.stack;
+        web49_interp_data_t iff = *--interp.stack;
+        web49_interp_data_t ift = *--interp.stack;
+        if (cond.i32_u) {
+            *interp.stack++ = ift;
+        } else {
+            *interp.stack++ = iff;
+        }
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_GET_LOCAL) {
+        *interp.stack++ = interp.locals[head++->data.i32_u];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_SET_LOCAL) {
+        interp.locals[head++->data.i32_u] = *--interp.stack;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_TEE_LOCAL) {
+        interp.locals[head++->data.i32_u] = interp.stack[-1];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_GET_GLOBAL) {
+        *interp.stack++ = interp.globals[head++->data.i32_u];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_SET_GLOBAL) {
+        interp.globals[head++->data.i32_u] = *--interp.stack;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LOAD) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->i32_u = *(uint32_t *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_LOAD) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->i64_u = *(uint64_t *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_LOAD) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->f32 = *(float *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_LOAD) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->f64 = *(double *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LOAD8_S) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->i32_s = (int32_t) * (int8_t *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LOAD8_U) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->i32_u = (uint32_t) * (uint8_t *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LOAD16_S) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->i32_s = (int32_t) * (int16_t *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LOAD16_U) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->i32_u = (uint32_t) * (uint16_t *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_LOAD8_S) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->i64_s = (int64_t) * (int8_t *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_LOAD8_U) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->i64_u = (uint64_t) * (uint8_t *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_LOAD16_S) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->i64_s = (int64_t) * (int16_t *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_LOAD16_U) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->i64_u = (uint64_t) * (uint16_t *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_LOAD32_S) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->i64_s = (int64_t) * (int32_t *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_LOAD32_U) {
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        interp.stack++->i64_u = (uint64_t) * (uint32_t *)&interp.memory[ptr + off];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_STORE) {
+        uint32_t val = (--interp.stack)->i32_u;
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        *(uint32_t *)&interp.memory[ptr + off] = (uint32_t)val;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_STORE) {
+        uint64_t val = (--interp.stack)->i64_u;
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        *(uint64_t *)&interp.memory[ptr + off] = (uint64_t)val;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_STORE) {
+        float val = (--interp.stack)->f32;
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        *(float *)&interp.memory[ptr + off] = (float)val;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_STORE) {
+        double val = (--interp.stack)->f64;
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        *(double *)&interp.memory[ptr + off] = (double)val;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_STORE8) {
+        uint32_t val = (--interp.stack)->i32_u;
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        *(uint8_t *)&interp.memory[ptr + off] = (uint8_t)val;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_STORE16) {
+        uint32_t val = (--interp.stack)->i32_u;
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        *(uint16_t *)&interp.memory[ptr + off] = (uint16_t)val;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_STORE8) {
+        uint64_t val = (--interp.stack)->i64_u;
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        *(uint8_t *)&interp.memory[ptr + off] = (uint8_t)val;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_STORE16) {
+        uint64_t val = (--interp.stack)->i64_u;
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        *(uint16_t *)&interp.memory[ptr + off] = (uint16_t)val;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_STORE32) {
+        uint64_t val = (--interp.stack)->i64_u;
+        uint32_t ptr = (--interp.stack)->i32_u;
+        uint32_t off = head++->data.i32_u;
+        *(uint32_t *)&interp.memory[ptr + off] = (uint32_t)val;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_MEMORY_SIZE) {
+        interp.stack++->i32_u = (interp.memsize) / (1 << 16);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_MEMORY_GROW) {
+        uint32_t oldsize = (interp.memsize) / (1 << 16);
+        uint32_t newsize = (--interp.stack)->i32_u;
+        interp.memory = web49_realloc(interp.memory, (oldsize + newsize) * (1 << 16));
+        interp.stack++->i32_u = oldsize;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_CONST) {
+        interp.stack++->i32_s = head++->data.i32_s;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_CONST) {
+        interp.stack++->i64_s = head++->data.i64_s;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_CONST) {
+        interp.stack++->f32 = head++->data.f32;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_CONST) {
+        interp.stack++->f64 = head++->data.f64;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_EQZ) {
+        interp.stack[-1].i32_u = interp.stack[-1].i32_u == 0 ? 1 : 0;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_EQ) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs == rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_NE) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs != rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LT_S) {
+        int32_t rhs = (--interp.stack)->i32_s;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i32_u = (uint32_t)(lhs < rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LT_U) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs < rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_GT_S) {
+        int32_t rhs = (--interp.stack)->i32_s;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i32_u = (uint32_t)(lhs > rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_GT_U) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs > rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LE_S) {
+        int32_t rhs = (--interp.stack)->i32_s;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LE_U) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_GE_S) {
+        int32_t rhs = (--interp.stack)->i32_s;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_GE_U) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_EQZ) {
+        interp.stack[-1].i32_u = interp.stack[-1].i64_u == 0 ? 1 : 0;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_EQ) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i32_u = (uint32_t)(lhs == rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_NE) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i32_u = (uint32_t)(lhs != rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_LT_S) {
+        int64_t rhs = (--interp.stack)->i64_s;
+        int64_t lhs = (--interp.stack)->i64_s;
+        interp.stack++->i32_u = (uint32_t)(lhs < rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_LT_U) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i32_u = (uint32_t)(lhs < rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_GT_S) {
+        int64_t rhs = (--interp.stack)->i64_s;
+        int64_t lhs = (--interp.stack)->i64_s;
+        interp.stack++->i32_u = (uint32_t)(lhs > rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_GT_U) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i32_u = (uint32_t)(lhs > rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_LE_S) {
+        int64_t rhs = (--interp.stack)->i64_s;
+        int64_t lhs = (--interp.stack)->i64_s;
+        interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_LE_U) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_GE_S) {
+        int64_t rhs = (--interp.stack)->i64_s;
+        int64_t lhs = (--interp.stack)->i64_s;
+        interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_GE_U) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_EQ) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->i32_u = (uint32_t)(lhs == rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_NE) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->i32_u = (uint32_t)(lhs != rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_LT) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->i32_u = (uint32_t)(lhs < rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_GT) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->i32_u = (uint32_t)(lhs > rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_LE) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_GE) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_EQ) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->i32_u = (uint32_t)(lhs == rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_NE) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->i32_u = (uint32_t)(lhs != rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_LT) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->i32_u = (uint32_t)(lhs < rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_GT) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->i32_u = (uint32_t)(lhs > rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_LE) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_GE) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_CLZ) {
+        uint32_t arg = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = __builtin_clz(arg);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_CTZ) {
+        uint32_t arg = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = __builtin_ctz(arg);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_POPCNT) {
+        uint32_t arg = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = __builtin_popcount(arg);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_ADD) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs + rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_SUB) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs - rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_MUL) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs * rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_DIV_S) {
+        int32_t rhs = (--interp.stack)->i32_s;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i32_s = (lhs / rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_DIV_U) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs / rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_REM_S) {
+        int32_t rhs = (--interp.stack)->i32_s;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i32_s = (lhs % rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_REM_U) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs % rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_AND) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs & rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_OR) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs | rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_XOR) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs ^ rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_SHL) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs << rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_SHR_S) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i64_s = (lhs >> rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_SHR_U) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs >> rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_ROTL) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs >> rhs) | (lhs << (32 - rhs));
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_ROTR) {
+        uint32_t rhs = (--interp.stack)->i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs << rhs) | (lhs >> (32 - rhs));
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_CLZ) {
+        uint64_t arg = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = __builtin_clz(arg);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_CTZ) {
+        uint64_t arg = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = __builtin_ctz(arg);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_POPCNT) {
+        uint64_t arg = (--interp.stack)->i64_u;
+        interp.stack++->i32_u = __builtin_popcount(arg);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_ADD) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i64_u = (lhs + rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_SUB) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i64_u = (lhs - rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_MUL) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i64_u = (lhs * rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_DIV_S) {
+        int64_t rhs = (--interp.stack)->i64_s;
+        int64_t lhs = (--interp.stack)->i64_s;
+        interp.stack++->i64_s = (lhs / rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_DIV_U) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i64_u = (lhs / rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_REM_S) {
+        int64_t rhs = (--interp.stack)->i64_s;
+        int64_t lhs = (--interp.stack)->i64_s;
+        interp.stack++->i64_s = (lhs % rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_REM_U) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i64_u = (lhs % rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_AND) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i64_u = (uint64_t)(lhs & rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_OR) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i64_u = (uint64_t)(lhs | rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_XOR) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i64_u = (uint64_t)(lhs ^ rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_SHL) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i64_u = (lhs << rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_SHR_S) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        int64_t lhs = (--interp.stack)->i64_s;
+        interp.stack++->i64_s = (lhs >> rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_SHR_U) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i64_u = (lhs >> rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_ROTL) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i64_u = (lhs >> rhs) | (lhs << (64 - rhs));
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_ROTR) {
+        uint64_t rhs = (--interp.stack)->i64_u;
+        uint64_t lhs = (--interp.stack)->i64_u;
+        interp.stack++->i64_u = (lhs << rhs) | (lhs >> (64 - rhs));
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_ABS) {
+        interp.stack[-1].f32 = fabsf(interp.stack[-1].f32);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_NEG) {
+        interp.stack[-1].f32 = -interp.stack[-1].f32;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_CEIL) {
+        interp.stack[-1].f32 = ceilf(interp.stack[-1].f32);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_FLOOR) {
+        interp.stack[-1].f32 = floorf(interp.stack[-1].f32);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_TRUNC) {
+        interp.stack[-1].f32 = truncf(interp.stack[-1].f32);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_NEAREST) {
+        interp.stack[-1].f32 = nearbyintf(interp.stack[-1].f32);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_SQRT) {
+        interp.stack[-1].f32 = sqrt(interp.stack[-1].f32);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_ADD) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->f32 = lhs + rhs;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_SUB) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->f32 = lhs - rhs;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_MUL) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->f32 = lhs * rhs;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_DIV) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->f32 = lhs / rhs;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_MIN) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->f32 = fminf(lhs, rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_MAX) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->f32 = fmaxf(lhs, rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_COPYSIGN) {
+        float rhs = (--interp.stack)->f32;
+        float lhs = (--interp.stack)->f32;
+        interp.stack++->f32 = copysignf(lhs, rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_ABS) {
+        interp.stack[-1].f64 = fabs(interp.stack[-1].f64);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_NEG) {
+        interp.stack[-1].f64 = -interp.stack[-1].f64;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_CEIL) {
+        interp.stack[-1].f64 = ceil(interp.stack[-1].f64);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_FLOOR) {
+        interp.stack[-1].f64 = floor(interp.stack[-1].f64);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_TRUNC) {
+        interp.stack[-1].f64 = trunc(interp.stack[-1].f64);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_NEAREST) {
+        interp.stack[-1].f64 = nearbyint(interp.stack[-1].f64);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_SQRT) {
+        interp.stack[-1].f64 = sqrt(interp.stack[-1].f64);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_ADD) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->f64 = lhs + rhs;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_SUB) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->f64 = lhs - rhs;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_MUL) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->f64 = lhs * rhs;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_DIV) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->f64 = lhs / rhs;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_MIN) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->f64 = fmin(lhs, rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_MAX) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->f64 = fmax(lhs, rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_COPYSIGN) {
+        double rhs = (--interp.stack)->f64;
+        double lhs = (--interp.stack)->f64;
+        interp.stack++->f64 = copysign(lhs, rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_WRAP_I64) {
+        interp.stack[-1].i32_s = (int32_t)interp.stack[-1].i64_s;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_TRUNC_S_F32) {
+        interp.stack[-1].i32_s = (int32_t)interp.stack[-1].f32;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_TRUNC_U_F32) {
+        interp.stack[-1].i32_u = (uint32_t)interp.stack[-1].f32;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_TRUNC_S_F64) {
+        interp.stack[-1].i32_s = (int32_t)interp.stack[-1].f64;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_TRUNC_U_F64) {
+        interp.stack[-1].i32_u = (uint32_t)interp.stack[-1].f64;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_EXTEND_S_I32) {
+        interp.stack[-1].i64_s = (int64_t)interp.stack[-1].i64_s;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_EXTEND_U_I32) {
+        interp.stack[-1].i64_u = (uint64_t)interp.stack[-1].i64_u;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_TRUNC_S_F32) {
+        interp.stack[-1].i64_s = (int64_t)interp.stack[-1].f32;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_TRUNC_U_F32) {
+        interp.stack[-1].i64_u = (uint64_t)interp.stack[-1].f32;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_TRUNC_S_F64) {
+        interp.stack[-1].i64_u = (int64_t)interp.stack[-1].f64;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_TRUNC_U_F64) {
+        interp.stack[-1].i64_u = (uint64_t)interp.stack[-1].f64;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_CONVERT_S_I32) {
+        interp.stack[-1].f32 = (float)interp.stack[-1].i32_s;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_CONVERT_U_I32) {
+        interp.stack[-1].f32 = (float)interp.stack[-1].i32_u;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_CONVERT_S_I64) {
+        interp.stack[-1].f32 = (float)interp.stack[-1].i64_s;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_CONVERT_U_I64) {
+        interp.stack[-1].f32 = (float)interp.stack[-1].i64_u;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_DEMOTE_F64) {
+        interp.stack[-1].f32 = (float)interp.stack[-1].f64;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_CONVERT_S_I32) {
+        interp.stack[-1].f64 = (double)interp.stack[-1].i32_s;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_CONVERT_U_I32) {
+        interp.stack[-1].f64 = (double)interp.stack[-1].i32_u;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_CONVERT_S_I64) {
+        interp.stack[-1].f64 = (double)interp.stack[-1].i64_s;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_CONVERT_U_I64) {
+        interp.stack[-1].f64 = (double)interp.stack[-1].i64_u;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_PROMOTE_F32) {
+        interp.stack[-1].f64 = (double)interp.stack[-1].f32;
+    }
+    LABEL(WEB49_OPCODE_I32_REINTERPRET_F32) {
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I64_REINTERPRET_F64) {
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F32_REINTERPRET_I32) {
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_F64_REINTERPRET_I64) {
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_MEMORY_INIT) {
+        fprintf(stderr, "no impl for: %s\n", "memory_init");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_MEMORY_COPY) {
+        fprintf(stderr, "no impl for: %s\n", "memory_copy");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_MEMORY_FILL) {
+        fprintf(stderr, "no impl for: %s\n", "memory_fill");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_DATA_DROP) {
+        fprintf(stderr, "no impl for: %s\n", "data_drop");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_TABLE_INIT) {
+        fprintf(stderr, "no impl for: %s\n", "table_init");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_ELEM_DROP) {
+        fprintf(stderr, "no impl for: %s\n", "elem_drop");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_TABLE_COPY) {
+        fprintf(stderr, "no impl for: %s\n", "table_copy");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_BLOCK_RETURNS) {
+        int32_t ret = web49_interp_block_run(interp, head++->block);
+        if (ret >= 0) {
+            return ret - 1;
+        }
+        *interp.stack++ = interp.returns[0];
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_IF_RETURNS) {
+        int32_t ret;
+        if ((--interp.stack)->i32_u) {
+            ret = web49_interp_block_run(interp, head[0].block);
+        } else {
+            ret = web49_interp_block_run(interp, head[1].block);
+        }
+        if (ret >= 0) {
+            return ret - 1;
+        }
+        *interp.stack++ = interp.returns[0];
+        head += 2;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_SEEK) {
+        uint32_t fd = interp.locals[0].i32_u;
+        uint32_t offset = interp.locals[1].i32_u;
+        uint32_t wasi_whence = interp.locals[2].i32_u;
+        uint32_t result = interp.locals[3].i32_u;
+        int whence = -1;
+        switch (wasi_whence) {
+            case 0:
+                whence = SEEK_SET;
+                break;
+            case 1:
+                whence = SEEK_CUR;
+                break;
+            case 2:
+                whence = SEEK_END;
+                break;
+        }
+        *(uint32_t *)&interp.memory[result] = lseek(fd, offset, whence);
+        interp.stack++->i32_u = 0;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_FILESTAT_GET) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_filestat_get");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_PATH_FILESTAT_GET) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_path_filestat_get");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_ARGS_GET) {
+        uint32_t argv = interp.locals[0].i32_u;
+        uint32_t buf = interp.locals[1].i32_u;
+
+        uint32_t argc = 0;
+        uint32_t head2 = buf;
+        for (size_t i = 0; interp.args[i] != NULL; i++) {
+            *(uint32_t *)&interp.memory[argv + argc * 4] = head2;
+            size_t memlen = strlen(interp.args[i]) + 1;
+            memcpy(&interp.memory[head2], interp.args[i], memlen);
+            head2 += memlen;
+            argc += 1;
+        }
+        *(uint32_t *)&interp.memory[argv + argc * 4] = 0;
+        interp.stack++->i32_u = 0;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_WASI_ARGS_SIZES_GET) {
+        uint32_t argc = interp.locals[0].i32_u;
+        uint32_t buf_size = interp.locals[1].i32_u;
+        uint32_t buf_len = 0;
+        size_t i = 0;
+        while (interp.args[i] != NULL) {
+            buf_len += strlen(interp.args[i]) + 1;
+            i += 1;
+        }
+        *(uint32_t *)&interp.memory[argc] = i;
+        *(uint32_t *)&interp.memory[buf_size] = buf_len;
+        interp.stack++->i32_u = 0;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_WASI_CLOCK_RES_GET) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_clock_res_get");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_CLOCK_TIME_GET) {
+        uint32_t wasi_clock_id = interp.locals[0].i32_u;
+        uint64_t precision = interp.locals[1].i64_u;
+        uint32_t time = interp.locals[2].i32_u;
+        int clock_id = -1;
+        switch (wasi_clock_id) {
+            case 0:
+                clock_id = CLOCK_REALTIME;
+                break;
+            case 1:
+                clock_id = CLOCK_MONOTONIC;
+                break;
+            case 2:
+                clock_id = CLOCK_PROCESS_CPUTIME_ID;
+                break;
+            case 3:
+                clock_id = CLOCK_THREAD_CPUTIME_ID;
+                break;
+        }
+        struct timespec ts;
+        clock_gettime(clock_id, &ts);
+        *(uint64_t *)&interp.memory[time] = (uint64_t)ts.tv_sec * 1000000000 + (uint64_t)ts.tv_nsec;
+        interp.stack++->i32_u = 0;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_WASI_ENVIRON_GET) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_environ_get");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_ENVIRON_SIZES_GET) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_environ_sizes_get");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_ADVISE) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_advise");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_ALLOCATE) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_allocate");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_CLOSE) {
+        uint32_t fd = interp.locals[0].i32_u;
+        interp.stack++->i32_u = close(fd);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_DATASYNC) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_datasync");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_FDSTAT_GET) {
+        uint32_t fd = interp.locals[0].i32_u;
+        uint32_t fdstat = interp.locals[1].i32_u;
+        struct stat fd_stat;
+        fstat(fd, &fd_stat);
+        int mode = fd_stat.st_mode;
+        uint16_t fs_filetype = (S_ISBLK(mode) ? 1 : 0) | (S_ISCHR(mode) ? 2 : 0) | (S_ISDIR(mode) ? 3 : 0) | (S_ISREG(mode) ? 4 : 0) | (S_ISLNK(mode) ? 7 : 0);
+        uint16_t fs_flags = 0;
+        uint64_t fs_rights_base = UINT64_MAX;
+        uint64_t fs_rights_inheriting = UINT64_MAX;
+        if (fd <= 2) {
+            fs_rights_base &= ~(4 | 32);
+        }
+        *(uint16_t *)&interp.memory[fdstat + 0] = fs_filetype;
+        *(uint16_t *)&interp.memory[fdstat + 2] = fs_flags;
+        *(uint32_t *)&interp.memory[fdstat + 4] = 0;
+        *(uint64_t *)&interp.memory[fdstat + 8] = fs_rights_base;
+        *(uint64_t *)&interp.memory[fdstat + 16] = fs_rights_inheriting;
+        interp.stack++->i32_u = 0;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_FDSTAT_SET_FLAGS) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_fdstat_set_flags");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_FDSTAT_SET_RIGHTS) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_fdstat_set_rights");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_FILESTAT_SET_SIZE) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_filestat_set_size");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_FILESTAT_SET_TIMES) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_filestat_set_times");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_PREAD) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_pread");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_PRESTAT_GET) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_prestat_get");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_PRESTAT_DIR_NAME) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_prestat_dir_name");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_PWRITE) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_pwrite");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_READ) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_read");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_READDIR) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_readdir");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_RENUMBER) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_renumber");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_SYNC) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_sync");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_TELL) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_tell");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_FD_WRITE) {
+        uint32_t fd = interp.locals[0].i32_u;
+        uint32_t iovs = interp.locals[1].i32_u;
+        uint32_t iovs_len = interp.locals[2].i32_u;
+        uint32_t nwritten = interp.locals[3].i32_u;
+        *(uint32_t *)&interp.memory[nwritten] = 0;
+        for (size_t i = 0; i < iovs_len; i++) {
+            uint32_t ptr = *(uint32_t *)&interp.memory[iovs + i * 8];
+            uint32_t len = *(uint32_t *)&interp.memory[iovs + i * 8 + 4];
+            // fprintf(stderr, ".ptr = %zu, .len = %zu\n", (size_t) ptr, (size_t) len);
+            *(uint32_t *)&interp.memory[nwritten] += write(fd, &interp.memory[ptr], len);
+        }
+        // interp.stack++->i32_u = *(uint32_t *)&interp.memory[nwritten];
+        interp.stack++->i32_u = 0;
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_WASI_PATH_CREATE_DIRECTORY) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_path_create_directory");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_PATH_FILESTAT_SET_TIMES) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_path_filestat_set_times");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_PATH_LINK) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_path_link");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_PATH_OPEN) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_path_open");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_PATH_READLINK) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_path_readlink");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_PATH_REMOVE_DIRECTORY) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_path_remove_directory");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_PATH_RENAME) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_path_rename");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_PATH_SYMLINK) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_path_symlink");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_PATH_UNLINK_FILE) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_path_unlink_file");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_POLL_ONEOFF) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_poll_oneoff");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_PROC_EXIT) {
+        exit(interp.locals[0].i32_u);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_WASI_PROC_RAISE) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_proc_raise");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_RANDOM_GET) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_random_get");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_SCHED_YIELD) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_sched_yield");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_SOCK_RECV) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_sock_recv");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_SOCK_SEND) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_sock_send");
+        __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_WASI_SOCK_SHUTDOWN) {
+        fprintf(stderr, "no impl for: wasi %s", "wasi_sock_shutdown");
+        __builtin_trap();
     }
 }
 
@@ -1769,15 +2017,15 @@ void web49_interp_module(web49_module_t mod, const char **args) {
         }
     }
     uint64_t cur_func = 0;
-    web49_interp_block_t **blocks = web49_malloc(sizeof(web49_interp_block_t *) * num_funcs);
+    web49_interp_block_t *blocks = web49_malloc(sizeof(web49_interp_block_t) * num_funcs);
     web49_interp_data_t *globals = web49_malloc(sizeof(web49_interp_data_t) * (global_section.num_entries));
     web49_interp_data_t *stack = web49_alloc0(sizeof(web49_interp_data_t) * (1 << 16));
     uint64_t memsize = 65536 * 256;
-    uint8_t *memory = web49_alloc0(memsize + (65536));
+    uint8_t *memory = web49_alloc0(memsize);
     web49_interp_data_t *returns = web49_alloc0(256);
     web49_interp_t interp = (web49_interp_t){
         .locals = stack,
-        .stack = stack,
+        .stack = stack + 1,
         .funcs = blocks,
         .globals = globals,
         .memsize = memsize,
@@ -1794,9 +2042,7 @@ void web49_interp_module(web49_module_t mod, const char **args) {
     for (size_t j = 0; j < import_section.num_entries; j++) {
         web49_section_import_entry_t entry = import_section.entries[j];
         if (entry.kind == WEB49_EXTERNAL_KIND_FUNCTION) {
-            web49_interp_block_t *block = web49_interp_import(&interp, entry.module_str, entry.field_str);
-            blocks[cur_func] = block;
-            cur_func += 1;
+            web49_interp_import(entry.module_str, entry.field_str, &blocks[cur_func++]);
         }
     }
     for (size_t j = 0; j < global_section.num_entries; j++) {
@@ -1814,34 +2060,24 @@ void web49_interp_module(web49_module_t mod, const char **args) {
         memcpy(&memory[entry.offset.immediate.varint32], entry.data, entry.size);
     }
     for (size_t j = 0; j < code_section.num_entries; j++) {
-        web49_section_code_entry_t entry = code_section.entries[j];
-        web49_interp_instr_buf_t buf;
-        buf.head = 0;
-        buf.len = entry.num_instrs;
-        buf.instrs = entry.instrs;
-        uint64_t nreturns[256] = {0};
-        web49_read_block_state_t state;
-        state.nreturns = &nreturns[0];
-        state.instrs = buf;
-        web49_interp_block_t *block = web49_interp_read_block(&state);
+        web49_section_code_entry_t *entry = &code_section.entries[j];
+        web49_interp_block_t *block = &blocks[cur_func++];
+        block->code = NULL;
         block->nlocals = 0;
-        for (uint64_t i = 0; i < entry.num_locals; i++) {
-            block->nlocals += entry.locals[i].count;
+        for (uint64_t i = 0; i < entry->num_locals; i++) {
+            block->nlocals += entry->locals[i].count;
         }
-        // block->nlocals += 16;
         block->nparams = type_section.entries[function_section.entries[j]].num_params;
         block->nreturns = type_section.entries[function_section.entries[j]].num_returns;
-        blocks[cur_func] = block;
-        cur_func += 1;
+        block->entry = entry;
     }
     for (size_t j = 0; j < element_section.num_entries; j++) {
         web49_section_element_entry_t entry = element_section.entries[j];
         for (uint64_t i = 0; i < entry.num_elems; i++) {
-            // fprintf(stderr, "%zu=%zu\n", (size_t) (entry.offset.immediate.varint32 + i), entry.elems[i]);
-            interp.table[i + entry.offset.immediate.varint32] = interp.funcs[entry.elems[i]];
+            interp.table[i + entry.offset.immediate.varint32] = &interp.funcs[entry.elems[i]];
         }
     }
-    web49_interp_block_t *func = blocks[start];
+    web49_interp_block_t *func = &blocks[start];
     web49_interp_data_t *old_locals = interp.locals;
     web49_interp_data_t *old_stack = interp.stack;
     interp.locals = interp.stack - func->nparams;

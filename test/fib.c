@@ -12,7 +12,7 @@ size_t fib(size_t n) {
 
 int main(int argc, char **argv) {
     size_t n = 0;
-    for (char *head = argv[1]; *head != '\0'; head+=1) {
+    for (char *head = argv[1]; *head != '\0'; head += 1) {
         n *= 10;
         n += *head - '0';
     }
