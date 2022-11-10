@@ -47,17 +47,6 @@ bin/wasm2wasm$(EXE): main/wasm2wasm.o $(OBJS)
 	@mkdir -p bin
 	$(CC) $(OPT) main/wasm2wasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
 
-# test
-
-$(TEST_TXT): bins $(@:test/out.%.txt:test/%.c)
-	@echo $(@) 
-	$(EMCC) -s PURE_WASI=1 -s SINGLE_FILE=1 -s WASM=1 $(EMCC_OPT) $(@:test/out.%.txt=test/%.c) -o $(@:test/out.%.txt=test/out.%.0.wasm) $(EMCC_CFLAGS)
-	# $(EXE_RUN) ./bin/wasm2wat$(EXE) $(@:test/out.%.txt=test/out.%.0.wasm) -o $(@:test/out.%.txt=test/out.%.1.wat)
-	# $(EXE_RUN) ./bin/wat2wasm$(EXE) $(@:test/out.%.txt=test/out.%.1.wat) -o $(@:test/out.%.txt=test/out.%.2.wasm)
-	# $(EXE_RUN) ./bin/wasm2wat$(EXE) $(@:test/out.%.txt=test/out.%.2.wasm) -o $(@:test/out.%.txt=test/out.%.3.wat)
-	# $(EXE_RUN) ./bin/wat2wasm$(EXE) $(@:test/out.%.txt=test/out.%.3.wat) -o $(@:test/out.%.txt=test/out.%.4.wasm)
-	$(HYPERFINE)  --shell=none "$(INTERP) $(@:test/out.%.txt=test/out.%.0.wasm)"
-
 # util
 
 format: .dummy
