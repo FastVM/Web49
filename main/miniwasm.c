@@ -11,7 +11,7 @@ int web49_file_main(const char *inarg, const char **args) {
 
 int main(int argc, const char **argv) {
     const char *inarg = NULL;
-    const char **args = argv + 1; 
+    const char **args = argv + 1;
     for (int i = 1; i <= argc; i += 1) {
         if (inarg == NULL) {
             inarg = argv[i];

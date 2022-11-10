@@ -7,7 +7,6 @@ typedef uint64_t web49_interp_instr_t;
 
 enum web49_interp_instr_enum_t {
     WEB49_INTERP_OPCODE_WASI = WEB49_MAX_OPCODE_NUM,
-    WEB49_OPCODE_END_WITH,
     WEB49_OPCODE_BLOCK_RETURNS,
     WEB49_OPCODE_IF_RETURNS,
     WEB49_OPCODE_WASI_FD_SEEK,
@@ -121,7 +120,7 @@ struct web49_interp_instr_buf_t {
 };
 
 web49_interp_block_t *web49_interp_import(web49_interp_t *interp, const char *mod, const char *sym);
-web49_interp_block_t *web49_interp_read_block(web49_section_type_t type_section, web49_interp_instr_buf_t *instrs, size_t nreturns);
+web49_interp_block_t *web49_interp_read_block(web49_section_type_t type_section, web49_interp_instr_buf_t *instrs);
 void web49_interp_module(web49_module_t mod, const char **args);
 const char *web49_interp_opcode_to_name(size_t opcode);
 

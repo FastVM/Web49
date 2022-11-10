@@ -33,19 +33,19 @@ test: $(TEST_TXT)
 
 bin/miniwasm$(EXE): main/miniwasm.o $(OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) main/miniwasm.o $(OBJS) -o $(@) $(LDFLAGS)
+	$(CC) $(OPT) main/miniwasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
 
 bin/wat2wasm$(EXE): main/wat2wasm.o $(OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) main/wat2wasm.o $(OBJS) -o $(@) $(LDFLAGS)
+	$(CC) $(OPT) main/wat2wasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
 
 bin/wasm2wat$(EXE): main/wasm2wat.o $(OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) main/wasm2wat.o $(OBJS) -o $(@) $(LDFLAGS)
+	$(CC) $(OPT) main/wasm2wat.o $(OBJS) -o $(@) -lm $(LDFLAGS)
 
 bin/wasm2wasm$(EXE): main/wasm2wasm.o $(OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) main/wasm2wasm.o $(OBJS) -o $(@) $(LDFLAGS)
+	$(CC) $(OPT) main/wasm2wasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
 
 # test
 

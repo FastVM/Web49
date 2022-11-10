@@ -2,6 +2,7 @@
 #if !defined(WEB49_HEADER_LIB)
 #define WEB49_HEADER_LIB
 
+#include <assert.h>
 #include <ctype.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -13,7 +14,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #define web49_bump(size) (malloc(size))
 #define web49_malloc(size) (malloc(size))
