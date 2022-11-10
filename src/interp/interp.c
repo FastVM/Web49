@@ -1222,7 +1222,7 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
                 break;
             }
             case WEB49_OPCODE_F64_ABS: {
-                interp.stack[-1].f64 = fabsf(interp.stack[-1].f64);
+                interp.stack[-1].f64 = fabs(interp.stack[-1].f64);
                 break;
             }
             case WEB49_OPCODE_F64_NEG: {
