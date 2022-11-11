@@ -7,6 +7,8 @@ typedef uint64_t web49_interp_instr_t;
 
 enum web49_interp_instr_enum_t {
     WEB49_INTERP_OPCODE_WASI = WEB49_MAX_OPCODE_NUM,
+    WEB49_OPCODE_CALL0,
+    WEB49_OPCODE_CALL1,
     WEB49_OPCODE_WASI_FD_SEEK,
     WEB49_OPCODE_WASI_FD_FILESTAT_GET,
     WEB49_OPCODE_WASI_PATH_FILESTAT_GET,
@@ -61,6 +63,9 @@ typedef union web49_interp_data_t web49_interp_data_t;
 struct web49_interp_t;
 typedef struct web49_interp_t web49_interp_t;
 
+struct web49_interp_extra_t;
+typedef struct web49_interp_extra_t web49_interp_extra_t;
+
 union web49_interp_opcode_t;
 typedef union web49_interp_opcode_t web49_interp_opcode_t;
 
@@ -84,16 +89,19 @@ union web49_interp_data_t {
     double f64;
 };
 
+struct web49_interp_extra_t {
+    web49_interp_block_t **table;
+    web49_interp_block_t *funcs;
+    web49_interp_data_t *globals;
+    const char **args;
+    uint64_t memsize;
+};
+
 struct web49_interp_t {
     web49_interp_data_t *stack;
     web49_interp_data_t *locals;
-    web49_interp_block_t *funcs;
-    web49_interp_block_t **table;
-    web49_interp_data_t *globals;
-    uint64_t memsize;
     uint8_t *memory;
-    web49_interp_data_t *returns;
-    const char **args;
+    web49_interp_extra_t *extra;
 };
 
 union web49_interp_opcode_t {
@@ -105,10 +113,10 @@ union web49_interp_opcode_t {
 
 struct web49_interp_block_t {
     web49_interp_opcode_t *code;
-    uint32_t nlocals: 32;
-    uint16_t nparams: 16;
-    uint16_t nreturns: 15;
-    bool is_code: 1;
+    uint32_t nlocals : 32;
+    uint16_t nparams : 16;
+    uint16_t nreturns : 15;
+    bool is_code : 1;
     union {
         web49_section_code_entry_t *code_entry;
         web49_section_import_entry_t *import_entry;
@@ -125,6 +133,7 @@ struct web49_read_block_state_t {
     void *ptrs;
     web49_interp_instr_buf_t instrs;
     web49_interp_opcode_t **bufs;
+    web49_interp_t *interp;
 };
 
 void web49_interp_import(void **ptrs, const char *mod, const char *sym, web49_interp_block_t *block);

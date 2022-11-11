@@ -13,3 +13,4 @@ bin/*
 *.wasm
 *.wat
 .vscode/*
+*.gcda
