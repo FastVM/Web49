@@ -9,10 +9,6 @@
 const char *web49_interp_opcode_to_name(size_t opcode) {
     if (opcode < WEB49_MAX_OPCODE_NUM) {
         return web49_opcode_to_name(opcode);
-    } else if (opcode == WEB49_OPCODE_BLOCK_RETURNS) {
-        return "block_returns";
-    } else if (opcode == WEB49_OPCODE_IF_RETURNS) {
-        return "if_returns";
     } else if (opcode == WEB49_OPCODE_WASI_FD_SEEK) {
         return "fd_seek";
     } else if (opcode == WEB49_OPCODE_WASI_FD_FILESTAT_GET) {
@@ -312,13 +308,14 @@ void web49_interp_import(void **ptrs, const char *mod, const char *sym, web49_in
     exit(1);
 }
 
-void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block_t *block) {
+void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block_t *block, web49_interp_opcode_t *fall) {
     void **ptrs = state->ptrs;
     web49_interp_instr_buf_t *instrs = &state->instrs;
     bool isfunc = instrs->head == 0;
-    uint64_t alloc = 128;
+    uint64_t alloc = instrs->len * 4;
     web49_interp_opcode_t *code = web49_malloc(sizeof(web49_interp_opcode_t) * alloc);
     uint64_t ncode = 0;
+    block->code = code;
     // while (instrs->head < instrs->len) {
     while (true) {
         web49_instr_t cur = instrs->instrs[instrs->head++];
@@ -328,32 +325,63 @@ void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block
         if (cur.opcode == WEB49_OPCODE_NOP) {
             continue;
         }
-        if (ncode + 64 >= alloc) {
-            alloc = (ncode + 64) * 2;
-            code = web49_realloc(code, sizeof(web49_interp_opcode_t) * alloc);
-        }
+        uint64_t npops = 0;
         if (cur.immediate.id == WEB49_IMMEDIATE_BLOCK_TYPE && cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
-            if (cur.opcode == WEB49_OPCODE_BLOCK) {
-                code[ncode++].opcode = OPCODE(WEB49_OPCODE_BLOCK_RETURNS);
-                code[ncode].block = web49_malloc(sizeof(web49_interp_block_t));
-                web49_interp_read_block(state, code[ncode++].block);
-                continue;
-            } else if (cur.opcode == WEB49_OPCODE_IF) {
-                code[ncode++].opcode = OPCODE(WEB49_OPCODE_IF_RETURNS);
-                code[ncode].block = web49_malloc(sizeof(web49_interp_block_t));
-                web49_interp_read_block(state, code[ncode++].block);
-                if (instrs->instrs[instrs->head - 1].opcode == WEB49_OPCODE_ELSE) {
-                    code[ncode].block = web49_malloc(sizeof(web49_interp_block_t));
-                    web49_interp_read_block(state, code[ncode++].block);
-                } else {
-                    fprintf(stderr, "if returns one value, has empty else. this will not work.");
-                    __builtin_trap();
-                }
-                continue;
+            npops = 1;
+        }
+
+        if (cur.opcode == WEB49_OPCODE_BLOCK) {
+            web49_interp_opcode_t *next_code = web49_malloc(sizeof(web49_interp_opcode_t) * alloc);
+            *++state->bufs = next_code;
+            code[ncode++].opcode = OPCODE(WEB49_OPCODE_BLOCK);
+            web49_interp_block_t sub;
+            web49_interp_read_block(state, &sub, next_code);
+            code[ncode++].ptr = sub.code;
+            state->bufs--;
+            code = next_code;
+            ncode = 0;
+            continue;
+        }
+        if (cur.opcode == WEB49_OPCODE_LOOP) {
+            web49_interp_opcode_t *next_code = web49_malloc(sizeof(web49_interp_opcode_t) * alloc);
+            *++state->bufs = &code[ncode];
+            code[ncode++].opcode = OPCODE(WEB49_OPCODE_LOOP);
+            web49_interp_block_t sub;
+            web49_interp_read_block(state, &sub, next_code);
+            code[ncode++].ptr = sub.code;
+            state->bufs--;
+            code = next_code;
+            ncode = 0;
+            continue;
+        }
+        if (cur.opcode == WEB49_OPCODE_IF) {
+            web49_interp_opcode_t *next_code = web49_malloc(sizeof(web49_interp_opcode_t) * alloc);
+            *++state->bufs = next_code;
+            code[ncode++].opcode = OPCODE(WEB49_OPCODE_IF);
+            web49_interp_block_t sub;
+            web49_interp_read_block(state, &sub, next_code);
+            code[ncode++].ptr = sub.code;
+            if (instrs->instrs[instrs->head - 1].opcode == WEB49_OPCODE_ELSE) {
+                web49_interp_block_t sub;
+                web49_interp_read_block(state, &sub, next_code);
+                code[ncode++].ptr = sub.code;
             } else {
-                fprintf(stderr, "opcode %zu returns value, no clue how to compile that\n", (size_t)cur.opcode);
-                __builtin_trap();
+                code[ncode++].ptr = next_code;
             }
+            state->bufs--;
+            code = next_code;
+            ncode = 0;
+            continue;
+        }
+        if (cur.opcode == WEB49_OPCODE_BR) {
+            code[ncode++].opcode = OPCODE(WEB49_OPCODE_BR);
+            code[ncode++].ptr = state->bufs[-(ptrdiff_t)cur.immediate.varuint32];
+            continue;
+        }
+        if (cur.opcode == WEB49_OPCODE_BR_IF) {
+            code[ncode++].opcode = OPCODE(WEB49_OPCODE_BR_IF);
+            code[ncode++].ptr = state->bufs[-(ptrdiff_t)cur.immediate.varuint32];
+            continue;
         }
         code[ncode++].opcode = OPCODE(cur.opcode);
         switch (cur.immediate.id) {
@@ -384,9 +412,9 @@ void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block
             case WEB49_IMMEDIATE_BR_TABLE:
                 code[ncode++].data.i32_u = cur.immediate.br_table.num_targets;
                 for (uint64_t i = 0; i < cur.immediate.br_table.num_targets; i++) {
-                    code[ncode++].data.i32_u = cur.immediate.br_table.targets[i];
+                    code[ncode++].ptr = state->bufs[-(ptrdiff_t)cur.immediate.br_table.targets[i]];
                 }
-                code[ncode++].data.i32_u = cur.immediate.br_table.default_target;
+                code[ncode++].ptr = state->bufs[-(ptrdiff_t)cur.immediate.br_table.default_target];
                 break;
             case WEB49_IMMEDIATE_CALL_INDIRECT:
                 break;
@@ -397,39 +425,33 @@ void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block
                 fprintf(stderr, "bad immediate: %zu\n", (size_t)cur.immediate.id);
                 __builtin_trap();
         }
-        if (cur.opcode == WEB49_OPCODE_BLOCK || cur.opcode == WEB49_OPCODE_LOOP) {
-            code[ncode].block = web49_malloc(sizeof(web49_interp_block_t));
-            web49_interp_read_block(state, code[ncode++].block);
-        }
-        if (cur.opcode == WEB49_OPCODE_IF) {
-            code[ncode].block = web49_malloc(sizeof(web49_interp_block_t));
-            web49_interp_read_block(state, code[ncode++].block);
-            if (instrs->instrs[instrs->head - 1].opcode == WEB49_OPCODE_ELSE) {
-                code[ncode].block = web49_malloc(sizeof(web49_interp_block_t));
-                web49_interp_read_block(state, code[ncode++].block);
-            } else {
-                web49_interp_opcode_t *instrs = web49_malloc(sizeof(web49_interp_opcode_t));
-                instrs[0].opcode = OPCODE(WEB49_OPCODE_END);
-                web49_interp_block_t *block2 = web49_malloc(sizeof(web49_interp_block_t));
-                block2->code = instrs;
-                block2->nlocals = 0;
-                block2->nparams = 0;
-                code[ncode++].block = block2;
-            }
+        if (cur.opcode == WEB49_OPCODE_BLOCK || cur.opcode == WEB49_OPCODE_LOOP || cur.opcode == WEB49_OPCODE_IF) {
+            __builtin_trap();
         }
     }
-    if (isfunc) {
+    if (fall == NULL) {
         code[ncode++].opcode = OPCODE(WEB49_OPCODE_RETURN);
     } else {
         code[ncode++].opcode = OPCODE(WEB49_OPCODE_END);
+        code[ncode++].ptr = fall;
     }
-    block->code = code;
 }
 
-#define LABEL(name) DO_ ## name:
-#define  NEXT() goto *head++->opcode
+#if defined(WEB49_PRINT_INSTR)
+#define DPRINT(name) fprintf(stderr, name "\n")
+#else
+#define DPRINT(name) 
+#endif
 
-int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *block) {
+#if 0
+#define LABEL(name) DO_ ## name: head++;
+#define  NEXT() goto *head->opcode
+#else
+#define LABEL(name) DO_ ## name:; DPRINT(#name);
+#define  NEXT() goto *head++->opcode
+#endif
+
+web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *block) {
     static void *ptrs[WEB49_MAX_OPCODE_INTERP_NUM] = {
         [WEB49_OPCODE_UNREACHABLE] = &&DO_WEB49_OPCODE_UNREACHABLE,
         [WEB49_OPCODE_NOP] = &&DO_WEB49_OPCODE_NOP,
@@ -610,8 +632,6 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
         [WEB49_OPCODE_TABLE_INIT] = &&DO_WEB49_OPCODE_TABLE_INIT,
         [WEB49_OPCODE_ELEM_DROP] = &&DO_WEB49_OPCODE_ELEM_DROP,
         [WEB49_OPCODE_TABLE_COPY] = &&DO_WEB49_OPCODE_TABLE_COPY,
-        [WEB49_OPCODE_BLOCK_RETURNS] = &&DO_WEB49_OPCODE_BLOCK_RETURNS,
-        [WEB49_OPCODE_IF_RETURNS] = &&DO_WEB49_OPCODE_IF_RETURNS,
         [WEB49_OPCODE_WASI_FD_SEEK] = &&DO_WEB49_OPCODE_WASI_FD_SEEK,
         [WEB49_OPCODE_WASI_FD_FILESTAT_GET] = &&DO_WEB49_OPCODE_WASI_FD_FILESTAT_GET,
         [WEB49_OPCODE_WASI_PATH_FILESTAT_GET] = &&DO_WEB49_OPCODE_WASI_PATH_FILESTAT_GET,
@@ -668,7 +688,9 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
             web49_read_block_state_t state;
             state.ptrs = ptrs;
             state.instrs = buf;
-            web49_interp_read_block(&state, block);
+            web49_interp_opcode_t *data[256];
+            state.bufs = &data[1];
+            web49_interp_read_block(&state, block, NULL);
         } else {
             web49_section_import_entry_t *entry = block->import_entry;
             web49_interp_import(ptrs, entry->module_str, entry->field_str, block);
@@ -684,73 +706,56 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
         NEXT();
     }
     LABEL(WEB49_OPCODE_BLOCK) {
-        int32_t ret = web49_interp_block_run(interp, head++->block);
-        if (ret >= 0) {
-            return ret - 1;
-        }
+        head = head[0].ptr;
         NEXT();
     }
     LABEL(WEB49_OPCODE_LOOP) {
-        while (true) {
-            int32_t ret = web49_interp_block_run(interp, head->block);
-            if (ret == -1) {
-                continue;
-            } else if (ret >= 0) {
-                return ret - 1;
-            } else {
-                break;
-            }
-        }
-        head += 1;
+        head = head[0].ptr;
         NEXT();
     }
     LABEL(WEB49_OPCODE_IF) {
-        int32_t ret;
         if ((--interp.stack)->i32_u) {
-            ret = web49_interp_block_run(interp, head[0].block);
+            head = head[0].ptr;
+            NEXT();
         } else {
-            ret = web49_interp_block_run(interp, head[1].block);
+            head = head[1].ptr;
+            NEXT();
         }
-        if (ret >= 0) {
-            return ret - 1;
-        }
-        head += 2;
-        NEXT();
     }
     LABEL(WEB49_OPCODE_ELSE) {
         fprintf(stderr, "no impl for: %s\n", "else");
         __builtin_trap();
     }
     LABEL(WEB49_OPCODE_END) {
-        interp.returns[0] = interp.stack[-1];
-        return INT32_MIN;
+        head = head[0].ptr;
+        NEXT();
     }
     LABEL(WEB49_OPCODE_BR) {
-        interp.returns[0] = interp.stack[-1];
-        return head[0].data.i32_u - 1;
+        head = head[0].ptr;
+        NEXT();
     }
     LABEL(WEB49_OPCODE_BR_IF) {
         if ((--interp.stack)->i32_u) {
-            interp.returns[0] = interp.stack[-1];
-            return head[0].data.i32_u - 1;
+            head = head[0].ptr;
+            NEXT();
+        } else {
+            head += 1;
+            NEXT();
         }
-        head += 1;
-        NEXT();
     }
     LABEL(WEB49_OPCODE_BR_TABLE) {
         web49_interp_data_t data = *--interp.stack;
         uint32_t max = head++->data.i32_u;
-        interp.returns[0] = interp.stack[-1];
         if (data.i32_u >= max) {
-            return head[max].data.i32_u - 1;
+            head = head[max].ptr;
+            NEXT();
         } else {
-            return head[data.i32_u].data.i32_u - 1;
+            head = head[data.i32_u].ptr;
+            NEXT();
         }
-        NEXT();
     }
     LABEL(WEB49_OPCODE_RETURN) {
-        interp.returns[0] = interp.stack[-1];
-        return INT32_MAX;
+        return interp.stack[-1];
     }
     LABEL(WEB49_OPCODE_CALL) {
         uint32_t funcno = head++->data.i32_u;
@@ -760,16 +765,21 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
         interp.locals = interp.stack - func->nparams;
         memset(interp.stack, 0, func->nlocals * sizeof(web49_interp_data_t));
         interp.stack += func->nlocals;
-        web49_interp_block_run(interp, func);
-        interp.stack = old_stack - func->nparams;
         switch (func->nreturns) {
-            case 0:
+            case 0: {
+                web49_interp_block_run(interp, func);
+                interp.stack = old_stack - func->nparams;
                 break;
-            case 1:
-                *interp.stack++ = interp.returns[0];
+            }
+            case 1: {
+                web49_interp_data_t ret = web49_interp_block_run(interp, func);
+                interp.stack = old_stack - func->nparams;
+                *interp.stack++ = ret;
                 break;
-            default:
+            }
+            default: {
                 __builtin_unreachable();
+            }
         }
         interp.locals = old_locals;
         NEXT();
@@ -782,16 +792,21 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
         interp.locals = interp.stack - func->nparams;
         memset(interp.stack, 0, func->nlocals * sizeof(web49_interp_data_t));
         interp.stack += func->nlocals;
-        web49_interp_block_run(interp, func);
-        interp.stack = old_stack - func->nparams;
         switch (func->nreturns) {
-            case 0:
+            case 0: {
+                web49_interp_block_run(interp, func);
+                interp.stack = old_stack - func->nparams;
                 break;
-            case 1:
-                *interp.stack++ = interp.returns[0];
+            }
+            case 1: {
+                web49_interp_data_t ret = web49_interp_block_run(interp, func);
+                interp.stack = old_stack - func->nparams;
+                *interp.stack++ = ret;
                 break;
-            default:
+            }
+            default: {
                 __builtin_unreachable();
+            }
         }
         interp.locals = old_locals;
         NEXT();
@@ -1678,28 +1693,6 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
         fprintf(stderr, "no impl for: %s\n", "table_copy");
         __builtin_trap();
     }
-    LABEL(WEB49_OPCODE_BLOCK_RETURNS) {
-        int32_t ret = web49_interp_block_run(interp, head++->block);
-        if (ret >= 0) {
-            return ret - 1;
-        }
-        *interp.stack++ = interp.returns[0];
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_IF_RETURNS) {
-        int32_t ret;
-        if ((--interp.stack)->i32_u) {
-            ret = web49_interp_block_run(interp, head[0].block);
-        } else {
-            ret = web49_interp_block_run(interp, head[1].block);
-        }
-        if (ret >= 0) {
-            return ret - 1;
-        }
-        *interp.stack++ = interp.returns[0];
-        head += 2;
-        NEXT();
-    }
     LABEL(WEB49_OPCODE_WASI_FD_SEEK) {
         uint32_t fd = interp.locals[0].i32_u;
         uint32_t offset = interp.locals[1].i32_u;
@@ -1896,10 +1889,8 @@ int32_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *bloc
         for (size_t i = 0; i < iovs_len; i++) {
             uint32_t ptr = *(uint32_t *)&interp.memory[iovs + i * 8];
             uint32_t len = *(uint32_t *)&interp.memory[iovs + i * 8 + 4];
-            // fprintf(stderr, ".ptr = %zu, .len = %zu\n", (size_t) ptr, (size_t) len);
             *(uint32_t *)&interp.memory[nwritten] += write(fd, &interp.memory[ptr], len);
         }
-        // interp.stack++->i32_u = *(uint32_t *)&interp.memory[nwritten];
         interp.stack++->i32_u = 0;
         NEXT();
     }
