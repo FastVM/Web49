@@ -8,12 +8,14 @@ const web49_interp_table_t web49_interp_opcode_stack_effect[WEB49_MAX_OPCODE_INT
         .fail = true,
     },
     [WEB49_OPCODE_BLOCK] = (web49_interp_table_t){
+        .out[0] = WEB49_INTERP_TABLE_BLOCK,
         .branch = true,
     },
     [WEB49_OPCODE_LOOP] = (web49_interp_table_t){
         .branch = true,
     },
     [WEB49_OPCODE_IF] = (web49_interp_table_t){
+        .out[0] = WEB49_INTERP_TABLE_BLOCK,
         .branch = true,
     },
     [WEB49_OPCODE_ELSE] = (web49_interp_table_t){
@@ -37,17 +39,14 @@ const web49_interp_table_t web49_interp_opcode_stack_effect[WEB49_MAX_OPCODE_INT
         .in[0] = WEB49_INTERP_TABLE_ANY,
         .branch = true,
     },
-    [WEB49_OPCODE_CALL0] = (web49_interp_table_t){
+    [WEB49_OPCODE_CALL] = (web49_interp_table_t){
         .in[0] = WEB49_INTERP_TABLE_ARGS,
-    },
-    [WEB49_OPCODE_CALL1] = (web49_interp_table_t){
-        .in[0] = WEB49_INTERP_TABLE_ARGS,
-        .out[0] = WEB49_INTERP_TABLE_ANY,
+        .out[0] = WEB49_INTERP_TABLE_RET,
     },
     [WEB49_OPCODE_CALL_INDIRECT] = (web49_interp_table_t){
         .in[0] = WEB49_INTERP_TABLE_I32,
-        .in[1] = WEB49_INTERP_TABLE_ARGS,
-        .out[0] = WEB49_INTERP_TABLE_RET,
+        .in[1] = WEB49_INTERP_TABLE_ARGS_INDIRECT,
+        .out[0] = WEB49_INTERP_TABLE_RET_INDIRECT,
     },
     [WEB49_OPCODE_DROP] = (web49_interp_table_t){
         .in[0] = WEB49_INTERP_TABLE_ANY,

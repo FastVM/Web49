@@ -95,6 +95,14 @@ struct web49_interp_extra_t {
     web49_interp_data_t *restrict globals;
     const char **args;
     uint64_t memsize;
+    web49_section_type_t type_section;
+    web49_section_import_t import_section;
+    web49_section_code_t code_section;
+    web49_section_function_t function_section;
+    web49_section_global_t global_section;
+    web49_section_data_t data_section;
+    web49_section_table_t table_section;
+    web49_section_element_t element_section;
 };
 
 struct web49_interp_t {
