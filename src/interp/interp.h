@@ -1,5 +1,5 @@
-#if !defined(WEB49_HEADER_INTERP)
-#define WEB49_HEADER_INTERP
+#if !defined(WEB49_HEADER_INTERP_INTERP)
+#define WEB49_HEADER_INTERP_INTERP
 
 #include "../ast.h"
 
@@ -92,16 +92,16 @@ union web49_interp_data_t {
 struct web49_interp_extra_t {
     web49_interp_block_t **table;
     web49_interp_block_t *funcs;
-    web49_interp_data_t *globals;
+    web49_interp_data_t *restrict globals;
     const char **args;
     uint64_t memsize;
 };
 
 struct web49_interp_t {
-    web49_interp_data_t *stack;
-    web49_interp_data_t *locals;
-    uint8_t *memory;
-    web49_interp_extra_t *extra;
+    web49_interp_data_t *restrict stack;
+    web49_interp_data_t *restrict locals;
+    uint8_t *restrict memory;
+    web49_interp_extra_t *restrict extra;
 };
 
 union web49_interp_opcode_t {

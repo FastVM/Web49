@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include "../tables.h"
+#include "table.h"
 
 const char *web49_interp_opcode_to_name(size_t opcode) {
     if (opcode < WEB49_MAX_OPCODE_NUM) {
@@ -308,6 +309,12 @@ void web49_interp_import(void **ptrs, const char *mod, const char *sym, web49_in
     exit(1);
 }
 
+enum {
+    STACK_REAL,
+    STACK_CONST,
+    STACK_LOCAL,
+};
+
 void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block_t *block, web49_interp_opcode_t *fall) {
     void **ptrs = state->ptrs;
     web49_interp_instr_buf_t *instrs = &state->instrs;
@@ -316,6 +323,7 @@ void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block
     web49_interp_opcode_t *code = web49_malloc(sizeof(web49_interp_opcode_t) * alloc);
     uint64_t ncode = 0;
     block->code = code;
+    size_t depth = 0;
     // while (instrs->head < instrs->len) {
     while (true) {
         web49_instr_t cur = instrs->instrs[instrs->head++];
@@ -325,11 +333,27 @@ void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block
         if (cur.opcode == WEB49_OPCODE_NOP) {
             continue;
         }
-        uint64_t npops = 0;
-        if (cur.immediate.id == WEB49_IMMEDIATE_BLOCK_TYPE && cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
-            npops = 1;
+        if (cur.opcode == WEB49_OPCODE_F64_REINTERPRET_I64 || cur.opcode == WEB49_OPCODE_I64_REINTERPRET_F64
+            || cur.opcode == WEB49_OPCODE_F32_REINTERPRET_I32 || cur.opcode == WEB49_OPCODE_I32_REINTERPRET_F32) {
+            continue;
         }
-
+        web49_interp_table_t table = web49_interp_opcode_stack_effect[cur.opcode];
+        fprintf(stderr, "%s", web49_interp_opcode_to_name(cur.opcode));
+        for (uint64_t i = 0; table.in[i] != WEB49_INTERP_TABLE_END; i++) {
+            if (table.in[i] == WEB49_INTERP_TABLE_ARGS) {
+                uint64_t nargs = state->interp->extra->funcs[cur.immediate.varint32].nparams;
+                depth -= nargs;
+                fprintf(stderr, " (r%zu .. r%zu)", depth + block->nparams + block->nlocals, depth + block->nparams + block->nlocals + nargs);
+            } else {
+                depth -= 1;
+                fprintf(stderr, " r%zu", depth + block->nparams + block->nlocals);
+            }
+        }
+        for (uint64_t i = 0; table.out[i] != WEB49_INTERP_TABLE_END; i++) {
+            fprintf(stderr, " -> r%zu", depth + block->nparams + block->nlocals);
+            depth += 1;
+        }
+        fprintf(stderr, "\n");
         if (cur.opcode == WEB49_OPCODE_BLOCK) {
             web49_interp_opcode_t *next_code = web49_malloc(sizeof(web49_interp_opcode_t) * alloc);
             *++state->bufs = next_code;
