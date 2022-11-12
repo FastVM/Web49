@@ -1,6 +1,776 @@
 
 #include "tables.h"
 
+const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
+    [WEB49_OPCODE_UNREACHABLE] = (web49_table_stack_effect_t){
+        .fail = true,
+    },
+    [WEB49_OPCODE_NOP] = (web49_table_stack_effect_t){
+        .fail = true,
+    },
+    [WEB49_OPCODE_BLOCK] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_BLOCK,
+        .branch = true,
+    },
+    [WEB49_OPCODE_LOOP] = (web49_table_stack_effect_t){
+        .branch = true,
+    },
+    [WEB49_OPCODE_IF] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_BLOCK,
+        .branch = true,
+    },
+    [WEB49_OPCODE_ELSE] = (web49_table_stack_effect_t){
+        .fail = true,
+    },
+    [WEB49_OPCODE_END] = (web49_table_stack_effect_t){
+        .branch = true,
+    },
+    [WEB49_OPCODE_BR] = (web49_table_stack_effect_t){
+        .branch = true,
+    },
+    [WEB49_OPCODE_BR_IF] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .branch = true,
+    },
+    [WEB49_OPCODE_BR_TABLE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .branch = true,
+    },
+    [WEB49_OPCODE_RETURN] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+        .branch = true,
+    },
+    [WEB49_OPCODE_CALL] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_ARGS,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_RET,
+    },
+    [WEB49_OPCODE_CALL_INDIRECT] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_ARGS_INDIRECT,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_RET_INDIRECT,
+    },
+    [WEB49_OPCODE_DROP] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+    },
+    [WEB49_OPCODE_SELECT] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_ANY,
+        .in[2] = WEB49_TABLE_STACK_EFFECT_ANY,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+    },
+    [WEB49_OPCODE_GET_LOCAL] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+    },
+    [WEB49_OPCODE_SET_LOCAL] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+    },
+    [WEB49_OPCODE_TEE_LOCAL] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+    },
+    [WEB49_OPCODE_GET_GLOBAL] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+    },
+    [WEB49_OPCODE_SET_GLOBAL] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+    },
+    [WEB49_OPCODE_I32_LOAD] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_LOAD] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_F32_LOAD] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F64_LOAD] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_I32_LOAD8_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_LOAD8_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_LOAD16_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_LOAD16_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_LOAD8_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_LOAD8_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_LOAD16_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_LOAD16_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_LOAD32_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_LOAD32_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I32_STORE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_STORE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F32_STORE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F64_STORE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_STORE8] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_STORE16] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_STORE8] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_STORE16] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_STORE32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_MEMORY_SIZE] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_MEMORY_GROW] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_CONST] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_CONST] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_F32_CONST] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F64_CONST] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_I32_EQZ] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_EQ] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_NE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_LT_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_LT_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_GT_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_GT_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_LE_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_LE_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_GE_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_GE_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_EQZ] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_EQ] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_NE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_LT_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_LT_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_GT_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_GT_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_LE_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_LE_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_GE_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_GE_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F32_EQ] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F32_NE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F32_LT] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F32_GT] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F32_LE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F32_GE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F64_EQ] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F64_NE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F64_LT] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F64_GT] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F64_LE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_F64_GE] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_CLZ] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_CTZ] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_POPCNT] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_ADD] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_SUB] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_MUL] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_DIV_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_DIV_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_REM_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_REM_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_AND] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_OR] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_XOR] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_SHL] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_SHR_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_SHR_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_ROTL] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_ROTR] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_CLZ] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_CTZ] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_POPCNT] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_ADD] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_SUB] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_MUL] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_DIV_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_DIV_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_REM_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_REM_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_AND] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_OR] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_XOR] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_SHL] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_SHR_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_SHR_U] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_ROTL] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_ROTR] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_F32_ABS] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_NEG] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_CEIL] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_FLOOR] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_TRUNC] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_NEAREST] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_SQRT] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_ADD] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_SUB] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_MUL] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_DIV] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_MIN] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_MAX] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_COPYSIGN] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F64_ABS] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_NEG] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_CEIL] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_FLOOR] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_TRUNC] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_NEAREST] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_SQRT] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_ADD] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_SUB] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_MUL] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_DIV] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_MIN] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_MAX] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_COPYSIGN] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_I32_WRAP_I64] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_TRUNC_S_F32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_TRUNC_U_F32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_TRUNC_S_F64] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_TRUNC_U_F64] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_EXTEND_S_I32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_EXTEND_U_I32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_TRUNC_S_F32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_TRUNC_U_F32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_TRUNC_S_F64] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_TRUNC_U_F64] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_F32_CONVERT_S_I32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_CONVERT_U_I32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_CONVERT_S_I64] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_CONVERT_U_I64] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F32_DEMOTE_F64] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F64_CONVERT_S_I32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_CONVERT_U_I32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_CONVERT_S_I64] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_CONVERT_U_I64] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_F64_PROMOTE_F32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_I32_REINTERPRET_F32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_REINTERPRET_F64] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_F32_REINTERPRET_I32] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
+    },
+    [WEB49_OPCODE_F64_REINTERPRET_I64] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_MEMORY_INIT] = (web49_table_stack_effect_t){
+        .fail = true,
+    },
+    [WEB49_OPCODE_MEMORY_COPY] = (web49_table_stack_effect_t){
+        .fail = true,
+    },
+    [WEB49_OPCODE_MEMORY_FILL] = (web49_table_stack_effect_t){
+        .fail = true,
+    },
+    [WEB49_OPCODE_DATA_DROP] = (web49_table_stack_effect_t){
+        .fail = true,
+    },
+    [WEB49_OPCODE_TABLE_INIT] = (web49_table_stack_effect_t){
+        .fail = true,
+    },
+    [WEB49_OPCODE_ELEM_DROP] = (web49_table_stack_effect_t){
+        .fail = true,
+    },
+    [WEB49_OPCODE_TABLE_COPY] = (web49_table_stack_effect_t){
+        .fail = true,
+    },
+};
+
 const size_t web49_opcode_memsize[WEB49_MAX_OPCODE_NUM] = {
     [WEB49_OPCODE_I32_LOAD] = 4,
     [WEB49_OPCODE_I64_LOAD] = 8,

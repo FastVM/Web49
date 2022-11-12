@@ -238,8 +238,8 @@ enum web49_opcode_enum_t {
     WEB49_OPCODE_F32_REINTERPRET_I32 = 0xBE,
     WEB49_OPCODE_F64_REINTERPRET_I64 = 0xBF,
 
-    // MEMORY OPCODES
     WEB49_256_OPCODE = 256,
+    // MEMORY OPCODES
     WEB49_OPCODE_MEMORY_INIT,
     WEB49_OPCODE_MEMORY_COPY,
     WEB49_OPCODE_MEMORY_FILL,
@@ -440,6 +440,7 @@ struct web49_type_t {
 // };
 
 struct web49_section_custom_t {
+    const char *name;
     void *payload;
 };
 
@@ -520,6 +521,8 @@ struct web49_instr_immediate_t {
 
 struct web49_instr_t {
     web49_opcode_t opcode;
+    uint32_t nargs;
+    web49_instr_t *args;
     web49_instr_immediate_t immediate;
 };
 

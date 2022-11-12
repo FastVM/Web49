@@ -121,14 +121,14 @@ union web49_interp_opcode_t {
 
 struct web49_interp_block_t {
     web49_interp_opcode_t *code;
-    uint32_t nlocals : 32;
-    uint16_t nparams : 16;
-    uint16_t nreturns : 15;
-    bool is_code : 1;
+    uint32_t nlocals;
+    uint16_t nparams;
+    uint16_t nreturns;
     union {
         web49_section_code_entry_t *code_entry;
         web49_section_import_entry_t *import_entry;
     };
+    bool is_code;
 };
 
 struct web49_interp_instr_buf_t {

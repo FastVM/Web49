@@ -5,7 +5,6 @@
 #include <unistd.h>
 
 #include "../tables.h"
-#include "table.h"
 
 const char *web49_interp_opcode_to_name(size_t opcode) {
     if (opcode < WEB49_MAX_OPCODE_NUM) {
@@ -323,8 +322,6 @@ void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block
     web49_interp_opcode_t *code = web49_malloc(sizeof(web49_interp_opcode_t) * alloc);
     uint64_t ncode = 0;
     block->code = code;
-    size_t depth = 0;
-    // while (instrs->head < instrs->len) {
     while (true) {
         web49_instr_t cur = instrs->instrs[instrs->head++];
         if (cur.opcode == WEB49_OPCODE_END || cur.opcode == WEB49_OPCODE_ELSE) {
@@ -337,50 +334,6 @@ void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block
             || cur.opcode == WEB49_OPCODE_F32_REINTERPRET_I32 || cur.opcode == WEB49_OPCODE_I32_REINTERPRET_F32) {
             continue;
         }
-        web49_interp_table_t table = web49_interp_opcode_stack_effect[cur.opcode];
-        fprintf(stderr, "%s", web49_interp_opcode_to_name(cur.opcode));
-        for (uint64_t i = 0; table.in[i] != WEB49_INTERP_TABLE_END; i++) {
-            if (table.in[i] == WEB49_INTERP_TABLE_ARGS) {
-                uint64_t nargs = state->interp->extra->type_section.entries[cur.immediate.call_indirect.index].num_params;
-                depth -= nargs;
-                fprintf(stderr, " (r%zu .. r%zu)", (size_t) (depth + block->nparams + block->nlocals), (size_t) (depth + block->nparams + block->nlocals + nargs));
-            } else if (table.in[i] == WEB49_INTERP_TABLE_ARGS_INDIRECT) {
-                uint64_t nargs = state->interp->extra->funcs[cur.immediate.varint32].nparams;
-                depth -= nargs;
-                fprintf(stderr, " (r%zu .. r%zu)", (size_t) (depth + block->nparams + block->nlocals), (size_t) (depth + block->nparams + block->nlocals + nargs));
-            } else {
-                depth -= 1;
-                fprintf(stderr, " r%zu", depth + block->nparams + block->nlocals);
-            }
-        }
-        for (uint64_t i = 0; table.out[i] != WEB49_INTERP_TABLE_END; i++) {
-            if (table.out[i] == WEB49_INTERP_TABLE_RET) {
-                uint64_t nreturns = state->interp->extra->funcs[cur.immediate.varint32].nreturns;
-                if (nreturns == 1) {
-                    fprintf(stderr, " (r%zu .. r%zu)", depth + block->nparams + block->nlocals, (size_t) (depth + block->nparams + block->nlocals + nreturns));
-                } else {
-                    fprintf(stderr, "-> (r%zu", (size_t) nreturns);
-                }
-                depth += nreturns;
-            } else if (table.in[i] == WEB49_INTERP_TABLE_RET_INDIRECT) {
-                uint64_t nreturns = state->interp->extra->funcs[cur.immediate.varint32].nreturns;
-                if (nreturns == 1) {
-                    fprintf(stderr, " (r%zu .. r%zu)", depth + block->nparams + block->nlocals, (size_t) (depth + block->nparams + block->nlocals + nreturns));
-                } else {
-                    fprintf(stderr, "-> (r%zu", (size_t) nreturns);
-                }
-                depth += nreturns;
-            } else if (table.in[i] == WEB49_INTERP_TABLE_BLOCK) {
-                if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
-                    fprintf(stderr, " -> r%zu", depth + block->nparams + block->nlocals);
-                    depth += 1;
-                }
-            } else {
-                fprintf(stderr, " -> r%zu", depth + block->nparams + block->nlocals);
-                depth += 1;
-            }
-        }
-        fprintf(stderr, "\n");
         if (cur.opcode == WEB49_OPCODE_BLOCK) {
             web49_interp_opcode_t *next_code = web49_malloc(sizeof(web49_interp_opcode_t) * alloc);
             *++state->bufs = next_code;
@@ -2104,6 +2057,7 @@ void web49_interp_module(web49_module_t mod, const char **args) {
             .globals = web49_alloc0(sizeof(web49_interp_data_t) * (global_section.num_entries)),
             .args = args,
             .memsize = memsize,
+            .type_section = type_section,
             .import_section = import_section,
             .code_section = code_section,
             .function_section = function_section,

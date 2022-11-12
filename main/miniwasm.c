@@ -1,10 +1,12 @@
 #include "../src/ast.h"
 #include "../src/interp/interp.h"
 #include "../src/read_bin.h"
+#include "../src/tree.h"
 
 int web49_file_main(const char *inarg, const char **args) {
     web49_io_input_t infile = web49_io_input_open(inarg);
     web49_module_t mod = web49_readbin_module(&infile);
+    web49_tree_opt_module(&mod);
     web49_interp_module(mod, args);
     return 0;
 }

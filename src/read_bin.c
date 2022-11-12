@@ -186,9 +186,18 @@ web49_type_t web49_readbin_type(web49_io_input_t *in, web49_external_kind_t tag)
 }
 
 web49_section_custom_t web49_readbin_section_custom(web49_io_input_t *in, web49_section_header_t header) {
-    void *payload = web49_malloc(header.size);
-    web49_io_input_fread(in, (header.size), payload);
+    uint64_t size = header.size;
+    size_t begin = web49_io_input_ftell(in);
+    uint64_t name_len = web49_readbin_uleb(in);
+    char *name = web49_malloc(sizeof(char) * (name_len + 1));
+    web49_io_input_fread(in, sizeof(char) * name_len, name);
+    name[name_len] = '\0';
+    size_t end = web49_io_input_ftell(in);
+    size -= end - begin;
+    void *payload = web49_malloc(size);
+    web49_io_input_fread(in, (size), payload);
     return (web49_section_custom_t){
+        .name = name,
         .payload = payload,
     };
 }
@@ -376,7 +385,7 @@ web49_section_code_t web49_readbin_section_code(web49_io_input_t *in) {
     web49_section_code_entry_t *entries = web49_malloc(sizeof(web49_section_code_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
         uint64_t body_len = web49_readbin_uleb(in);
-        size_t end = web49_io_input_ftell(in) + (long)body_len;
+        size_t end = web49_io_input_ftell(in) + body_len;
         uint64_t num_locals = web49_readbin_uleb(in);
         web49_section_code_entry_local_t *locals = web49_malloc(sizeof(web49_section_code_entry_local_t) * num_locals);
         for (uint64_t j = 0; j < num_locals; j++) {
