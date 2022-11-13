@@ -24,8 +24,8 @@ enum {
 struct web49_table_stack_effect_t {
     uint8_t in[8];
     uint8_t out[8];
-    bool branch: 1;
-    bool fail: 1;
+    bool branch : 1;
+    bool fail : 1;
 };
 
 extern const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM];

@@ -364,12 +364,124 @@ void web49_interp_read_instr(web49_read_block_state_t *state, web49_interp_build
         state->bufs--;
         return;
     }
+    if (cur.nargs != 0 && cur.args[cur.nargs - 1].opcode == WEB49_OPCODE_I32_CONST) {
+        if (cur.opcode == WEB49_OPCODE_I32_EQ) {
+            cur.opcode = WEB49_OPCODE_I32_EQ_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_NE) {
+            cur.opcode = WEB49_OPCODE_I32_NE_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_LT_S) {
+            cur.opcode = WEB49_OPCODE_I32_LT_S_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_LT_U) {
+            cur.opcode = WEB49_OPCODE_I32_LT_U_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_GT_S) {
+            cur.opcode = WEB49_OPCODE_I32_GT_S_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_GT_U) {
+            cur.opcode = WEB49_OPCODE_I32_GT_U_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_LE_S) {
+            cur.opcode = WEB49_OPCODE_I32_LE_S_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_LE_U) {
+            cur.opcode = WEB49_OPCODE_I32_LE_U_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_GE_S) {
+            cur.opcode = WEB49_OPCODE_I32_GE_S_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_GE_U) {
+            cur.opcode = WEB49_OPCODE_I32_GE_U_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_ADD) {
+            cur.opcode = WEB49_OPCODE_I32_ADD_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_SUB) {
+            cur.opcode = WEB49_OPCODE_I32_SUB_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_MUL) {
+            cur.opcode = WEB49_OPCODE_I32_MUL_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_DIV_S) {
+            cur.opcode = WEB49_OPCODE_I32_DIV_S_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_DIV_U) {
+            cur.opcode = WEB49_OPCODE_I32_DIV_U_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_REM_S) {
+            cur.opcode = WEB49_OPCODE_I32_REM_S_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_REM_U) {
+            cur.opcode = WEB49_OPCODE_I32_REM_U_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_AND) {
+            cur.opcode = WEB49_OPCODE_I32_AND_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_OR) {
+            cur.opcode = WEB49_OPCODE_I32_OR_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_XOR) {
+            cur.opcode = WEB49_OPCODE_I32_XOR_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_SHL) {
+            cur.opcode = WEB49_OPCODE_I32_SHL_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_SHR_S) {
+            cur.opcode = WEB49_OPCODE_I32_SHR_S_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_SHR_U) {
+            cur.opcode = WEB49_OPCODE_I32_SHR_U_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_ROTL) {
+            cur.opcode = WEB49_OPCODE_I32_ROTL_TOP_CONST;
+            cur.nargs -= 1;
+        }
+        if (cur.opcode == WEB49_OPCODE_I32_ROTR) {
+            cur.opcode = WEB49_OPCODE_I32_ROTR_TOP_CONST;
+            cur.nargs -= 1;
+        }
+    }
     for (uint64_t i = 0; i < cur.nargs; i++) {
         web49_interp_read_instr(state, build, cur.args[i]);
     }
-    if (cur.opcode == WEB49_OPCODE_F64_REINTERPRET_I64 || cur.opcode == WEB49_OPCODE_I64_REINTERPRET_F64
-        || cur.opcode == WEB49_OPCODE_F32_REINTERPRET_I32 || cur.opcode == WEB49_OPCODE_I32_REINTERPRET_F32
-        || cur.opcode == WEB49_OPCODE_BEGIN0 || cur.opcode == WEB49_OPCODE_NOP) {
+    if (cur.opcode == WEB49_OPCODE_F64_REINTERPRET_I64 || cur.opcode == WEB49_OPCODE_I64_REINTERPRET_F64 || cur.opcode == WEB49_OPCODE_F32_REINTERPRET_I32 || cur.opcode == WEB49_OPCODE_I32_REINTERPRET_F32 || cur.opcode == WEB49_OPCODE_BEGIN0 || cur.opcode == WEB49_OPCODE_NOP) {
+        return;
+    }
+    // cmp ops
+    if (cur.opcode == WEB49_OPCODE_I32_EQ_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_NE_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_LT_S_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_LT_U_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_GT_S_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_GT_U_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_LE_S_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_LE_U_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_GE_S_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_GE_U_TOP_CONST) {
+        build->code[build->ncode++].opcode = OPCODE(cur.opcode);
+        build->code[build->ncode++].data.i32_s = cur.args[cur.nargs].immediate.varint32;
+        return;
+    }
+    // math ops
+    if (cur.opcode == WEB49_OPCODE_I32_ADD_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_SUB_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_MUL_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_DIV_S_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_DIV_U_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_REM_S_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_REM_U_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_AND_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_OR_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_XOR_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_SHL_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_SHR_S_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_SHR_U_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_ROTL_TOP_CONST || cur.opcode == WEB49_OPCODE_I32_ROTR_TOP_CONST) {
+        build->code[build->ncode++].opcode = OPCODE(cur.opcode);
+        build->code[build->ncode++].data.i32_s = cur.args[cur.nargs].immediate.varint32;
         return;
     }
     if (cur.opcode == WEB49_OPCODE_BR) {
@@ -449,9 +561,9 @@ uint64_t web49_interp_count(web49_instr_t cur) {
     }
     ret += 4;
     switch (cur.immediate.id) {
-    case WEB49_IMMEDIATE_BR_TABLE:
-        ret += cur.immediate.br_table.num_targets + 1;
-        break;
+        case WEB49_IMMEDIATE_BR_TABLE:
+            ret += cur.immediate.br_table.num_targets + 1;
+            break;
     }
     return ret;
 }
@@ -728,6 +840,31 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         [WEB49_OPCODE_WASI_SOCK_RECV] = &&DO_WEB49_OPCODE_WASI_SOCK_RECV,
         [WEB49_OPCODE_WASI_SOCK_SEND] = &&DO_WEB49_OPCODE_WASI_SOCK_SEND,
         [WEB49_OPCODE_WASI_SOCK_SHUTDOWN] = &&DO_WEB49_OPCODE_WASI_SOCK_SHUTDOWN,
+        [WEB49_OPCODE_I32_EQ_TOP_CONST] = &&DO_WEB49_OPCODE_I32_EQ_TOP_CONST,
+        [WEB49_OPCODE_I32_NE_TOP_CONST] = &&DO_WEB49_OPCODE_I32_NE_TOP_CONST,
+        [WEB49_OPCODE_I32_LT_S_TOP_CONST] = &&DO_WEB49_OPCODE_I32_LT_S_TOP_CONST,
+        [WEB49_OPCODE_I32_LT_U_TOP_CONST] = &&DO_WEB49_OPCODE_I32_LT_U_TOP_CONST,
+        [WEB49_OPCODE_I32_GT_S_TOP_CONST] = &&DO_WEB49_OPCODE_I32_GT_S_TOP_CONST,
+        [WEB49_OPCODE_I32_GT_U_TOP_CONST] = &&DO_WEB49_OPCODE_I32_GT_U_TOP_CONST,
+        [WEB49_OPCODE_I32_LE_S_TOP_CONST] = &&DO_WEB49_OPCODE_I32_LE_S_TOP_CONST,
+        [WEB49_OPCODE_I32_LE_U_TOP_CONST] = &&DO_WEB49_OPCODE_I32_LE_U_TOP_CONST,
+        [WEB49_OPCODE_I32_GE_S_TOP_CONST] = &&DO_WEB49_OPCODE_I32_GE_S_TOP_CONST,
+        [WEB49_OPCODE_I32_GE_U_TOP_CONST] = &&DO_WEB49_OPCODE_I32_GE_U_TOP_CONST,
+        [WEB49_OPCODE_I32_ADD_TOP_CONST] = &&DO_WEB49_OPCODE_I32_ADD_TOP_CONST,
+        [WEB49_OPCODE_I32_SUB_TOP_CONST] = &&DO_WEB49_OPCODE_I32_SUB_TOP_CONST,
+        [WEB49_OPCODE_I32_MUL_TOP_CONST] = &&DO_WEB49_OPCODE_I32_MUL_TOP_CONST,
+        [WEB49_OPCODE_I32_DIV_S_TOP_CONST] = &&DO_WEB49_OPCODE_I32_DIV_S_TOP_CONST,
+        [WEB49_OPCODE_I32_DIV_U_TOP_CONST] = &&DO_WEB49_OPCODE_I32_DIV_U_TOP_CONST,
+        [WEB49_OPCODE_I32_REM_S_TOP_CONST] = &&DO_WEB49_OPCODE_I32_REM_S_TOP_CONST,
+        [WEB49_OPCODE_I32_REM_U_TOP_CONST] = &&DO_WEB49_OPCODE_I32_REM_U_TOP_CONST,
+        [WEB49_OPCODE_I32_AND_TOP_CONST] = &&DO_WEB49_OPCODE_I32_AND_TOP_CONST,
+        [WEB49_OPCODE_I32_OR_TOP_CONST] = &&DO_WEB49_OPCODE_I32_OR_TOP_CONST,
+        [WEB49_OPCODE_I32_XOR_TOP_CONST] = &&DO_WEB49_OPCODE_I32_XOR_TOP_CONST,
+        [WEB49_OPCODE_I32_SHL_TOP_CONST] = &&DO_WEB49_OPCODE_I32_SHL_TOP_CONST,
+        [WEB49_OPCODE_I32_SHR_S_TOP_CONST] = &&DO_WEB49_OPCODE_I32_SHR_S_TOP_CONST,
+        [WEB49_OPCODE_I32_SHR_U_TOP_CONST] = &&DO_WEB49_OPCODE_I32_SHR_U_TOP_CONST,
+        [WEB49_OPCODE_I32_ROTL_TOP_CONST] = &&DO_WEB49_OPCODE_I32_ROTL_TOP_CONST,
+        [WEB49_OPCODE_I32_ROTR_TOP_CONST] = &&DO_WEB49_OPCODE_I32_ROTR_TOP_CONST,
     };
     if (block->code == NULL) {
         if (block->is_code) {
@@ -1103,7 +1240,6 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         uint32_t rhs = (--interp.stack)->i32_u;
         uint32_t lhs = (--interp.stack)->i32_u;
         interp.stack++->i32_u = (uint32_t)(lhs < rhs);
-        // fprintf(stderr, "%zu < %zu\n", (size_t) lhs, (size_t) rhs);
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_GT_S) {
@@ -1116,7 +1252,6 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         uint32_t rhs = (--interp.stack)->i32_u;
         uint32_t lhs = (--interp.stack)->i32_u;
         interp.stack++->i32_u = (uint32_t)(lhs > rhs);
-        // fprintf(stderr, "%zu > %zu\n", (size_t) lhs, (size_t) rhs);
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_LE_S) {
@@ -1298,14 +1433,12 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         uint32_t rhs = (--interp.stack)->i32_u;
         uint32_t lhs = (--interp.stack)->i32_u;
         interp.stack++->i32_u = (lhs + rhs);
-        // fprintf(stderr, "%zu + %zu\n", (size_t) lhs, (size_t) rhs);
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_SUB) {
         uint32_t rhs = (--interp.stack)->i32_u;
         uint32_t lhs = (--interp.stack)->i32_u;
         interp.stack++->i32_u = (lhs - rhs);
-        // fprintf(stderr, "%zu - %zu\n", (size_t) lhs, (size_t) rhs);
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_MUL) {
@@ -2021,6 +2154,156 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
     LABEL(WEB49_OPCODE_WASI_SOCK_SHUTDOWN) {
         fprintf(stderr, "no impl for: wasi %s", "wasi_sock_shutdown");
         __builtin_trap();
+    }
+    LABEL(WEB49_OPCODE_I32_EQ_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs == rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_NE_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs != rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LT_S_TOP_CONST) {
+        int32_t rhs = head++->data.i32_s;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i32_u = (uint32_t)(lhs < rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LT_U_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs < rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_GT_S_TOP_CONST) {
+        int32_t rhs = head++->data.i32_s;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i32_u = (uint32_t)(lhs > rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_GT_U_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs > rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LE_S_TOP_CONST) {
+        int32_t rhs = head++->data.i32_s;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_LE_U_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_GE_S_TOP_CONST) {
+        int32_t rhs = head++->data.i32_s;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_GE_U_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_ADD_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs + rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_SUB_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs - rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_MUL_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs * rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_DIV_S_TOP_CONST) {
+        int32_t rhs = head++->data.i32_s;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i32_s = (lhs / rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_DIV_U_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs / rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_REM_S_TOP_CONST) {
+        int32_t rhs = head++->data.i32_s;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i32_s = (lhs % rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_REM_U_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs % rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_AND_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs & rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_OR_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs | rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_XOR_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (uint32_t)(lhs ^ rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_SHL_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs << rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_SHR_S_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        int32_t lhs = (--interp.stack)->i32_s;
+        interp.stack++->i64_s = (lhs >> rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_SHR_U_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs >> rhs);
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_ROTL_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs >> rhs) | (lhs << (32 - rhs));
+        NEXT();
+    }
+    LABEL(WEB49_OPCODE_I32_ROTR_TOP_CONST) {
+        uint32_t rhs = head++->data.i32_u;
+        uint32_t lhs = (--interp.stack)->i32_u;
+        interp.stack++->i32_u = (lhs << rhs) | (lhs >> (32 - rhs));
+        NEXT();
     }
 }
 
