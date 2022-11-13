@@ -78,6 +78,16 @@ typedef struct web49_interp_instr_buf_t web49_interp_instr_buf_t;
 struct web49_read_block_state_t;
 typedef struct web49_read_block_state_t web49_read_block_state_t;
 
+struct web49_interp_build_t;
+typedef struct web49_interp_build_t web49_interp_build_t;
+
+struct web49_interp_build_t {
+    uint64_t alloc;
+    web49_interp_opcode_t *code;
+    uint64_t ncode;
+    web49_interp_block_t *block;
+};
+
 union web49_interp_data_t {
     int64_t i64_s;
     int32_t i32_s;
@@ -142,6 +152,7 @@ struct web49_read_block_state_t {
     web49_interp_instr_buf_t instrs;
     web49_interp_opcode_t **bufs;
     web49_interp_t *interp;
+    uint64_t nblocks;
 };
 
 void web49_interp_import(void **ptrs, const char *mod, const char *sym, web49_interp_block_t *block);

@@ -16,6 +16,7 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
         .branch = true,
     },
     [WEB49_OPCODE_IF] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_BLOCK,
         .branch = true,
     },
@@ -62,7 +63,7 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
         .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
     },
     [WEB49_OPCODE_SET_LOCAL] = (web49_table_stack_effect_t){
-        .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+        .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
     },
     [WEB49_OPCODE_TEE_LOCAL] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
@@ -72,18 +73,22 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
         .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
     },
     [WEB49_OPCODE_SET_GLOBAL] = (web49_table_stack_effect_t){
-        .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+        .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
     },
     [WEB49_OPCODE_I32_LOAD] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
     [WEB49_OPCODE_I64_LOAD] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
     },
     [WEB49_OPCODE_F32_LOAD] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
     },
     [WEB49_OPCODE_F64_LOAD] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
     },
     [WEB49_OPCODE_I32_LOAD8_S] = (web49_table_stack_effect_t){
@@ -1731,6 +1736,8 @@ const char *web49_opcode_to_name(web49_opcode_t opcode) {
             return "f32.reinterpret_i32";
         case WEB49_OPCODE_F64_REINTERPRET_I64:
             return "f64.reinterpret_i64";
+        case WEB49_OPCODE_BEGIN0:
+            return "begin0";
         case WEB49_OPCODE_MEMORY_INIT:
             return "memory.init";
         case WEB49_OPCODE_MEMORY_COPY:
