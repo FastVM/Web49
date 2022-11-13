@@ -91,7 +91,7 @@ web49_instr_t web49_tree_opt_read_block(web49_module_t *mod, web49_instr_t **hea
     ret.nargs = 0;
     ret.args = web49_malloc(sizeof(web49_instr_t) * nalloc);
     ret.immediate.id = WEB49_IMMEDIATE_NONE;
-    ret.opcode = WEB49_OPCODE_BLOCK;
+    ret.opcode = WEB49_OPCODE_BEGIN0;
     ret.args[ret.nargs++] = (web49_instr_t) {
         .opcode = WEB49_OPCODE_NOP,
         .immediate = (web49_instr_immediate_t) {
@@ -119,18 +119,14 @@ web49_instr_t web49_tree_opt_read_block(web49_module_t *mod, web49_instr_t **hea
             if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
                 ret.args[ret.nargs++] = cur;
             } else {
-                if (ret.args[ret.nargs-1].opcode == WEB49_OPCODE_NOP) {
-                    ret.args[ret.nargs-1] = cur;
-                } else {
-                    web49_instr_t begin0;
-                    begin0.opcode = WEB49_OPCODE_BEGIN0;
-                    begin0.immediate.id = WEB49_IMMEDIATE_NONE;
-                    begin0.nargs = 2;
-                    begin0.args = web49_malloc(sizeof(web49_instr_t) * 2);
-                    begin0.args[0] = ret.args[--ret.nargs];
-                    begin0.args[1] = cur;
-                    ret.args[ret.nargs++] = begin0;
-                }
+                web49_instr_t begin0;
+                begin0.opcode = WEB49_OPCODE_BEGIN0;
+                begin0.immediate.id = WEB49_IMMEDIATE_NONE;
+                begin0.nargs = 2;
+                begin0.args = web49_malloc(sizeof(web49_instr_t) * 2);
+                begin0.args[0] = ret.args[--ret.nargs];
+                begin0.args[1] = cur;
+                ret.args[ret.nargs++] = begin0;
             }
             continue;
         }
@@ -216,18 +212,14 @@ web49_instr_t web49_tree_opt_read_block(web49_module_t *mod, web49_instr_t **hea
             cur.args[cur.nargs++] = ret.args[ret.nargs + i];
         }
         if (use_begin0 && ret.nargs != 0) {
-            if (ret.args[ret.nargs-1].opcode == WEB49_OPCODE_NOP) {
-                ret.args[ret.nargs-1] = cur;
-            } else {
-                web49_instr_t begin0;
-                begin0.opcode = WEB49_OPCODE_BEGIN0;
-                begin0.immediate.id = WEB49_IMMEDIATE_NONE;
-                begin0.nargs = 2;
-                begin0.args = web49_malloc(sizeof(web49_instr_t) * 2);
-                begin0.args[0] = ret.args[--ret.nargs];
-                begin0.args[1] = cur;
-                ret.args[ret.nargs++] = begin0;
-            }
+            web49_instr_t begin0;
+            begin0.opcode = WEB49_OPCODE_BEGIN0;
+            begin0.immediate.id = WEB49_IMMEDIATE_NONE;
+            begin0.nargs = 2;
+            begin0.args = web49_malloc(sizeof(web49_instr_t) * 2);
+            begin0.args[0] = ret.args[--ret.nargs];
+            begin0.args[1] = cur;
+            ret.args[ret.nargs++] = begin0;
         } else {
             ret.args[ret.nargs++] = cur;
         }

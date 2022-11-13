@@ -314,7 +314,6 @@ void web49_interp_read_instr(web49_read_block_state_t *state, web49_interp_build
         fprintf(stderr, "error: outran preallocated code memory\n");
         __builtin_trap();
     }
-    // fprintf(stderr, "%s\n", web49_opcode_to_name(cur.opcode));
     if (cur.opcode == WEB49_OPCODE_BLOCK) {
         web49_interp_opcode_t *next_code = &build->code[build->ncode + 2];
         *++state->bufs = next_code;
@@ -789,7 +788,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         NEXT();
     }
     LABEL(WEB49_OPCODE_BR_IF) {
-        fprintf(stderr, "(br_if ... %zu)\n", (size_t) interp.stack[-1].i32_u);
+        // fprintf(stderr, "(br_if ... %zu)\n", (size_t) interp.stack[-1].i32_u);
         if ((--interp.stack)->i32_u) {
             head = head[0].ptr;
             NEXT();
@@ -884,6 +883,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         NEXT();
     }
     LABEL(WEB49_OPCODE_GET_LOCAL) {
+        // fprintf(stderr, "LOCAL %zu\n", (size_t) head->data.i32_u);
         *interp.stack++ = interp.locals[head++->data.i32_u];
         NEXT();
     }
@@ -1103,7 +1103,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         uint32_t rhs = (--interp.stack)->i32_u;
         uint32_t lhs = (--interp.stack)->i32_u;
         interp.stack++->i32_u = (uint32_t)(lhs < rhs);
-        fprintf(stderr, "%zu < %zu\n", (size_t) lhs, (size_t) rhs);
+        // fprintf(stderr, "%zu < %zu\n", (size_t) lhs, (size_t) rhs);
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_GT_S) {
@@ -1116,7 +1116,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         uint32_t rhs = (--interp.stack)->i32_u;
         uint32_t lhs = (--interp.stack)->i32_u;
         interp.stack++->i32_u = (uint32_t)(lhs > rhs);
-        fprintf(stderr, "%zu > %zu\n", (size_t) lhs, (size_t) rhs);
+        // fprintf(stderr, "%zu > %zu\n", (size_t) lhs, (size_t) rhs);
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_LE_S) {
@@ -1298,14 +1298,14 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         uint32_t rhs = (--interp.stack)->i32_u;
         uint32_t lhs = (--interp.stack)->i32_u;
         interp.stack++->i32_u = (lhs + rhs);
-        fprintf(stderr, "%zu + %zu\n", (size_t) lhs, (size_t) rhs);
+        // fprintf(stderr, "%zu + %zu\n", (size_t) lhs, (size_t) rhs);
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_SUB) {
         uint32_t rhs = (--interp.stack)->i32_u;
         uint32_t lhs = (--interp.stack)->i32_u;
         interp.stack++->i32_u = (lhs - rhs);
-        fprintf(stderr, "%zu - %zu\n", (size_t) lhs, (size_t) rhs);
+        // fprintf(stderr, "%zu - %zu\n", (size_t) lhs, (size_t) rhs);
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_MUL) {
