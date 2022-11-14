@@ -401,15 +401,8 @@ struct web49_interp_block_t {
     bool is_code;
 };
 
-struct web49_interp_instr_buf_t {
-    uint64_t head;
-    uint64_t len;
-    web49_instr_t *instrs;
-};
-
 struct web49_read_block_state_t {
     void *ptrs;
-    web49_interp_instr_buf_t instrs;
     uint64_t **bufs;
     web49_interp_t *interp;
     web49_interp_build_t build;

@@ -447,19 +447,60 @@ void web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur)
     if (cur.opcode == WEB49_OPCODE_BLOCK) {
         uint64_t *box = web49_interp_link_box();
         *++state->bufs = box;
+        for (size_t i = 0; i < cur.nargs; i++) {
+            web49_interp_read_instr(state, cur.args[i]);
+        }
         state->bufs--;
+        *box = build->ncode;
         return;
     }
     if (cur.opcode == WEB49_OPCODE_LOOP) {
         uint64_t *box = web49_interp_link_box();
+        *box = build->ncode;
         *++state->bufs = box;
+        for (size_t i = 0; i < cur.nargs; i++) {
+            web49_interp_read_instr(state, cur.args[i]);
+        }
         state->bufs--;
         return;
     }
     if (cur.opcode == WEB49_OPCODE_IF) {
-        uint64_t *box = web49_interp_link_box();
-        *++state->bufs = box;
-        state->bufs--;
+        if (cur.nargs == 3) {
+            uint64_t *ift = web49_interp_link_box();
+            uint64_t *iff = web49_interp_link_box();
+            uint64_t *end = web49_interp_link_box();
+            web49_interp_read_instr(state, cur.args[0]);
+            build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_IF);
+            web49_interp_link_get(state, build->ncode++, ift);
+            web49_interp_link_get(state, build->ncode++, iff);
+            *++state->bufs = end;
+            *ift = build->ncode;
+            for (size_t i = 0; i < cur.args[1].nargs; i++) {
+                web49_interp_read_instr(state, cur.args[1].args[i]);
+            }
+            build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_BR);
+            web49_interp_link_get(state, build->ncode++, end);
+            *iff = build->ncode;
+            for (size_t i = 0; i < cur.args[2].nargs; i++) {
+                web49_interp_read_instr(state, cur.args[2].args[i]);
+            }
+            state->bufs--;
+            *end = build->ncode;
+        } else {
+            uint64_t *then = web49_interp_link_box();
+            uint64_t *end = web49_interp_link_box();
+            web49_interp_read_instr(state, cur.args[0]);
+            build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_IF);
+            web49_interp_link_get(state, build->ncode++, then);
+            web49_interp_link_get(state, build->ncode++, end);
+            *++state->bufs = end;
+            *then = build->ncode;
+            for (size_t i = 0; i < cur.args[1].nargs; i++) {
+                web49_interp_read_instr(state, cur.args[1].args[i]);
+            }
+            state->bufs--;
+            *end = build->ncode;
+        }
         return;
     }
     for (uint64_t i = 0; i < cur.nargs; i++) {
@@ -1108,30 +1149,25 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
     if (block->code == NULL) {
         if (block->is_code) {
             web49_section_code_entry_t *entry = block->code_entry;
-            web49_interp_instr_buf_t buf;
-            buf.head = 0;
-            buf.len = entry->num_instrs;
-            buf.instrs = entry->instrs;
             for (uint64_t i = 0; i < entry->num_instrs; i++) {
                 entry->instrs[i] = web49_interp_opt(entry->instrs[i]);
             }
             web49_read_block_state_t state;
             state.ptrs = ptrs;
-            state.instrs = buf;
             uint64_t *data[256];
             state.bufs = &data[1];
             state.interp = &interp;
             state.build.alloc = 16;
-            for (uint64_t i = 0; i < buf.len; i++) {
-                state.build.alloc += web49_interp_count(buf.instrs[i]);
+            for (uint64_t i = 0; i < entry->num_instrs; i++) {
+                state.build.alloc += web49_interp_count(entry->instrs[i]);
             }
             state.build.code = web49_malloc(sizeof(web49_interp_opcode_t) * state.build.alloc);
             state.build.ncode = 0;
             state.alloc_links = 0;
             state.nlinks = 0;
             state.links = NULL;
-            for (uint64_t i = 0; i < buf.len; i++) {
-                web49_interp_read_instr(&state, buf.instrs[i]);
+            for (uint64_t i = 0; i < entry->num_instrs; i++) {
+                web49_interp_read_instr(&state, entry->instrs[i]);
             }
             state.build.code[state.build.ncode++].opcode = OPCODE(WEB49_OPCODE_RETURN);
             for (size_t i = 0; i < state.nlinks; i++) {
