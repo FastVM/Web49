@@ -13,7 +13,7 @@ OPT ?= -O2
 PROG_SRCS := main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c main/miniwasm.c
 PROG_OBJS := $(PROG_SRCS:%.c=%.o)
 
-WEB49_SRCS := src/read_bin.c src/read_wat.c src/write_wat.c src/write_bin.c src/io.c src/tables.c src/interp/interp.c src/tree.c
+WEB49_SRCS := src/read_bin.c src/read_wat.c src/write_wat.c src/write_bin.c src/io.c src/tables.c src/interp/interp.c src/interp/opt.c src/tree.c
 WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
 
 OBJS := $(WEB49_OBJS)

@@ -79,6 +79,31 @@ enum web49_interp_instr_enum_t {
     WEB49_OPCODE_I32_SHR_U_TOP_CONST,
     WEB49_OPCODE_I32_ROTL_TOP_CONST,
     WEB49_OPCODE_I32_ROTR_TOP_CONST,
+    WEB49_OPCODE_I32_EQ_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_NE_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_LT_S_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_LT_U_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_GT_S_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_GT_U_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_LE_S_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_LE_U_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_GE_S_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_GE_U_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_ADD_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_SUB_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_MUL_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_DIV_S_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_DIV_U_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_REM_S_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_REM_U_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_AND_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_OR_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_XOR_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_SHL_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_SHR_S_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_SHR_U_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_ROTL_TOP_CONST_NEXT_LOCAL,
+    WEB49_OPCODE_I32_ROTR_TOP_CONST_NEXT_LOCAL,
     WEB49_MAX_OPCODE_INTERP_NUM,
 };
 
@@ -177,7 +202,6 @@ struct web49_read_block_state_t {
     web49_interp_instr_buf_t instrs;
     web49_interp_opcode_t **bufs;
     web49_interp_t *interp;
-    uint64_t nblocks;
 };
 
 void web49_interp_import(void **ptrs, const char *mod, const char *sym, web49_interp_block_t *block);
@@ -185,5 +209,9 @@ void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block
 void web49_interp_module(web49_module_t mod, const char **args);
 const char *web49_interp_opcode_to_name(size_t opcode);
 web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *block);
+
+// opt.c
+
+web49_instr_t web49_interp_opt(web49_instr_t cur);
 
 #endif
