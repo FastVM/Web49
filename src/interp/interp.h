@@ -333,11 +333,18 @@ typedef struct web49_read_block_state_t web49_read_block_state_t;
 struct web49_interp_build_t;
 typedef struct web49_interp_build_t web49_interp_build_t;
 
+struct web49_interp_link_t;
+typedef struct web49_interp_link_t web49_interp_link_t;
+
+struct web49_interp_link_t {
+    uint64_t out;
+    uint64_t *box;
+};
+
 struct web49_interp_build_t {
     uint64_t alloc;
     web49_interp_opcode_t *code;
     uint64_t ncode;
-    web49_interp_block_t *block;
 };
 
 union web49_interp_data_t {
@@ -379,6 +386,7 @@ union web49_interp_opcode_t {
     void *ptr;
     web49_interp_data_t data;
     web49_interp_block_t *block;
+    size_t link;
 };
 
 struct web49_interp_block_t {
@@ -402,12 +410,18 @@ struct web49_interp_instr_buf_t {
 struct web49_read_block_state_t {
     void *ptrs;
     web49_interp_instr_buf_t instrs;
-    web49_interp_opcode_t **bufs;
+    uint64_t **bufs;
     web49_interp_t *interp;
+    web49_interp_build_t build;
+    web49_interp_link_t *links;
+    uint64_t alloc_links;
+    uint64_t nlinks;
 };
 
+
+uint64_t *web49_interp_link_box(void);
+void web49_interp_link_get(web49_read_block_state_t *state, uint64_t out, uint64_t *from);
 void web49_interp_import(void **ptrs, const char *mod, const char *sym, web49_interp_block_t *block);
-void web49_interp_read_block(web49_read_block_state_t *state, web49_interp_block_t *block, web49_interp_opcode_t *fall);
 void web49_interp_module(web49_module_t mod, const char **args);
 const char *web49_interp_opcode_to_name(size_t opcode);
 web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *block);
