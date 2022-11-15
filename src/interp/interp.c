@@ -544,18 +544,6 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         [WEB49_OPCODE_F64_CONST] = &&DO_WEB49_OPCODE_F64_CONST,
         [WEB49_OPCODE_I32_EQZ] = &&DO_WEB49_OPCODE_I32_EQZ,
         [WEB49_OPCODE_I64_EQZ] = &&DO_WEB49_OPCODE_I64_EQZ,
-        [WEB49_OPCODE_F32_EQ] = &&DO_WEB49_OPCODE_F32_EQ,
-        [WEB49_OPCODE_F32_NE] = &&DO_WEB49_OPCODE_F32_NE,
-        [WEB49_OPCODE_F32_LT] = &&DO_WEB49_OPCODE_F32_LT,
-        [WEB49_OPCODE_F32_GT] = &&DO_WEB49_OPCODE_F32_GT,
-        [WEB49_OPCODE_F32_LE] = &&DO_WEB49_OPCODE_F32_LE,
-        [WEB49_OPCODE_F32_GE] = &&DO_WEB49_OPCODE_F32_GE,
-        [WEB49_OPCODE_F64_EQ] = &&DO_WEB49_OPCODE_F64_EQ,
-        [WEB49_OPCODE_F64_NE] = &&DO_WEB49_OPCODE_F64_NE,
-        [WEB49_OPCODE_F64_LT] = &&DO_WEB49_OPCODE_F64_LT,
-        [WEB49_OPCODE_F64_GT] = &&DO_WEB49_OPCODE_F64_GT,
-        [WEB49_OPCODE_F64_LE] = &&DO_WEB49_OPCODE_F64_LE,
-        [WEB49_OPCODE_F64_GE] = &&DO_WEB49_OPCODE_F64_GE,
         [WEB49_OPCODE_I32_CLZ] = &&DO_WEB49_OPCODE_I32_CLZ,
         [WEB49_OPCODE_I32_CTZ] = &&DO_WEB49_OPCODE_I32_CTZ,
         [WEB49_OPCODE_I32_POPCNT] = &&DO_WEB49_OPCODE_I32_POPCNT,
@@ -569,13 +557,6 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         [WEB49_OPCODE_F32_TRUNC] = &&DO_WEB49_OPCODE_F32_TRUNC,
         [WEB49_OPCODE_F32_NEAREST] = &&DO_WEB49_OPCODE_F32_NEAREST,
         [WEB49_OPCODE_F32_SQRT] = &&DO_WEB49_OPCODE_F32_SQRT,
-        [WEB49_OPCODE_F32_ADD] = &&DO_WEB49_OPCODE_F32_ADD,
-        [WEB49_OPCODE_F32_SUB] = &&DO_WEB49_OPCODE_F32_SUB,
-        [WEB49_OPCODE_F32_MUL] = &&DO_WEB49_OPCODE_F32_MUL,
-        [WEB49_OPCODE_F32_DIV] = &&DO_WEB49_OPCODE_F32_DIV,
-        [WEB49_OPCODE_F32_MIN] = &&DO_WEB49_OPCODE_F32_MIN,
-        [WEB49_OPCODE_F32_MAX] = &&DO_WEB49_OPCODE_F32_MAX,
-        [WEB49_OPCODE_F32_COPYSIGN] = &&DO_WEB49_OPCODE_F32_COPYSIGN,
         [WEB49_OPCODE_F64_ABS] = &&DO_WEB49_OPCODE_F64_ABS,
         [WEB49_OPCODE_F64_NEG] = &&DO_WEB49_OPCODE_F64_NEG,
         [WEB49_OPCODE_F64_CEIL] = &&DO_WEB49_OPCODE_F64_CEIL,
@@ -583,13 +564,6 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         [WEB49_OPCODE_F64_TRUNC] = &&DO_WEB49_OPCODE_F64_TRUNC,
         [WEB49_OPCODE_F64_NEAREST] = &&DO_WEB49_OPCODE_F64_NEAREST,
         [WEB49_OPCODE_F64_SQRT] = &&DO_WEB49_OPCODE_F64_SQRT,
-        [WEB49_OPCODE_F64_ADD] = &&DO_WEB49_OPCODE_F64_ADD,
-        [WEB49_OPCODE_F64_SUB] = &&DO_WEB49_OPCODE_F64_SUB,
-        [WEB49_OPCODE_F64_MUL] = &&DO_WEB49_OPCODE_F64_MUL,
-        [WEB49_OPCODE_F64_DIV] = &&DO_WEB49_OPCODE_F64_DIV,
-        [WEB49_OPCODE_F64_MIN] = &&DO_WEB49_OPCODE_F64_MIN,
-        [WEB49_OPCODE_F64_MAX] = &&DO_WEB49_OPCODE_F64_MAX,
-        [WEB49_OPCODE_F64_COPYSIGN] = &&DO_WEB49_OPCODE_F64_COPYSIGN,
         [WEB49_OPCODE_I32_WRAP_I64] = &&DO_WEB49_OPCODE_I32_WRAP_I64,
         [WEB49_OPCODE_I32_TRUNC_S_F32] = &&DO_WEB49_OPCODE_I32_TRUNC_S_F32,
         [WEB49_OPCODE_I32_TRUNC_U_F32] = &&DO_WEB49_OPCODE_I32_TRUNC_U_F32,
@@ -1046,78 +1020,6 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         interp.stack[-1].i32_u = interp.stack[-1].i64_u == 0 ? 1 : 0;
         NEXT();
     }
-    LABEL(WEB49_OPCODE_F32_EQ) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->i32_u = (uint32_t)(lhs == rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F32_NE) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->i32_u = (uint32_t)(lhs != rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F32_LT) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->i32_u = (uint32_t)(lhs < rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F32_GT) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->i32_u = (uint32_t)(lhs > rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F32_LE) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F32_GE) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_EQ) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->i32_u = (uint32_t)(lhs == rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_NE) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->i32_u = (uint32_t)(lhs != rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_LT) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->i32_u = (uint32_t)(lhs < rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_GT) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->i32_u = (uint32_t)(lhs > rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_LE) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->i32_u = (uint32_t)(lhs <= rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_GE) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->i32_u = (uint32_t)(lhs >= rhs);
-        NEXT();
-    }
     LABEL(WEB49_OPCODE_I32_CLZ) {
         uint32_t arg = (--interp.stack)->i32_u;
         interp.stack++->i32_u = __builtin_clz(arg);
@@ -1176,48 +1078,6 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         interp.stack[-1].f32 = sqrt(interp.stack[-1].f32);
         NEXT();
     }
-    LABEL(WEB49_OPCODE_F32_ADD) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->f32 = lhs + rhs;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F32_SUB) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->f32 = lhs - rhs;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F32_MUL) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->f32 = lhs * rhs;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F32_DIV) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->f32 = lhs / rhs;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F32_MIN) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->f32 = fminf(lhs, rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F32_MAX) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->f32 = fmaxf(lhs, rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F32_COPYSIGN) {
-        float rhs = (--interp.stack)->f32;
-        float lhs = (--interp.stack)->f32;
-        interp.stack++->f32 = copysignf(lhs, rhs);
-        NEXT();
-    }
     LABEL(WEB49_OPCODE_F64_ABS) {
         interp.stack[-1].f64 = fabs(interp.stack[-1].f64);
         NEXT();
@@ -1244,48 +1104,6 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
     }
     LABEL(WEB49_OPCODE_F64_SQRT) {
         interp.stack[-1].f64 = sqrt(interp.stack[-1].f64);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_ADD) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->f64 = lhs + rhs;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_SUB) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->f64 = lhs - rhs;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_MUL) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->f64 = lhs * rhs;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_DIV) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->f64 = lhs / rhs;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_MIN) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->f64 = fmin(lhs, rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_MAX) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->f64 = fmax(lhs, rhs);
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_F64_COPYSIGN) {
-        double rhs = (--interp.stack)->f64;
-        double lhs = (--interp.stack)->f64;
-        interp.stack++->f64 = copysign(lhs, rhs);
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_WRAP_I64) {

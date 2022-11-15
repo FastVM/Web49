@@ -316,6 +316,165 @@ BLOCK(WEB49_OPCODE_I64_ROTR) {
     NEXT();
 }
 
+BLOCK(WEB49_OPCODE_F32_EQ) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(i32_u) = (uint32_t)(lhs == rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F32_NE) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(i32_u) = (uint32_t)(lhs != rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F32_LT) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(i32_u) = (uint32_t)(lhs < rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F32_GT) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(i32_u) = (uint32_t)(lhs > rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F32_LE) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(i32_u) = (uint32_t)(lhs <= rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F32_GE) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(i32_u) = (uint32_t)(lhs >= rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F32_ADD) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(f32) = (lhs + rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F32_SUB) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(f32) = (lhs - rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F32_MUL) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(f32) = (lhs * rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F32_DIV) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(f32) = (lhs / rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F32_MIN) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(f32) = fminf(lhs, rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F32_MAX) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(f32) = fmaxf(lhs, rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F32_COPYSIGN) {
+    float rhs = (RHS)->f32;
+    float lhs = (LHS)->f32;
+    OUT(f32) = copysignf(lhs, rhs);
+    NEXT();
+}
+
+
+BLOCK(WEB49_OPCODE_F64_EQ) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(i32_u) = (uint32_t)(lhs == rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F64_NE) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(i32_u) = (uint32_t)(lhs != rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F64_LT) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(i32_u) = (uint32_t)(lhs < rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F64_GT) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(i32_u) = (uint32_t)(lhs > rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F64_LE) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(i32_u) = (uint32_t)(lhs <= rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F64_GE) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(i32_u) = (uint32_t)(lhs >= rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F64_ADD) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(f64) = (lhs + rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F64_SUB) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(f64) = (lhs - rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F64_MUL) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(f64) = (lhs * rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F64_DIV) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(f64) = (lhs / rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F64_MIN) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(f64) = fmin(lhs, rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F64_MAX) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(f64) = fmax(lhs, rhs);
+    NEXT();
+}
+BLOCK(WEB49_OPCODE_F64_COPYSIGN) {
+    double rhs = (RHS)->f64;
+    double lhs = (LHS)->f64;
+    OUT(f64) = copysign(lhs, rhs);
+    NEXT();
+}
+
 #undef LHS
 #undef RHS
 #undef OUT
