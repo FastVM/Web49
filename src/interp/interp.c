@@ -666,8 +666,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
             }
             web49_read_block_state_t state;
             state.ptrs = ptrs;
-            uint64_t *data[256];
-            state.bufs = &data[1];
+            state.bufs = &interp.extra->data[1];
             state.interp = &interp;
             state.build.alloc = 16;
             for (uint64_t i = 0; i < entry->num_instrs; i++) {
@@ -1675,6 +1674,7 @@ void web49_interp_module(web49_module_t mod, const char **args) {
     uint64_t opcode[WEB49_MAX_OPCODE_INTERP_NUM] = {0};
     const char *names[WEB49_MAX_OPCODE_INTERP_NUM] = {0};
 #endif
+    uint64_t *data[256];
     web49_interp_t interp = (web49_interp_t) {
         .locals = stack,
         .stack = stack + 256,
@@ -1685,6 +1685,7 @@ void web49_interp_module(web49_module_t mod, const char **args) {
             .globals = web49_alloc0(sizeof(web49_interp_data_t) * (global_section.num_entries)),
             .args = args,
             .memsize = memsize,
+            .data = &data[0],
             .type_section = type_section,
             .import_section = import_section,
             .code_section = code_section,
@@ -1760,7 +1761,7 @@ void web49_interp_module(web49_module_t mod, const char **args) {
 #if defined(WEB49_COUNT_INSTR)
     for (size_t i = 0; i < WEB49_MAX_OPCODE_INTERP_NUM; i++) {
         if (interp.names[i] != NULL) {
-            fprintf(stderr, "%s = %"PRIu64"\n", interp.names[i], interp.count[i]);
+            fprintf(stderr, "%"PRIu64" of %s\n", interp.count[i], interp.names[i]+strlen("WEB49_OPCODE_"));
         }
     }
 #endif

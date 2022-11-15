@@ -120,6 +120,7 @@ struct web49_interp_extra_t {
     web49_interp_data_t *restrict globals;
     const char **args;
     uint64_t memsize;
+    uint64_t **data;
     web49_section_type_t type_section;
     web49_section_import_t import_section;
     web49_section_code_t code_section;
