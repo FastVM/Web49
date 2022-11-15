@@ -135,6 +135,10 @@ struct web49_interp_t {
     web49_interp_data_t *restrict locals;
     uint8_t *restrict memory;
     web49_interp_extra_t *restrict extra;
+#if defined(WEB49_COUNT_INSTR)
+    uint64_t *count;
+    const char **names;
+#endif
 };
 
 union web49_interp_opcode_t {
