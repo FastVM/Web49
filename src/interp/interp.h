@@ -55,8 +55,8 @@ enum web49_interp_instr_enum_t {
     WEB49_OPCODE_WASI_SOCK_SEND,
     WEB49_OPCODE_WASI_SOCK_SHUTDOWN,
 #define DO(a) a,
-#define PERM1(c) DO(c##_TO_STACK) DO(c##_TO_LOCAL)
-#define PERM2(b) PERM1(b) PERM1(b##_TOP_CONST) PERM1(b##_TOP_CONST_NEXT_LOCAL)
+#define PERM1(c) DO(c##_TO_STACK) DO(c##_TO_LOCAL) DO(c##_TO_STACK_AND_LOCAL)
+#define PERM2(b) PERM1(b) PERM1(b##_TOP_CONST) PERM1(b##_TOP_CONST_NEXT_LOCAL) PERM1(b##_TOP_LOCAL) PERM1(b##_TOP_LOCAL_NEXT_LOCAL)
 #define NAME(d) PERM2(d)
 #include "name.inc"
 #undef PERM1

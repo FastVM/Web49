@@ -330,6 +330,14 @@ void web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur)
 #include "name.inc"
 
 #define NAME(n) \
+    if (cur.opcode == n##_TOP_LOCAL_TO_STACK) { \
+        build->code[build->ncode++].opcode = OPCODE(cur.opcode); \
+        build->code[build->ncode++].data.i32_u = cur.args[cur.nargs].immediate.varuint32; \
+        return; \
+    }
+#include "name.inc"
+
+#define NAME(n) \
     if (cur.opcode == n##_TOP_CONST_NEXT_LOCAL_TO_STACK) { \
         build->code[build->ncode++].opcode = OPCODE(cur.opcode); \
         build->code[build->ncode++].data.i64_s = cur.args[cur.nargs+1].immediate.varint64; \
@@ -339,7 +347,16 @@ void web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur)
 #include "name.inc"
 
 #define NAME(n) \
-    if (cur.opcode == n##_TO_LOCAL) { \
+    if (cur.opcode == n##_TOP_LOCAL_NEXT_LOCAL_TO_STACK) { \
+        build->code[build->ncode++].opcode = OPCODE(cur.opcode); \
+        build->code[build->ncode++].data.i32_u = cur.args[cur.nargs+1].immediate.varuint32; \
+        build->code[build->ncode++].data.i32_u = cur.args[cur.nargs].immediate.varuint32; \
+        return; \
+    }
+#include "name.inc"
+
+#define NAME(n) \
+    if (cur.opcode == n##_TO_LOCAL || cur.opcode == n##_TO_STACK_AND_LOCAL) { \
         build->code[build->ncode++].opcode = OPCODE(cur.opcode); \
         build->code[build->ncode++].data.i32_u = cur.immediate.varuint32; \
         return; \
@@ -347,7 +364,7 @@ void web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur)
 #include "name.inc"
 
 #define NAME(n) \
-    if (cur.opcode == n##_TOP_CONST_TO_LOCAL) { \
+    if (cur.opcode == n##_TOP_CONST_TO_LOCAL || cur.opcode == n##_TOP_CONST_TO_STACK_AND_LOCAL) { \
         build->code[build->ncode++].opcode = OPCODE(cur.opcode); \
         build->code[build->ncode++].data.i64_s = cur.args[cur.nargs].immediate.varint64; \
         build->code[build->ncode++].data.i32_u = cur.immediate.varuint32; \
@@ -356,9 +373,28 @@ void web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur)
 #include "name.inc"
 
 #define NAME(n) \
-    if (cur.opcode == n##_TOP_CONST_NEXT_LOCAL_TO_LOCAL) { \
+    if (cur.opcode == n##_TOP_LOCAL_TO_LOCAL || cur.opcode == n##_TOP_LOCAL_TO_STACK_AND_LOCAL) { \
+        build->code[build->ncode++].opcode = OPCODE(cur.opcode); \
+        build->code[build->ncode++].data.i32_u = cur.args[cur.nargs].immediate.varuint32; \
+        build->code[build->ncode++].data.i32_u = cur.immediate.varuint32; \
+        return; \
+    }
+#include "name.inc"
+
+#define NAME(n) \
+    if (cur.opcode == n##_TOP_CONST_NEXT_LOCAL_TO_LOCAL || cur.opcode == n##_TOP_CONST_NEXT_LOCAL_TO_STACK_AND_LOCAL) { \
         build->code[build->ncode++].opcode = OPCODE(cur.opcode); \
         build->code[build->ncode++].data.i64_s = cur.args[cur.nargs+1].immediate.varint64; \
+        build->code[build->ncode++].data.i32_u = cur.args[cur.nargs].immediate.varuint32; \
+        build->code[build->ncode++].data.i32_u = cur.immediate.varuint32; \
+        return; \
+    }
+#include "name.inc"
+
+#define NAME(n) \
+    if (cur.opcode == n##_TOP_LOCAL_NEXT_LOCAL_TO_LOCAL || cur.opcode == n##_TOP_LOCAL_NEXT_LOCAL_TO_STACK_AND_LOCAL) { \
+        build->code[build->ncode++].opcode = OPCODE(cur.opcode); \
+        build->code[build->ncode++].data.i32_u = cur.args[cur.nargs+1].immediate.varuint32; \
         build->code[build->ncode++].data.i32_u = cur.args[cur.nargs].immediate.varuint32; \
         build->code[build->ncode++].data.i32_u = cur.immediate.varuint32; \
         return; \
@@ -632,8 +668,8 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         [WEB49_OPCODE_WASI_SOCK_SEND] = &&DO_WEB49_OPCODE_WASI_SOCK_SEND,
         [WEB49_OPCODE_WASI_SOCK_SHUTDOWN] = &&DO_WEB49_OPCODE_WASI_SOCK_SHUTDOWN,
 #define DO(a) [a] = && DO_##a,
-#define PERM1(c) DO(c##_TO_STACK) DO(c##_TO_LOCAL)
-#define PERM2(b) [b] = && DO_##b##_TO_STACK, PERM1(b) PERM1(b##_TOP_CONST) PERM1(b##_TOP_CONST_NEXT_LOCAL)
+#define PERM1(c) DO(c##_TO_STACK) DO(c##_TO_LOCAL) DO(c##_TO_STACK_AND_LOCAL)
+#define PERM2(b) [b] = && DO_##b##_TO_STACK, PERM1(b) PERM1(b##_TOP_CONST) PERM1(b##_TOP_CONST_NEXT_LOCAL) PERM1(b##_TOP_LOCAL) PERM1(b##_TOP_LOCAL_NEXT_LOCAL)
 #define NAME(d) PERM2(d)
 #include "name.inc"
 #undef PERM1
@@ -674,7 +710,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
             web49_interp_import(ptrs, entry->module_str, entry->field_str, block);
         }
     }
-    web49_interp_opcode_t *head = block->code;
+    const web49_interp_opcode_t *restrict head = block->code;
     NEXT();
     LABEL(WEB49_OPCODE_UNREACHABLE) {
         fprintf(stderr, "unreachable was reached\n");
@@ -1459,7 +1495,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         }
         struct timespec ts;
         clock_gettime(clock_id, &ts);
-        *(uint64_t *)&interp.memory[time] = (uint64_t)ts.tv_sec * 1000000000 + (uint64_t)ts.tv_nsec;
+        *(uint64_t *)&interp.memory[time] = (uint64_t)ts.tv_sec * UINT64_C(1000000000) + (uint64_t)ts.tv_nsec;
         interp.stack++->i32_u = 0;
         NEXT();
     }
@@ -1646,38 +1682,93 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
 #define BLOCK(NAME) LABEL(NAME##_TO_STACK)
 #define RHS (--interp.stack)
 #define LHS (--interp.stack)
-#define OUT (interp.stack++)
+#define OUT(t) interp.stack++->t
 #include "impl.inc"
 
 #define BLOCK(NAME) LABEL(NAME ## _TOP_CONST_TO_STACK)
 #define RHS (&head++->data)
 #define LHS (--interp.stack)
-#define OUT (interp.stack++)
+#define OUT(t) interp.stack++->t
+#include "impl.inc"
+
+#define BLOCK(NAME) LABEL(NAME ## _TOP_LOCAL_TO_STACK)
+#define RHS (&interp.locals[head++->data.i32_u])
+#define LHS (--interp.stack)
+#define OUT(t) interp.stack++->t
 #include "impl.inc"
 
 #define BLOCK(NAME) LABEL(NAME ## _TOP_CONST_NEXT_LOCAL_TO_STACK)
 #define RHS (&head++->data)
 #define LHS (&interp.locals[head++->data.i32_u])
-#define OUT (interp.stack++)
+#define OUT(t) interp.stack++->t
+#include "impl.inc"
+
+#define BLOCK(NAME) LABEL(NAME ## _TOP_LOCAL_NEXT_LOCAL_TO_STACK)
+#define RHS (&interp.locals[head++->data.i32_u])
+#define LHS (&interp.locals[head++->data.i32_u])
+#define OUT(t) interp.stack++->t
 #include "impl.inc"
 
 #define BLOCK(NAME) LABEL(NAME ## _TO_LOCAL)
 #define RHS (--interp.stack)
 #define LHS (--interp.stack)
-#define OUT (&interp.locals[head++->data.i32_u])
+#define OUT(t) interp.locals[head++->data.i32_u].t
 #include "impl.inc"
 
 #define BLOCK(NAME) LABEL(NAME ## _TOP_CONST_TO_LOCAL)
 #define RHS (&head++->data)
 #define LHS (--interp.stack)
-#define OUT (&interp.locals[head++->data.i32_u])
+#define OUT(t) interp.locals[head++->data.i32_u].t
+#include "impl.inc"
+
+#define BLOCK(NAME) LABEL(NAME ## _TOP_LOCAL_TO_LOCAL)
+#define RHS (&interp.locals[head++->data.i32_u])
+#define LHS (--interp.stack)
+#define OUT(t) interp.locals[head++->data.i32_u].t
 #include "impl.inc"
 
 #define BLOCK(NAME) LABEL(NAME ## _TOP_CONST_NEXT_LOCAL_TO_LOCAL)
 #define RHS (&head++->data)
 #define LHS (&interp.locals[head++->data.i32_u])
-#define OUT (&interp.locals[head++->data.i32_u])
+#define OUT(t) interp.locals[head++->data.i32_u].t
 #include "impl.inc"
+
+#define BLOCK(NAME) LABEL(NAME ## _TOP_LOCAL_NEXT_LOCAL_TO_LOCAL)
+#define RHS (&interp.locals[head++->data.i32_u])
+#define LHS (&interp.locals[head++->data.i32_u])
+#define OUT(t) interp.locals[head++->data.i32_u].t
+#include "impl.inc"
+
+#define BLOCK(NAME) LABEL(NAME ## _TO_STACK_AND_LOCAL)
+#define RHS (--interp.stack)
+#define LHS (--interp.stack)
+#define OUT(t) interp.stack++->t = interp.locals[head++->data.i32_u].t
+#include "impl.inc"
+
+#define BLOCK(NAME) LABEL(NAME ## _TOP_CONST_TO_STACK_AND_LOCAL)
+#define RHS (&head++->data)
+#define LHS (--interp.stack)
+#define OUT(t) interp.stack++->t = interp.locals[head++->data.i32_u].t
+#include "impl.inc"
+
+#define BLOCK(NAME) LABEL(NAME ## _TOP_LOCAL_TO_STACK_AND_LOCAL)
+#define RHS (&interp.locals[head++->data.i32_u])
+#define LHS (--interp.stack)
+#define OUT(t) interp.stack++->t = interp.locals[head++->data.i32_u].t
+#include "impl.inc"
+
+#define BLOCK(NAME) LABEL(NAME ## _TOP_CONST_NEXT_LOCAL_TO_STACK_AND_LOCAL)
+#define RHS (&head++->data)
+#define LHS (&interp.locals[head++->data.i32_u])
+#define OUT(t) interp.stack++->t = interp.locals[head++->data.i32_u].t
+#include "impl.inc"
+
+#define BLOCK(NAME) LABEL(NAME ## _TOP_LOCAL_NEXT_LOCAL_TO_STACK_AND_LOCAL)
+#define RHS (&interp.locals[head++->data.i32_u])
+#define LHS (&interp.locals[head++->data.i32_u])
+#define OUT(t) interp.stack++->t = interp.locals[head++->data.i32_u].t
+#include "impl.inc"
+
 }
 
 void web49_interp_module(web49_module_t mod, const char **args) {
