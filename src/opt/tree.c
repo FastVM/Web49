@@ -65,7 +65,7 @@ static void debug_print(FILE *out, web49_instr_t instr, size_t depth, size_t max
     }
 }
 
-web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **head) {
+web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, size_t depth, web49_instr_t **head) {
     web49_section_type_t type_section;
     web49_section_function_t function_section;
     web49_section_import_t import_section;
@@ -113,12 +113,13 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
             ret.args = web49_realloc(ret.args, sizeof(web49_instr_t) * nalloc);
         }
         if (cur.opcode == WEB49_OPCODE_BLOCK || cur.opcode == WEB49_OPCODE_LOOP) {
-            web49_instr_t body = web49_opt_tree_read_block(mod, head);
+            web49_instr_t body = web49_opt_tree_read_block(mod, depth, head);
             cur.nargs = 1;
             cur.args = web49_malloc(sizeof(web49_instr_t));
             cur.args[0] = body;
             if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
                 ret.args[ret.nargs++] = cur;
+                depth += 1;
             } else {
                 web49_instr_t begin0;
                 begin0.opcode = WEB49_OPCODE_BEGIN0;
@@ -132,13 +133,13 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
             continue;
         }
         if (cur.opcode == WEB49_OPCODE_IF) {
-            web49_instr_t ifthen = web49_opt_tree_read_block(mod, head);
+            web49_instr_t ifthen = web49_opt_tree_read_block(mod, depth, head);
             if ((*head)[-1].opcode == WEB49_OPCODE_ELSE) {
                 cur.nargs = 3;
                 cur.args = web49_malloc(sizeof(web49_instr_t) * 3);
                 cur.args[0] = ret.args[--ret.nargs];
                 cur.args[1] = ifthen;
-                cur.args[2] = web49_opt_tree_read_block(mod, head);
+                cur.args[2] = web49_opt_tree_read_block(mod, depth, head);
             } else {
                 cur.nargs = 2;
                 cur.args = web49_malloc(sizeof(web49_instr_t) * 2);
@@ -147,6 +148,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
             }
             if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
                 ret.args[ret.nargs++] = cur;
+                depth += 1;
             } else {
                 web49_instr_t begin0;
                 begin0.opcode = WEB49_OPCODE_BEGIN0;
@@ -212,6 +214,8 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
         for (size_t i = 0; i < nargs; i++) {
             cur.args[cur.nargs++] = ret.args[ret.nargs + i];
         }
+        depth += nargs;
+        cur.depth = depth;
         if (use_begin0 && ret.nargs != 0) {
             web49_instr_t begin0;
             begin0.opcode = WEB49_OPCODE_BEGIN0;
@@ -223,6 +227,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
             ret.args[ret.nargs++] = begin0;
         } else {
             ret.args[ret.nargs++] = cur;
+            depth += 1;
         }
     }
     return ret;
@@ -230,7 +235,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
 
 void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t *entry) {
     web49_instr_t *head = entry->instrs;
-    web49_instr_t instr = web49_opt_tree_read_block(mod, &head);
+    web49_instr_t instr = web49_opt_tree_read_block(mod, 0, &head);
     // debug_print(stderr, instr, 0, SIZE_MAX);
     // fprintf(stderr, "\n");
     entry->num_instrs = 1;
