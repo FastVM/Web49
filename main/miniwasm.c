@@ -1,8 +1,8 @@
 #include "../src/ast.h"
 #include "../src/interp/interp.h"
-#include "../src/read_bin.h"
 #include "../src/opt/tee.h"
 #include "../src/opt/tree.h"
+#include "../src/read_bin.h"
 
 int web49_file_main(const char *inarg, const char **args) {
     web49_io_input_t infile = web49_io_input_open(inarg);

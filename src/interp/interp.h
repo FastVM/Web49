@@ -161,7 +161,6 @@ struct web49_read_block_state_t {
     uint64_t nlinks;
 };
 
-
 uint64_t *web49_interp_link_box(void);
 void web49_interp_link_get(web49_read_block_state_t *state, uint64_t out, uint64_t *from);
 void web49_interp_import(void **ptrs, const char *mod, const char *sym, web49_interp_block_t *block);

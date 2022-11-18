@@ -13,13 +13,13 @@ void web49_opt_tee_code(web49_module_t *mod, web49_section_code_entry_t *entry) 
             next = web49_realloc(next, sizeof(web49_instr_t) * alloc);
         }
         if (instr.opcode == WEB49_OPCODE_TEE_LOCAL) {
-            next[len++] = (web49_instr_t) {
+            next[len++] = (web49_instr_t){
                 .opcode = WEB49_OPCODE_SET_LOCAL,
-                .immediate = instr.immediate,                
+                .immediate = instr.immediate,
             };
-            next[len++] = (web49_instr_t) {
+            next[len++] = (web49_instr_t){
                 .opcode = WEB49_OPCODE_GET_LOCAL,
-                .immediate = instr.immediate,                
+                .immediate = instr.immediate,
             };
         } else {
             next[len++] = instr;
