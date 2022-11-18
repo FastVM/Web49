@@ -341,12 +341,12 @@ void web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur,
     if (cur.opcode == WEB49_OPCODE_CALL_INDIRECT) {
         web49_section_type_entry_t ent = state->interp->extra->type_section.entries[cur.immediate.call_indirect.index];
         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL_INDIRECT);
-        // fprintf(stderr, "%zu : %zu", (size_t) ent.num_params, (size_t) cur.nargs);
         build->code[build->ncode++].data.i32_u = state->stack[--state->depth];
         state->depth -= ent.num_params;
         build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
         state->stack[state->depth] = state->depth + state->nlocals;
         state->depth += ent.num_returns;
+        return;
     }
     if (cur.opcode == WEB49_OPCODE_CALL) {
         switch (state->interp->extra->funcs[cur.immediate.varint32].nreturns) {
