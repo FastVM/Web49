@@ -244,7 +244,7 @@ void web49_interp_link_get(web49_read_block_state_t *state, uint64_t out, uint64
 }
 
 void web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur, bool fake_okay) {
-    // fake_okay = false;
+    fake_okay = false;
     web49_interp_build_t *build = &state->build;
     void **ptrs = state->ptrs;
     if (build->ncode + 16 >= build->alloc) {
@@ -258,11 +258,13 @@ void web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur,
     }
     if (cur.opcode == WEB49_OPCODE_BLOCK) {
         uint64_t *box = web49_interp_link_box();
+        uint64_t save = state->depth;
         *++state->bufs = box;
         for (size_t i = 0; i < cur.nargs; i++) {
             web49_interp_read_instr(state, cur.args[i], true);
         }
         state->bufs--;
+        state->depth = save;
         *box = build->ncode;
         if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
             state->stack[state->depth] = state->depth + state->nlocals;
@@ -273,11 +275,13 @@ void web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur,
     if (cur.opcode == WEB49_OPCODE_LOOP) {
         uint64_t *box = web49_interp_link_box();
         *box = build->ncode;
+        uint64_t save = state->depth;
         *++state->bufs = box;
         for (size_t i = 0; i < cur.nargs; i++) {
             web49_interp_read_instr(state, cur.args[i], true);
         }
         state->bufs--;
+        state->depth = save;
         return;
     }
     if (cur.opcode == WEB49_OPCODE_IF) {
@@ -298,6 +302,7 @@ void web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur,
             build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_BR);
             uint64_t save = state->depth;
             web49_interp_link_get(state, build->ncode++, end);
+            // build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_UNREACHABLE);
             state->depth = save;
             *iff = build->ncode;
             for (size_t i = 0; i < cur.args[2].nargs; i++) {
@@ -367,8 +372,10 @@ void web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur,
         return;
     }
     build->code[build->ncode++].opcode = OPCODE(cur.opcode);
-    state->depth -= cur.nargs;
-    for (uint64_t i = 0; i < cur.nargs; i++) {
+    for (uint64_t i = 0; web49_stack_effects[cur.opcode].in[i] != WEB49_TABLE_STACK_EFFECT_END; i++) {
+        state->depth -= 1;
+    }
+    for (uint64_t i = 0; web49_stack_effects[cur.opcode].in[i] != WEB49_TABLE_STACK_EFFECT_END; i++) {
         build->code[build->ncode++].data.i32_u = state->stack[state->depth + i];
     }
     if (web49_stack_effects[cur.opcode].out[0] != WEB49_TABLE_STACK_EFFECT_END) {
@@ -764,9 +771,16 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         }
     }
     LABEL(WEB49_OPCODE_BR_TABLE) {
-        fprintf(stderr, "unimplemented: br_table\n");
-        __builtin_trap();
-        NEXT();
+        uint32_t brvalue = interp.locals[head[0].data.i32_u].i32_u;
+        uint32_t maxvalue = head[1].data.i32_u;
+        head += 2;
+        if (brvalue < maxvalue) {
+            head = head[brvalue].ptr;
+            NEXT();
+        } else {
+            head = head[maxvalue].ptr;
+            NEXT();
+        }
     }
     LABEL(WEB49_OPCODE_RETURN) {
         return interp.locals[head[0].data.i32_u];
@@ -807,8 +821,12 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         NEXT();
     }
     LABEL(WEB49_OPCODE_SELECT) {
-        fprintf(stderr, "unimplemented: select\n");
-        __builtin_trap();
+        if (interp.locals[head[2].data.i32_u].i32_u != 0) {
+            interp.locals[head[3].data.i32_u] = interp.locals[head[0].data.i32_u];
+        } else {
+            interp.locals[head[3].data.i32_u] = interp.locals[head[1].data.i32_u];
+        }
+        head += 4;
         NEXT();
     }
     LABEL(WEB49_OPCODE_GET_LOCAL) {
@@ -823,6 +841,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
     }
     LABEL(WEB49_OPCODE_TEE_LOCAL) {
         web49_interp_data_t got = interp.locals[head[0].data.i32_u];
+        interp.locals[head[1].data.i32_u] = got;
         interp.locals[head[2].data.i32_u] = got;
         head += 3;
         NEXT();
@@ -843,18 +862,18 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_LOAD) {
-        fprintf(stderr, "unimplemented: i64_load\n");
-        __builtin_trap();
+        interp.locals[head[1].data.i32_u].i64_u = *(uint64_t *)&interp.extra->memory[interp.locals[head[0].data.i32_u].i32_u + head[2].data.i32_u];
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_F32_LOAD) {
-        fprintf(stderr, "unimplemented: f32_load\n");
-        __builtin_trap();
+        interp.locals[head[1].data.i32_u].f32 = *(float *)&interp.extra->memory[interp.locals[head[0].data.i32_u].i32_u + head[2].data.i32_u];
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_F64_LOAD) {
-        fprintf(stderr, "unimplemented: f64_load\n");
-        __builtin_trap();
+        interp.locals[head[1].data.i32_u].f64 = *(double *)&interp.extra->memory[interp.locals[head[0].data.i32_u].i32_u + head[2].data.i32_u];
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_LOAD8_S) {
@@ -878,33 +897,33 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_LOAD8_S) {
-        fprintf(stderr, "unimplemented: i64_load8_s\n");
-        __builtin_trap();
+        interp.locals[head[1].data.i32_u].i64_s = (int64_t) * (int8_t *)&interp.extra->memory[interp.locals[head[0].data.i32_u].i32_u + head[2].data.i32_u];
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_LOAD8_U) {
-        fprintf(stderr, "unimplemented: i64_load8_u\n");
-        __builtin_trap();
+        interp.locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint8_t *)&interp.extra->memory[interp.locals[head[0].data.i32_u].i32_u + head[2].data.i32_u];
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_LOAD16_S) {
-        fprintf(stderr, "unimplemented: i64_load16_s\n");
-        __builtin_trap();
+        interp.locals[head[1].data.i32_u].i64_s = (int64_t) * (int16_t *)&interp.extra->memory[interp.locals[head[0].data.i32_u].i32_u + head[2].data.i32_u];
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_LOAD16_U) {
-        fprintf(stderr, "unimplemented: i64_load16_u\n");
-        __builtin_trap();
+        interp.locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint16_t *)&interp.extra->memory[interp.locals[head[0].data.i32_u].i32_u + head[2].data.i32_u];
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_LOAD32_S) {
-        fprintf(stderr, "unimplemented: i64_load32_s\n");
-        __builtin_trap();
+        interp.locals[head[1].data.i32_u].i64_s = (int64_t) * (int32_t *)&interp.extra->memory[interp.locals[head[0].data.i32_u].i32_u + head[2].data.i32_u];
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_LOAD32_U) {
-        fprintf(stderr, "unimplemented: i64_load32_u\n");
-        __builtin_trap();
+        interp.locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint32_t *)&interp.extra->memory[interp.locals[head[0].data.i32_u].i32_u + head[2].data.i32_u];
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_STORE) {
@@ -1023,58 +1042,58 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_EQZ) {
-        fprintf(stderr, "unimplemented: i64_eqz\n");
-        __builtin_trap();
+        interp.locals[head[1].data.i32_u].i32_u = (uint32_t)(interp.locals[head[0].data.i32_u].i32_u == 0);
+        head += 2;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_EQ) {
-        fprintf(stderr, "unimplemented: i64_eq\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i32_u = (uint32_t)(interp.locals[head[0].data.i32_u].i64_u == interp.locals[head[1].data.i32_u].i64_u);
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_NE) {
-        fprintf(stderr, "unimplemented: i64_ne\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i32_u = (uint32_t)(interp.locals[head[0].data.i32_u].i64_u != interp.locals[head[1].data.i32_u].i64_u);
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_LT_S) {
-        fprintf(stderr, "unimplemented: i64_lt_s\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i32_u = (uint32_t)(interp.locals[head[0].data.i32_u].i64_s < interp.locals[head[1].data.i32_u].i64_s);
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_LT_U) {
-        fprintf(stderr, "unimplemented: i64_lt_u\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i32_u = (uint32_t)(interp.locals[head[0].data.i32_u].i64_u < interp.locals[head[1].data.i32_u].i64_u);
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_GT_S) {
-        fprintf(stderr, "unimplemented: i64_gt_s\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i32_u = (uint32_t)(interp.locals[head[0].data.i32_u].i64_s > interp.locals[head[1].data.i32_u].i64_s);
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_GT_U) {
-        fprintf(stderr, "unimplemented: i64_gt_u\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i32_u = (uint32_t)(interp.locals[head[0].data.i32_u].i64_u > interp.locals[head[1].data.i32_u].i64_u);
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_LE_S) {
-        fprintf(stderr, "unimplemented: i64_le_s\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i32_u = (uint32_t)(interp.locals[head[0].data.i32_u].i64_s <= interp.locals[head[1].data.i32_u].i64_s);
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_LE_U) {
-        fprintf(stderr, "unimplemented: i64_le_u\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i32_u = (uint32_t)(interp.locals[head[0].data.i32_u].i64_u <= interp.locals[head[1].data.i32_u].i64_u);
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_GE_S) {
-        fprintf(stderr, "unimplemented: i64_ge_s\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i32_u = (uint32_t)(interp.locals[head[0].data.i32_u].i64_s >= interp.locals[head[1].data.i32_u].i64_s);
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_GE_U) {
-        fprintf(stderr, "unimplemented: i64_ge_u\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i32_u = (uint32_t)(interp.locals[head[0].data.i32_u].i64_u >= interp.locals[head[1].data.i32_u].i64_u);
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_F32_EQ) {
@@ -1153,16 +1172,12 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_ADD) {
-        // fprintf(stderr, "%zu + %zu\n", (size_t)interp.locals[head[0].data.i32_u].i32_u, (size_t)interp.locals[head[1].data.i32_u].i32_u);
         interp.locals[head[2].data.i32_u].i32_u = interp.locals[head[0].data.i32_u].i32_u + interp.locals[head[1].data.i32_u].i32_u;
-        // fprintf(stderr, "r%zu + r%zu\n", (size_t)head[0].data.i32_u, (size_t)head[1].data.i32_u);
         head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_SUB) {
-        // fprintf(stderr, "%zu - %zu\n", (size_t)interp.locals[head[0].data.i32_u].i32_u, (size_t)interp.locals[head[1].data.i32_u].i32_u);
         interp.locals[head[2].data.i32_u].i32_u = interp.locals[head[0].data.i32_u].i32_u - interp.locals[head[1].data.i32_u].i32_u;
-        // fprintf(stderr, "r%zu = r%zu - r%zu\n", (size_t)head[2].data.i32_u, (size_t)head[0].data.i32_u, (size_t)head[1].data.i32_u);
         head += 3;
         NEXT();
     }
@@ -1172,8 +1187,8 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_DIV_S) {
-        fprintf(stderr, "unimplemented: i32_div_s\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i32_s = interp.locals[head[0].data.i32_u].i32_s / interp.locals[head[1].data.i32_u].i32_s;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_DIV_U) {
@@ -1182,8 +1197,8 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_REM_S) {
-        fprintf(stderr, "unimplemented: i32_rem_s\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i32_s = interp.locals[head[0].data.i32_u].i32_s % interp.locals[head[1].data.i32_u].i32_s;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I32_REM_U) {
@@ -1247,68 +1262,68 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_ADD) {
-        fprintf(stderr, "unimplemented: i64_add\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_u = interp.locals[head[0].data.i32_u].i64_u + interp.locals[head[1].data.i32_u].i64_u;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_SUB) {
-        fprintf(stderr, "unimplemented: i64_sub\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_u = interp.locals[head[0].data.i32_u].i64_u - interp.locals[head[1].data.i32_u].i64_u;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_MUL) {
-        fprintf(stderr, "unimplemented: i64_mul\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_u = interp.locals[head[0].data.i32_u].i64_u * interp.locals[head[1].data.i32_u].i64_u;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_DIV_S) {
-        fprintf(stderr, "unimplemented: i64_div_s\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_s = interp.locals[head[0].data.i32_u].i64_s / interp.locals[head[1].data.i32_u].i64_s;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_DIV_U) {
-        fprintf(stderr, "unimplemented: i64_div_u\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_u = interp.locals[head[0].data.i32_u].i64_u / interp.locals[head[1].data.i32_u].i64_u;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_REM_S) {
-        fprintf(stderr, "unimplemented: i64_rem_s\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_s = interp.locals[head[0].data.i32_u].i64_s % interp.locals[head[1].data.i32_u].i64_s;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_REM_U) {
-        fprintf(stderr, "unimplemented: i64_rem_u\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_u = interp.locals[head[0].data.i32_u].i64_u % interp.locals[head[1].data.i32_u].i64_u;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_AND) {
-        fprintf(stderr, "unimplemented: i64_and\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_u = interp.locals[head[0].data.i32_u].i64_u & interp.locals[head[1].data.i32_u].i64_u;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_OR) {
-        fprintf(stderr, "unimplemented: i64_or\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_u = interp.locals[head[0].data.i32_u].i64_u | interp.locals[head[1].data.i32_u].i64_u;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_XOR) {
-        fprintf(stderr, "unimplemented: i64_xor\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_u = interp.locals[head[0].data.i32_u].i64_u ^ interp.locals[head[1].data.i32_u].i64_u;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_SHL) {
-        fprintf(stderr, "unimplemented: i64_shl\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_u = interp.locals[head[0].data.i32_u].i64_u << interp.locals[head[1].data.i32_u].i64_u;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_SHR_S) {
-        fprintf(stderr, "unimplemented: i64_shr_s\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_s = interp.locals[head[0].data.i32_u].i64_s >> interp.locals[head[1].data.i32_u].i64_s;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_SHR_U) {
-        fprintf(stderr, "unimplemented: i64_shr_u\n");
-        __builtin_trap();
+        interp.locals[head[2].data.i32_u].i64_u = interp.locals[head[0].data.i32_u].i64_u >> interp.locals[head[1].data.i32_u].i64_u;
+        head += 3;
         NEXT();
     }
     LABEL(WEB49_OPCODE_I64_ROTL) {
