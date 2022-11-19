@@ -1,6 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int main() {
-    printf("Hello, %s!\n", "World");
+    printf("0x%p\n", malloc(4));
     return 0;
 }
