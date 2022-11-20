@@ -1,8 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int main() {
-    puts("World");
-    printf("Hello, %s!\n", "World");
-    printf("ptr = %p\n", &main);
+    printf("0x%p\n", malloc(4));
     return 0;
 }

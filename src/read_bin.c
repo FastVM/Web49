@@ -652,6 +652,15 @@ web49_section_t web49_readbin_section(web49_io_input_t *in, web49_section_header
             .data_section = web49_readbin_section_data(in),
         };
     }
+    if (id == WEB49_SECTION_ID_DATA_COUNT) {
+        void *mem = web49_malloc(sizeof(uint8_t) * header.size);
+        web49_io_input_fread(in, header.size, mem);
+        return (web49_section_t){
+            .header = header,
+            .custom_section.name = NULL,
+            .custom_section.payload = mem,
+        };
+    }
     fprintf(stderr, "unknown section kind: 0x%zX starting at %zX\n", (size_t)id, (size_t)web49_io_input_ftell(in));
     exit(1);
 }
