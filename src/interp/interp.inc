@@ -49,7 +49,6 @@ NAME(WEB49_OPCODE_CALL0) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL1) {
-    // fprintf(stderr, "OUT %p\n", &interp.locals[head[2].data.i32_u]);
     web49_interp_block_t *block = head[0].ptr;
     web49_interp_data_t *next = interp.locals + head[1].data.i32_u;
     web49_interp_t interp2 = (web49_interp_t){
@@ -63,7 +62,7 @@ NAME(WEB49_OPCODE_CALL1) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_INDIRECT) {
-    web49_interp_block_t *block = interp.extra->table[head[0].data.i32_u];
+    web49_interp_block_t *block = interp.extra->table[LOCAL0.i32_u];
     web49_interp_data_t *next = interp.locals + head[1].data.i32_u;
     web49_interp_t interp2 = (web49_interp_t){
         .locals = next,
@@ -86,13 +85,11 @@ NAME(WEB49_OPCODE_SELECT) {
 }
 NAME(WEB49_OPCODE_GET_LOCAL) {
     interp.locals[head[0].data.i32_u] = LOCAL1;
-    // fprintf(stderr,"local.get %"PRIu32" (%p)\n", head[1].data.i32_u, &interp.locals[head[1].data.i32_u]);
     head += 2;
     NEXT();
 }
 NAME(WEB49_OPCODE_SET_LOCAL) {
     interp.locals[head[1].data.i32_u] = LOCAL0;
-    // fprintf(stderr,"local.set %"PRIu32" (%p)\n", head[1].data.i32_u, &interp.locals[head[1].data.i32_u]);
     head += 2;
     NEXT();
 }
@@ -100,8 +97,6 @@ NAME(WEB49_OPCODE_TEE_LOCAL) {
     web49_interp_data_t got = LOCAL0;
     interp.locals[head[1].data.i32_u] = got;
     interp.locals[head[2].data.i32_u] = got;
-    // fprintf(stderr,"local.tee %"PRIu32" (%p)\n", head[2].data.i32_u, &interp.locals[head[2].data.i32_u]);
-    // fprintf(stderr,"local.tee %"PRIu32" (%p) & %"PRIu32" (%p)\n", head[1].data.i32_u, &interp.locals[head[1].data.i32_u], head[2].data.i32_u, &interp.locals[head[2].data.i32_u]);
     head += 3;
     NEXT();
 }

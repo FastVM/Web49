@@ -157,7 +157,6 @@ struct web49_read_block_state_t {
     web49_interp_t *interp;
     web49_interp_build_t build;
     web49_interp_link_t *links;
-    uint32_t *stack;
     uint32_t depth;
     uint32_t nlocals;
     uint64_t alloc_links;

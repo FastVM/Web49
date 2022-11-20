@@ -525,7 +525,6 @@ struct web49_instr_t {
     web49_instr_t *args;
     uint32_t nargs;
     web49_opcode_t opcode;
-    uint16_t depth;
 };
 
 struct web49_section_global_entry_t {
