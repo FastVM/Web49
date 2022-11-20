@@ -7,7 +7,7 @@
 int web49_file_main(const char *inarg, const char **args) {
     web49_io_input_t infile = web49_io_input_open(inarg);
     web49_module_t mod = web49_readbin_module(&infile);
-    // web49_opt_tee_module(&mod);
+    web49_opt_tee_module(&mod);
     web49_opt_tree_module(&mod);
     web49_interp_module(mod, args);
     return 0;

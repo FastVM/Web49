@@ -405,14 +405,16 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     if (cur.opcode == WEB49_OPCODE_BEGIN0) {
         uint32_t ret = UINT32_MAX;
         for (uint64_t i = 0; i < cur.nargs; i++) {
-            uint32_t tmp = web49_interp_read_instr(state, cur.args[i], UINT32_MAX);
+            uint32_t tmp = web49_interp_read_instr(state, cur.args[i], local);
             if (tmp != UINT32_MAX) {
+                local = UINT32_MAX;
                 ret = tmp;
             }
         }
         return ret;
     }
-    if (cur.opcode == WEB49_OPCODE_SET_LOCAL) {
+#if !defined(WEB49_NO_OPT)
+    if (cur.opcode == WEB49_OPCODE_SET_LOCAL && cur.args[0].opcode != WEB49_OPCODE_BEGIN0 && cur.args[0].opcode != WEB49_OPCODE_BLOCK && cur.args[0].opcode != WEB49_OPCODE_IF) {
         uint32_t ret = web49_interp_read_instr(state, cur.args[0], cur.immediate.varuint32);
         if (state->depth < 1) {
             __builtin_trap();
@@ -425,6 +427,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         }
         return UINT32_MAX;
     }
+#endif
     bool const0 = false;
     bool const1 = false;
     uint16_t add = 0;
