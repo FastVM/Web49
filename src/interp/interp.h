@@ -54,10 +54,13 @@ enum web49_interp_instr_enum_t {
     WEB49_OPCODE_WASI_SOCK_RECV,
     WEB49_OPCODE_WASI_SOCK_SEND,
     WEB49_OPCODE_WASI_SOCK_SHUTDOWN,
-    WEB49_OPCODE_WITH_CONST0,
-    WEB49_OPCODE_WITH_CONST1 = WEB49_OPCODE_WITH_CONST0 << 1,
-    WEB49_OPCODE_WITH_CONST01 = WEB49_OPCODE_WITH_CONST0 + WEB49_OPCODE_WITH_CONST1,
-    WEB49_MAX_OPCODE_INTERP_NUM = WEB49_OPCODE_WITH_CONST0 << 2,
+#define LOAD(x) x##_TO_LOCAL,
+#include "mem.inc"
+#define PERM1(b) b##_TO_STACK, b##_TO_LOCAL, b##_TO_STACK_AND_LOCAL,
+#define NAME(a) PERM1(a) PERM1(a##_TOP_CONST) PERM1(a##_TOP_CONST_NEXT_LOCAL) PERM1(a##_TOP_LOCAL) PERM1(a##_TOP_LOCAL_NEXT_LOCAL)
+#include "math.inc"
+#undef PERM1
+    WEB49_MAX_OPCODE_INTERP_NUM,
 };
 
 union web49_interp_data_t;
@@ -110,12 +113,12 @@ union web49_interp_data_t {
 };
 
 struct web49_interp_extra_t {
-    uint8_t *restrict memory;
-    web49_interp_data_t *restrict globals;
     web49_interp_block_t **table;
     web49_interp_block_t *funcs;
+    web49_interp_data_t *restrict globals;
     const char **args;
     uint64_t memsize;
+    uint64_t **data;
     web49_section_type_t type_section;
     web49_section_import_t import_section;
     web49_section_code_t code_section;
@@ -127,8 +130,14 @@ struct web49_interp_extra_t {
 };
 
 struct web49_interp_t {
+    web49_interp_data_t *restrict stack;
     web49_interp_data_t *restrict locals;
+    uint8_t *restrict memory;
     web49_interp_extra_t *restrict extra;
+#if defined(WEB49_COUNT_INSTR)
+    uint64_t *count;
+    const char **names;
+#endif
 };
 
 union web49_interp_opcode_t {
@@ -157,11 +166,10 @@ struct web49_read_block_state_t {
     web49_interp_t *interp;
     web49_interp_build_t build;
     web49_interp_link_t *links;
-    uint32_t depth;
-    uint32_t nlocals;
     uint64_t alloc_links;
     uint64_t nlinks;
 };
+
 
 uint64_t *web49_interp_link_box(void);
 void web49_interp_link_get(web49_read_block_state_t *state, uint64_t out, uint64_t *from);
