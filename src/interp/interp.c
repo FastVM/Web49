@@ -9,6 +9,24 @@
 #define OPCODE(n) ({size_t x = (n); if (ptrs[x] == NULL) {__builtin_trap();} ptrs[x]; })
 
 void web49_interp_import(void **ptrs, const char *mod, const char *sym, web49_interp_block_t *block) {
+    if (!strcmp(mod, "env")) {
+        if (ptrs != NULL) {
+            web49_interp_opcode_t *instrs = web49_malloc(sizeof(web49_interp_opcode_t) * 2);
+            instrs[0].opcode = OPCODE(WEB49_OPCODE_FFI_CALL);
+            instrs[1].ptr = web49_env_func(sym);
+            if (instrs[1].ptr == NULL) {
+                fprintf(stderr, "not implemented: env.%s\n", sym);
+            }
+            block->code = instrs;
+        } else {
+            block->code = NULL;
+        }
+        // fprintf(stderr, "block->code = %p\n", block->code);
+        block->nlocals = 0;
+        block->nreturns = 1;
+        block->nparams = 0;
+        return;
+    }
     if (!strcmp(mod, "wasi_snapshot_preview1")) {
         size_t iit;
         uint64_t nargs = UINT64_MAX;
@@ -342,7 +360,13 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         }
         state->bufs--;
         state->depth = save;
-        return UINT32_MAX;
+        if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
+            uint32_t ret = state->depth + state->nlocals;
+            state->depth += 1;
+            return ret;
+        } else {
+            return UINT32_MAX;
+        }
     }
     if (cur.opcode == WEB49_OPCODE_IF) {
         if (cur.nargs == 3) {
@@ -414,10 +438,11 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         return ret;
     }
 #if !defined(WEB49_NO_OPT)
-    if (cur.opcode == WEB49_OPCODE_SET_LOCAL && cur.args[0].opcode != WEB49_OPCODE_BEGIN0 && cur.args[0].opcode != WEB49_OPCODE_BLOCK && cur.args[0].opcode != WEB49_OPCODE_IF) {
+    if (cur.opcode == WEB49_OPCODE_SET_LOCAL && cur.args[0].opcode != WEB49_OPCODE_BEGIN0 && cur.args[0].opcode != WEB49_OPCODE_BLOCK && cur.args[0].opcode != WEB49_OPCODE_LOOP && cur.args[0].opcode != WEB49_OPCODE_IF) {
         uint32_t ret = web49_interp_read_instr(state, cur.args[0], cur.immediate.varuint32);
         if (state->depth < 1) {
-            __builtin_trap();
+            return UINT32_MAX;
+            // __builtin_trap();
         }
         state->depth -= 1;
         if (ret != cur.immediate.varuint32) {
@@ -826,6 +851,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         [WEB49_OPCODE_TABLE_INIT] = &&DO_WEB49_OPCODE_TABLE_INIT,
         [WEB49_OPCODE_ELEM_DROP] = &&DO_WEB49_OPCODE_ELEM_DROP,
         [WEB49_OPCODE_TABLE_COPY] = &&DO_WEB49_OPCODE_TABLE_COPY,
+        [WEB49_OPCODE_FFI_CALL] = &&DO_WEB49_OPCODE_FFI_CALL,
         [WEB49_OPCODE_WASI_FD_SEEK] = &&DO_WEB49_OPCODE_WASI_FD_SEEK,
         [WEB49_OPCODE_WASI_FD_FILESTAT_GET] = &&DO_WEB49_OPCODE_WASI_FD_FILESTAT_GET,
         [WEB49_OPCODE_WASI_PATH_FILESTAT_GET] = &&DO_WEB49_OPCODE_WASI_PATH_FILESTAT_GET,
@@ -989,6 +1015,10 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         fprintf(stderr, "bulk memory? you wish!\n");
         __builtin_trap();
         NEXT();
+    }
+    LABEL(WEB49_OPCODE_FFI_CALL) {
+        web49_env_func_t func = head[0].ptr;
+        return func(interp.extra->memory, interp.locals);
     }
     LABEL(WEB49_OPCODE_WASI_FD_SEEK) {
         uint32_t fd = interp.locals[0].i32_u;
@@ -1254,7 +1284,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
     }
 }
 
-void web49_interp_module(web49_module_t mod, const char **args) {
+web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
     web49_section_type_t type_section = {0};
     web49_section_import_t import_section = {0};
     web49_section_code_t code_section = {0};
@@ -1263,16 +1293,18 @@ void web49_interp_module(web49_module_t mod, const char **args) {
     web49_section_data_t data_section = {0};
     web49_section_table_t table_section = {0};
     web49_section_element_t element_section = {0};
-    uint64_t start = 0;
     for (size_t i = 0; i < mod.num_sections; i++) {
         web49_section_t section = mod.sections[i];
         if (section.header.id == WEB49_SECTION_ID_EXPORT) {
-            for (size_t j = 0; j < section.export_section.num_entries; j++) {
-                web49_section_export_entry_t entry = section.export_section.entries[j];
-                if (!strcmp(entry.field_str, "_start")) {
-                    start = entry.index;
-                }
-            }
+            // for (size_t j = 0; j < section.export_section.num_entries; j++) {
+            //     web49_section_export_entry_t entry = section.export_section.entries[j];
+            //     if (!strcmp(entry.field_str, start)) {
+            //         start = entry.index;
+            //     }
+            //     if (!strcmp(entry.field_str, update)) {
+            //         update = entry.index;
+            //     }
+            // }
         }
         if (mod.sections[i].header.id == WEB49_SECTION_ID_TYPE) {
             type_section = mod.sections[i].type_section;
@@ -1309,9 +1341,8 @@ void web49_interp_module(web49_module_t mod, const char **args) {
     uint64_t cur_func = 0;
     web49_interp_data_t *locals = web49_alloc0(sizeof(web49_interp_data_t) * (1 << 16));
     uint64_t memsize = 65536 * 256;
-    uint8_t *memory = web49_alloc0(memsize);
-    web49_interp_extra_t extra = (web49_interp_extra_t){
-        .memory = memory,
+    web49_interp_extra_t *extra = web49_alloc0(sizeof(web49_interp_extra_t) + memsize);
+    *extra = (web49_interp_extra_t){
         .table = NULL,
         .funcs = web49_malloc(sizeof(web49_interp_block_t) * num_funcs),
         .globals = web49_alloc0(sizeof(web49_interp_data_t) * (global_section.num_entries)),
@@ -1328,7 +1359,7 @@ void web49_interp_module(web49_module_t mod, const char **args) {
     };
     web49_interp_t interp = (web49_interp_t){
         .locals = locals,
-        .extra = &extra,
+        .extra = extra,
     };
     for (size_t j = 0; j < table_section.num_entries; j++) {
         web49_type_table_t entry = table_section.entries[j];
@@ -1358,7 +1389,7 @@ void web49_interp_module(web49_module_t mod, const char **args) {
     }
     for (size_t j = 0; j < data_section.num_entries; j++) {
         web49_section_data_entry_t entry = data_section.entries[j];
-        memcpy(&memory[entry.offset.immediate.varint32], entry.data, entry.size);
+        memcpy(&interp.extra->memory[entry.offset.immediate.varint32], entry.data, entry.size);
     }
     for (size_t j = 0; j < code_section.num_entries; j++) {
         web49_section_code_entry_t *entry = &code_section.entries[j];
@@ -1379,5 +1410,5 @@ void web49_interp_module(web49_module_t mod, const char **args) {
             interp.extra->table[i + entry.offset.immediate.varint32] = &interp.extra->funcs[entry.elems[i]];
         }
     }
-    web49_interp_block_run(interp, &interp.extra->funcs[start]);
+    return interp;
 }
