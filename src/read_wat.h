@@ -20,8 +20,9 @@ typedef struct web49_readwat_state_t web49_readwat_state_t;
 struct web49_readwat_expr_t;
 typedef struct web49_readwat_expr_t web49_readwat_expr_t;
 
-uint64_t web49_readwat_expr_to_u64(const char *expr);
-int64_t web49_readwat_expr_to_i64(const char *expr);
+uint64_t web49_readwat_expr_to_u64(web49_readwat_expr_t expr);
+int64_t web49_readwat_expr_to_i64(web49_readwat_expr_t expr);
+web49_readwat_expr_t web49_readwat_expr(web49_io_input_t *in);
 void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
 void web49_readwat_state_import_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
 void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);

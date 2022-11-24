@@ -35,7 +35,12 @@ void web49_writebin_init_expr(web49_writebin_buf_t *out, web49_instr_t instr) {
 }
 
 void web49_writebin_instr(web49_writebin_buf_t *out, web49_instr_t instr) {
+    for (uint64_t i = 0; i < instr.nargs; i++) {
+        web49_writebin_instr(out, instr.args[i]);
+    }
     switch (instr.opcode) {
+        case WEB49_OPCODE_BEGIN0:
+            return;
         case WEB49_OPCODE_MEMORY_INIT:
             web49_writebin_byte(out, 0xFC);
             web49_writebin_byte(out, 0x08);

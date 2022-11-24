@@ -1,7 +1,7 @@
 #include "../src/ast.h"
+#include "../src/interp/interp.h"
 #include "../src/read_wat.h"
 #include "../src/write_bin.h"
-#include "../src/interp/interp.h"
 
 web49_env_func_t web49_env_func(const char *name) {
     return NULL;
