@@ -954,7 +954,6 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
             web49_interp_import(ptrs, entry->module_str, entry->field_str, block);
         }
     }
-    web49_interp_data_t reg0;
     web49_interp_opcode_t *head = block->code;
     NEXT();
 #define NAME(x) LABEL(x)
@@ -973,13 +972,6 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
 #define LOCAL0 interp.locals[head[0].data.i32_u]
 #define LOCAL1 interp.locals[head[1].data.i32_u]
 #define NAME(x) LABEL(x##_RR)
-#include "interp2.inc"
-#undef LOCAL0
-#undef LOCAL1
-#undef NAME
-#define LOCAL0 (interp.locals[head[0].data.i32_u])
-#define LOCAL1 reg0
-#define NAME(x) LABEL(x##_T1)
 #include "interp2.inc"
 #undef LOCAL0
 #undef LOCAL1
