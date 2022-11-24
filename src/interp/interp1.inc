@@ -1,14 +1,10 @@
 NAME(WEB49_OPCODE_CALL_INDIRECT) {
     web49_interp_block_t *block = interp.extra->table[LOCAL0.i32_u];
-    web49_interp_data_t *next = interp.locals + head[1].data.i32_u;
-    web49_interp_t interp2 = (web49_interp_t){
-        .locals = next,
-        .extra = interp.extra,
-    };
-    memset(next + block->nparams, 0, sizeof(web49_interp_data_t) * block->nlocals);
-    web49_interp_data_t res = web49_interp_block_run(interp2, block);
-    interp.locals[head[2].data.i32_u] = res;
-    head += 3;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + block->nparams, 0, sizeof(web49_interp_data_t) * block->nlocals);
+    web49_interp_block_run_comp(block, ptrs, interp);
+    head = block->code;
     NEXT();
 }
 NAME(WEB49_OPCODE_IF) {
@@ -42,7 +38,12 @@ NAME(WEB49_OPCODE_BR_TABLE) {
     }
 }
 NAME(WEB49_OPCODE_RETURN) {
-    return LOCAL0;
+    web49_interp_data_t ret = LOCAL0;
+    head = *--returns;
+    interp.locals = *--stacks;
+    interp.locals[head[2].data.i32_u] = ret;
+    head += 4;
+    NEXT();
 }
 NAME(WEB49_OPCODE_TEE_LOCAL) {
     web49_interp_data_t got = LOCAL0;

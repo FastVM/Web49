@@ -7,8 +7,6 @@ typedef uint64_t web49_interp_instr_t;
 
 enum web49_interp_instr_enum_t {
     WEB49_INTERP_OPCODE_WASI = WEB49_MAX_OPCODE_NUM,
-    WEB49_OPCODE_CALL0,
-    WEB49_OPCODE_CALL1,
     WEB49_OPCODE_FFI_CALL,
     WEB49_OPCODE_IF_I32_EQZ,
     WEB49_OPCODE_IF_I32_EQ,

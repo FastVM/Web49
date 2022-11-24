@@ -1,7 +1,4 @@
 
-        NAME(WEB49_OPCODE_RETURN) {
-    return LOCAL0;
-}
 NAME(WEB49_OPCODE_SELECT) {
     if (interp.locals[head[2].data.i32_u].i32_u != 0) {
         interp.locals[head[3].data.i32_u] = LOCAL0;

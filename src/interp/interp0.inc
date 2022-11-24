@@ -1,27 +1,124 @@
 
-NAME(WEB49_OPCODE_CALL0) {
-    web49_interp_block_t *block = head[0].ptr;
-    web49_interp_data_t *next = interp.locals + head[1].data.i32_u;
-    web49_interp_t interp2 = (web49_interp_t){
-        .locals = next,
-        .extra = interp.extra,
-    };
-    memset(next + block->nparams, 0, sizeof(web49_interp_data_t) * block->nlocals);
-    web49_interp_block_run(interp2, block);
-    head += 2;
+NAME(WEB49_OPCODE_CALL_DONE0) {
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    head = head[0].ptr;
     NEXT();
 }
-NAME(WEB49_OPCODE_CALL1) {
+NAME(WEB49_OPCODE_CALL_DONE1) {
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 1);
+    head = head[0].ptr;
+    NEXT();
+}
+NAME(WEB49_OPCODE_CALL_DONE2) {
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 2);
+    head = head[0].ptr;
+    NEXT();
+}
+NAME(WEB49_OPCODE_CALL_DONE4) {
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 4);
+    head = head[0].ptr;
+    NEXT();
+}
+NAME(WEB49_OPCODE_CALL_DONE8) {
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 8);
+    head = head[0].ptr;
+    NEXT();
+}
+NAME(WEB49_OPCODE_CALL_DONE16) {
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 16);
+    head = head[0].ptr;
+    NEXT();
+}
+NAME(WEB49_OPCODE_CALL_DONE32) {
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 32);
+    head = head[0].ptr;
+    NEXT();
+}
+NAME(WEB49_OPCODE_CALL_DONE64) {
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 64);
+    head = head[0].ptr;
+    NEXT();
+}
+NAME(WEB49_OPCODE_CALL_DONE128) {
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 128);
+    head = head[0].ptr;
+    NEXT();
+}
+NAME(WEB49_OPCODE_CALL_DONE256) {
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 256);
+    head = head[0].ptr;
+    NEXT();
+}
+NAME(WEB49_OPCODE_CALL) {
     web49_interp_block_t *block = head[0].ptr;
-    web49_interp_data_t *next = interp.locals + head[1].data.i32_u;
-    web49_interp_t interp2 = (web49_interp_t){
-        .locals = next,
-        .extra = interp.extra,
-    };
-    memset(next + block->nparams, 0, sizeof(web49_interp_data_t) * block->nlocals);
-    web49_interp_data_t res = web49_interp_block_run(interp2, block);
-    interp.locals[head[2].data.i32_u] = res;
-    head += 3;
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + block->nparams, 0, sizeof(web49_interp_data_t) * block->nlocals);
+    web49_interp_block_run_comp(block, ptrs, interp);
+    if (block->nparams == 0) {
+        head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE0;
+    }
+    else if (block->nparams <= 1) {
+        head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE1;
+    }
+    else if (block->nparams <= 2) {
+        head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE2;
+    }
+    else if (block->nparams <= 4) {
+        head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE4;
+    }
+    else if (block->nparams <= 8) {
+        head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE8;
+    }
+    else if (block->nparams <= 16) {
+        head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE16;
+    }
+    else if (block->nparams <= 32) {
+        head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE32;
+    }
+    else if (block->nparams <= 64) {
+        head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE64;
+    }
+    else if (block->nparams <= 128) {
+        head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE128;
+    }
+    else if (block->nparams <= 256) {
+        head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE256;
+    } else {
+        __builtin_trap();
+    }
+    head[0].ptr = block->code;
+    head = head[0].ptr;
     NEXT();
 }
 NAME(WEB49_OPCODE_BR) {

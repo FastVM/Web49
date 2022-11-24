@@ -513,7 +513,13 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
         };
         for (uint64_t i = 0; i < expr.fun_nargs; i++) {
             web49_readwat_expr_t code = expr.fun_args[i];
-            if (code.tag == WEB49_READWAT_EXPR_TAG_SYM) {
+            if (entry.num_instrs + 2 >= alloc_instrs) {
+                alloc_instrs = (entry.num_instrs + 2) * 2;
+                entry.instrs = web49_realloc(entry.instrs, sizeof(web49_instr_t) * alloc_instrs);
+            }
+            if (code.tag == WEB49_READWAT_EXPR_TAG_FUN && web49_name_to_opcode(code.fun_fun) != WEB49_MAX_OPCODE_NUM) {
+                entry.instrs[entry.num_instrs++] = web49_readwat_instr(code);
+            } else if (code.tag == WEB49_READWAT_EXPR_TAG_SYM) {
                 web49_opcode_t opcode = web49_name_to_opcode(code.sym);
                 if (opcode < WEB49_MAX_OPCODE_NUM) {
                     web49_immediate_id_t id = web49_opcode_immediate[opcode];
@@ -639,10 +645,6 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                             }
                             break;
                         }
-                    }
-                    if (entry.num_instrs + 2 >= alloc_instrs) {
-                        alloc_instrs = (entry.num_instrs + 2) * 2;
-                        entry.instrs = web49_realloc(entry.instrs, sizeof(web49_instr_t) * alloc_instrs);
                     }
                     entry.instrs[entry.num_instrs++] = (web49_instr_t){
                         .opcode = opcode,
@@ -872,9 +874,18 @@ web49_instr_t web49_readwat_instr(web49_readwat_expr_t code) {
                     break;
                 }
             }
+            uint64_t nargs = 0;
+            web49_instr_t *args = web49_malloc(sizeof(web49_instr_t) * code.fun_nargs);
+            for (uint64_t i = 0; i < code.fun_nargs; i++) {
+                if (code.fun_args[i].tag == WEB49_READWAT_EXPR_TAG_FUN && web49_name_to_opcode(code.fun_args[i].fun_fun) != WEB49_MAX_OPCODE_NUM) {
+                    args[nargs++] = web49_readwat_instr(code.fun_args[i]);
+                }
+            }
             return (web49_instr_t){
                 .opcode = opcode,
                 .immediate = imm,
+                .args = args,
+                .nargs = nargs,
             };
         } else {
             fprintf(stderr, "unexpected word: `%s` byte=%zu\n", code.sym, (size_t)code.start);
