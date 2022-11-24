@@ -176,6 +176,14 @@ NAME(WEB49_OPCODE_I64_EQZ) {
     head += 2;
     NEXT();
 }
+NAME(WEB49_OPCODE_IF_I32_EQZ) {
+    if (LOCAL0.i32_u == 0) { head = head[1].ptr; } else { head = head[2].ptr; }
+    NEXT();
+}
+NAME(WEB49_OPCODE_IF_I64_EQZ) {
+    if (LOCAL0.i64_u == 0) { head = head[1].ptr; } else { head = head[2].ptr; }
+    NEXT();
+}
 NAME(WEB49_OPCODE_I32_CLZ) {
     interp.locals[head[1].data.i32_u].i32_u = __builtin_clz(LOCAL0.i32_u);
     head += 2;
