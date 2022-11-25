@@ -2,76 +2,11 @@
 
 #include "../tables.h"
 
-
-static void debug_print(FILE *out, web49_instr_t instr, size_t depth, size_t maxdepth) {
-    fprintf(out, "(%s", web49_opcode_to_name(instr.opcode));
-    switch (instr.immediate.id) {
-        case WEB49_IMMEDIATE_NONE: {
-            break;
-        }
-        case WEB49_IMMEDIATE_VARUINT1: {
-            break;
-        }
-        case WEB49_IMMEDIATE_VARUINT32: {
-            fprintf(out, " %" PRIu32, instr.immediate.varuint32);
-            break;
-        }
-        case WEB49_IMMEDIATE_VARUINT64: {
-            fprintf(out, " %" PRIu64, instr.immediate.varuint64);
-            break;
-        }
-        case WEB49_IMMEDIATE_VARINT32: {
-            fprintf(out, " %" PRIi32, instr.immediate.varint32);
-            break;
-        }
-        case WEB49_IMMEDIATE_VARINT64: {
-            fprintf(out, " %" PRIi64, instr.immediate.varint64);
-            break;
-        }
-        case WEB49_IMMEDIATE_UINT32: {
-            fprintf(out, " %" PRIu32, instr.immediate.uint32);
-            break;
-        }
-        case WEB49_IMMEDIATE_UINT64: {
-            fprintf(out, " %" PRIu64, instr.immediate.uint64);
-            break;
-        }
-        case WEB49_IMMEDIATE_BR_TABLE: {
-            break;
-        }
-        case WEB49_IMMEDIATE_CALL_INDIRECT: {
-            break;
-        }
-        case WEB49_IMMEDIATE_MEMORY_IMMEDIATE: {
-            fprintf(out, " offset=%" PRIu64, instr.immediate.memory_immediate.offset);
-            break;
-        }
-        case WEB49_IMMEDIATE_DATA_INDEX: {
-            break;
-        }
-    }
-    for (uint64_t i = 0; i < instr.nargs; i++) {
-        fprintf(out, "\n");
-        for (size_t j = 0; j < depth + 1; j++) {
-            fprintf(out, "  ");
-        }
-        if (depth >= maxdepth) {
-            fprintf(out, "...");
-        } else {
-            debug_print(out, instr.args[i], depth + 1, maxdepth);
-        }
-    }
-    fprintf(out, ")");
-    if (depth == 0) {
-        fprintf(out, "\n");
-    }
-}
-
 web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **head) {
     web49_section_type_t type_section;
     web49_section_function_t function_section;
     web49_section_import_t import_section;
-    size_t num_funcs = 0;
+    int32_t num_funcs = 0;
     for (uint64_t s = 0; s < mod->num_sections; s++) {
         web49_section_t cur = mod->sections[s];
         if (cur.header.id == WEB49_SECTION_ID_TYPE) {
@@ -169,7 +104,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
                     int32_t entry = function_section.entries[cur.immediate.varint32 - num_funcs];
                     nargs += type_section.entries[entry].num_params;
                 } else {
-                    uint32_t index = 0;
+                    int32_t index = 0;
                     for (uint64_t j = 0; j < import_section.num_entries; j++) {
                         if (import_section.entries[j].kind == WEB49_EXTERNAL_KIND_FUNCTION) {
                             if (index == cur.immediate.varint32) {
@@ -194,7 +129,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
                 int32_t entry = function_section.entries[cur.immediate.varint32 - num_funcs];
                 use_begin0 = !type_section.entries[entry].has_return_type;
             } else {
-                uint32_t index = 0;
+                int32_t index = 0;
                 for (uint64_t j = 0; j < import_section.num_entries; j++) {
                     if (import_section.entries[j].kind == WEB49_EXTERNAL_KIND_FUNCTION) {
                         if (index == cur.immediate.varint32) {
@@ -233,8 +168,6 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
 void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t *entry) {
     web49_instr_t *head = entry->instrs;
     web49_instr_t instr = web49_opt_tree_read_block(mod, &head);
-    // debug_print(stderr, instr, 0, SIZE_MAX);
-    // fprintf(stderr, "\n");
     entry->num_instrs = 1;
     entry->instrs[0] = instr;
 }

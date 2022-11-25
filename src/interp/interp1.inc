@@ -58,11 +58,6 @@ NAME(WEB49_OPCODE_SET_LOCAL) {
     head += 2;
     NEXT();
 }
-NAME(WEB49_OPCODE_GET_GLOBAL) {
-    interp.locals[head[0].data.i32_u] = interp.extra->globals[head[1].data.i32_u];
-    head += 2;
-    NEXT();
-}
 NAME(WEB49_OPCODE_SET_GLOBAL) {
     interp.extra->globals[head[1].data.i32_u] = LOCAL0;
     head += 2;
@@ -136,11 +131,6 @@ NAME(WEB49_OPCODE_I64_LOAD32_S) {
 NAME(WEB49_OPCODE_I64_LOAD32_U) {
     interp.locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint32_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
-    NEXT();
-}
-NAME(WEB49_OPCODE_MEMORY_SIZE) {
-    interp.locals[head[0].data.i32_u].i32_u = interp.extra->memsize / 65536;
-    head += 1;
     NEXT();
 }
 NAME(WEB49_OPCODE_MEMORY_GROW) {

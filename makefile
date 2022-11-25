@@ -1,5 +1,5 @@
 
-EXE = .exe
+EXE = 
 EXE_RUN = 
 
 EMCC ?= emcc

@@ -9,16 +9,6 @@ web49_env_func_t web49_env_func(const char *name) {
     return NULL;
 }
 
-int web49_wast_main(web49_readwat_expr_t expr) {
-    for (uint64_t i = 0; i < expr.fun_nargs; i++) {
-        web49_readwat_expr_t cur = expr.fun_args[i];
-        if (cur.tag != WEB49_READWAT_EXPR_TAG_FUN) {
-            continue;
-        }
-        puts(cur.fun_fun);
-    }
-}
-
 int web49_file_main(const char *inarg, const char **args) {
     web49_io_input_t infile = web49_io_input_open(inarg);
     web49_module_t mod;
@@ -27,10 +17,8 @@ int web49_file_main(const char *inarg, const char **args) {
     } else {
         const char *v = strrchr(inarg, '.');
         if (!strcmp(v, ".wast")) {
-            web49_readwat_expr_t expr = web49_readwat_expr(&infile);
-            return web49_wast_main(expr);
-            // fprintf(stderr, "miniwasm cannot handle \"wasm spec test\" files yet!\n");
-            // return 1;
+            fprintf(stderr, "miniwasm cannot handle \"wasm spec test\" files yet!\n");
+            return 1;
         } else {
             mod = web49_readwat_module(&infile);
         }
