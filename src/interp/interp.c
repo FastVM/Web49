@@ -462,6 +462,7 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
 }
 
 uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur, uint32_t local) {
+        // debug_print(stderr, cur, 0, SIZE_MAX);
     web49_interp_build_t *build = &state->build;
     void **ptrs = state->ptrs;
     if (build->ncode + 16 >= build->alloc) {
@@ -816,7 +817,7 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
             state.nlocals = block->nparams + block->nlocals;
             uint32_t ret = UINT32_MAX;
             // for (uint64_t i = 0; i < entry->num_instrs; i++) {
-                // debug_print(stderr, entry->instrs[i], 0, SIZE_MAX);
+            //     debug_print(stderr, entry->instrs[i], 0, SIZE_MAX);
             // }
             for (uint64_t i = 0; i < entry->num_instrs; i++) {
                 uint32_t tmp = web49_interp_read_instr(&state, entry->instrs[i], UINT32_MAX);
@@ -1047,6 +1048,11 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         TABLE_PUT1(WEB49_OPCODE_F64_CONVERT_S_I64),
         TABLE_PUT1(WEB49_OPCODE_F64_CONVERT_U_I64),
         TABLE_PUT1(WEB49_OPCODE_F64_PROMOTE_F32),
+        TABLE_PUT1(WEB49_OPCODE_I32_EXTEND8_S),
+        TABLE_PUT1(WEB49_OPCODE_I32_EXTEND16_S),
+        TABLE_PUT1(WEB49_OPCODE_I64_EXTEND8_S),
+        TABLE_PUT1(WEB49_OPCODE_I64_EXTEND16_S),
+        TABLE_PUT1(WEB49_OPCODE_I64_EXTEND32_S),
 #undef TABLE_PUTV
 #undef TABLE_PUT1
 #undef TABLE_PUT2

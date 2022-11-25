@@ -1,5 +1,6 @@
 
 #include "tables.h"
+#include "ast.h"
 
 const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
     [WEB49_OPCODE_UNREACHABLE] = (web49_table_stack_effect_t){
@@ -753,6 +754,26 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
         .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
         .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
     },
+    [WEB49_OPCODE_I32_EXTEND8_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_I32_EXTEND16_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_I64_EXTEND8_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_I64_EXTEND16_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
+    [WEB49_OPCODE_I64_EXTEND32_S] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
+    },
     [WEB49_OPCODE_MEMORY_INIT] = (web49_table_stack_effect_t){
         .fail = true,
     },
@@ -1366,6 +1387,21 @@ web49_opcode_t web49_name_to_opcode(const char *name) {
     if (!strcmp(name, "f64.reinterpret_i64")) {
         return WEB49_OPCODE_F64_REINTERPRET_I64;
     }
+    if (!strcmp(name, "i32.extend8_s")) {
+        return WEB49_OPCODE_I32_EXTEND8_S;
+    }
+    if (!strcmp(name, "i32.extend16_s")) {
+        return WEB49_OPCODE_I32_EXTEND16_S;
+    }
+    if (!strcmp(name, "i64.extend8_s")) {
+        return WEB49_OPCODE_I64_EXTEND8_S;
+    }
+    if (!strcmp(name, "i64.extend16_s")) {
+        return WEB49_OPCODE_I64_EXTEND16_S;
+    }
+    if (!strcmp(name, "i64.extend32_s")) {
+        return WEB49_OPCODE_I64_EXTEND32_S;
+    }
     if (!strcmp(name, "memory.init")) {
         return WEB49_OPCODE_MEMORY_INIT;
     }
@@ -1736,6 +1772,16 @@ const char *web49_opcode_to_name(web49_opcode_t opcode) {
             return "f32.reinterpret_i32";
         case WEB49_OPCODE_F64_REINTERPRET_I64:
             return "f64.reinterpret_i64";
+        case WEB49_OPCODE_I32_EXTEND8_S:
+            return "i32.extend8_s";
+        case WEB49_OPCODE_I32_EXTEND16_S:
+            return "i32.extend16_s";
+        case WEB49_OPCODE_I64_EXTEND8_S:
+            return "i64.extend8_s";
+        case WEB49_OPCODE_I64_EXTEND16_S:
+            return "i64.extend16_s";
+        case WEB49_OPCODE_I64_EXTEND32_S:
+            return "i64.extend32_s";
         case WEB49_OPCODE_BEGIN0:
             return "begin0";
         case WEB49_OPCODE_MEMORY_INIT:

@@ -379,3 +379,28 @@ NAME(WEB49_OPCODE_F64_PROMOTE_F32) {
     head += 2;
     NEXT();
 }
+NAME(WEB49_OPCODE_I32_EXTEND8_S) {
+    interp.locals[head[1].data.i32_u].i32_s = (int32_t)(int8_t)LOCAL0.i32_s;
+    head += 2;
+    NEXT();
+}
+NAME(WEB49_OPCODE_I32_EXTEND16_S) {
+    interp.locals[head[1].data.i32_u].i32_s = (int32_t)(int16_t)LOCAL0.i32_s;
+    head += 2;
+    NEXT();
+}
+NAME(WEB49_OPCODE_I64_EXTEND8_S) {
+    interp.locals[head[1].data.i32_u].i64_s = (int64_t)(int8_t)LOCAL0.i64_s;
+    head += 2;
+    NEXT();
+}
+NAME(WEB49_OPCODE_I64_EXTEND16_S) {
+    interp.locals[head[1].data.i32_u].i64_s = (int64_t)(int16_t)LOCAL0.i64_s;
+    head += 2;
+    NEXT();
+}
+NAME(WEB49_OPCODE_I64_EXTEND32_S) {
+    interp.locals[head[1].data.i32_u].i64_s = (int64_t)(int32_t)LOCAL0.i64_s;
+    head += 2;
+    NEXT();
+}

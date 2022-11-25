@@ -518,7 +518,7 @@ web49_instr_immediate_t web49_readbin_instr_immediate(web49_io_input_t *in, web4
     }
     if (id == WEB49_IMMEDIATE_DATA_INDEX) {
         return (web49_instr_immediate_t){
-            .id = WEB49_IMMEDIATE_MEMORY_IMMEDIATE,
+            .id = WEB49_IMMEDIATE_DATA_INDEX,
             .data_index = web49_readbin_varint32(in),
         };
     }

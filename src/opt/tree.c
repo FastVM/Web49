@@ -2,6 +2,7 @@
 
 #include "../tables.h"
 
+
 static void debug_print(FILE *out, web49_instr_t instr, size_t depth, size_t maxdepth) {
     fprintf(out, "(%s", web49_opcode_to_name(instr.opcode));
     switch (instr.immediate.id) {
@@ -42,6 +43,7 @@ static void debug_print(FILE *out, web49_instr_t instr, size_t depth, size_t max
             break;
         }
         case WEB49_IMMEDIATE_MEMORY_IMMEDIATE: {
+            fprintf(out, " offset=%" PRIu64, instr.immediate.memory_immediate.offset);
             break;
         }
         case WEB49_IMMEDIATE_DATA_INDEX: {
