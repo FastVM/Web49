@@ -643,6 +643,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         } else {
             // fprintf(stderr, "DYNCALL -> (none %zu)\n", (size_t) (state->nlocals + 256));
             build->code[build->ncode++].data.i32_u = state->nlocals + 256;
+            build->code[build->ncode++].data.i32_u = cur.nargs - 1;
             return UINT32_MAX;
         }
     }
@@ -794,7 +795,7 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
     if (block->code == NULL) {
         if (block->is_code) {
             web49_section_code_entry_t *entry = block->code_entry;
-            // for (uint64_t i = 0; i < entry->num_instrs; i++) {
+            // for (uint64_t i = 0; i `< entry->num_instrs; i++) {
             //     entry->instrs[i] = web49_interp_opt(entry->instrs[i]);
             // }
             web49_read_block_state_t state;
@@ -814,9 +815,9 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
             state.depth = 0;
             state.nlocals = block->nparams + block->nlocals;
             uint32_t ret = UINT32_MAX;
-            for (uint64_t i = 0; i < entry->num_instrs; i++) {
+            // for (uint64_t i = 0; i < entry->num_instrs; i++) {
                 // debug_print(stderr, entry->instrs[i], 0, SIZE_MAX);
-            }
+            // }
             for (uint64_t i = 0; i < entry->num_instrs; i++) {
                 uint32_t tmp = web49_interp_read_instr(&state, entry->instrs[i], UINT32_MAX);
                 if (tmp != UINT32_MAX) {
@@ -1104,8 +1105,8 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         [WEB49_OPCODE_WASI_SOCK_SHUTDOWN] = &&DO_WEB49_OPCODE_WASI_SOCK_SHUTDOWN,
     };
     web49_interp_block_run_comp(block, ptrs, interp);
-    web49_interp_data_t **restrict stacks = web49_malloc(sizeof(web49_interp_data_t) * (1<<14));
-    web49_interp_opcode_t **restrict returns = web49_malloc(sizeof(web49_interp_data_t *) * (1<<14));
+    web49_interp_data_t **restrict stacks = web49_malloc(sizeof(web49_interp_data_t) * (1 << 14));
+    web49_interp_opcode_t **restrict returns = web49_malloc(sizeof(web49_interp_data_t *) * (1 << 14));
     web49_interp_data_t s0[1];
     web49_interp_opcode_t r0[5] = {
         [2].data.i32_u = 0,
@@ -1116,7 +1117,8 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
     *stacks++ = s0;
     web49_interp_opcode_t *restrict head = block->code;
     NEXT();
-exitv: return s0[0];
+exitv:
+    return s0[0];
 #define NAME(x) LABEL(x)
 #include "interp0.inc"
 #undef NAME
@@ -1197,7 +1199,7 @@ exitv: return s0[0];
         web49_env_func_t func = head[0].ptr;
         head = *--returns;
         interp.locals = *--stacks;
-        interp.locals[head[1].data.i32_u] = func(interp.extra->memory, interp.locals);
+        interp.locals[head[1].data.i32_u] = func(interp.memory, interp.locals);
         head += 4;
         NEXT();
     }
@@ -1218,7 +1220,7 @@ exitv: return s0[0];
                 whence = SEEK_END;
                 break;
         }
-        *(uint32_t *)&interp.extra->memory[result] = lseek(fd, offset, whence);
+        *(uint32_t *)&interp.memory[result] = lseek(fd, offset, whence);
         head = *--returns;
         interp.locals = *--stacks;
         interp.locals[head[2].data.i32_u].i32_u = 0;
@@ -1239,13 +1241,13 @@ exitv: return s0[0];
         uint32_t argc = 0;
         uint32_t head2 = buf;
         for (size_t i = 0; interp.extra->args[i] != NULL; i++) {
-            *(uint32_t *)&interp.extra->memory[argv + argc * 4] = head2;
+            *(uint32_t *)&interp.memory[argv + argc * 4] = head2;
             size_t memlen = strlen(interp.extra->args[i]) + 1;
-            memcpy(&interp.extra->memory[head2], interp.extra->args[i], memlen);
+            memcpy(&interp.memory[head2], interp.extra->args[i], memlen);
             head2 += memlen;
             argc += 1;
         }
-        *(uint32_t *)&interp.extra->memory[argv + argc * 4] = 0;
+        *(uint32_t *)&interp.memory[argv + argc * 4] = 0;
         head = *--returns;
         interp.locals = *--stacks;
         interp.locals[head[2].data.i32_u].i32_u = 0;
@@ -1261,8 +1263,8 @@ exitv: return s0[0];
             buf_len += strlen(interp.extra->args[i]) + 1;
             i += 1;
         }
-        *(uint32_t *)&interp.extra->memory[argc] = i;
-        *(uint32_t *)&interp.extra->memory[buf_size] = buf_len;
+        *(uint32_t *)&interp.memory[argc] = i;
+        *(uint32_t *)&interp.memory[buf_size] = buf_len;
         head = *--returns;
         interp.locals = *--stacks;
         interp.locals[head[2].data.i32_u].i32_u = 0;
@@ -1294,7 +1296,7 @@ exitv: return s0[0];
         }
         struct timespec ts;
         clock_gettime(clock_id, &ts);
-        *(uint64_t *)&interp.extra->memory[time] = (uint64_t)ts.tv_sec * 1000000000 + (uint64_t)ts.tv_nsec;
+        *(uint64_t *)&interp.memory[time] = (uint64_t)ts.tv_sec * 1000000000 + (uint64_t)ts.tv_nsec;
         head = *--returns;
         interp.locals = *--stacks;
         interp.locals[head[2].data.i32_u].i32_u = 0;
@@ -1343,11 +1345,11 @@ exitv: return s0[0];
         if (fd <= 2) {
             fs_rights_base &= ~(4 | 32);
         }
-        *(uint16_t *)&interp.extra->memory[fdstat + 0] = fs_filetype;
-        *(uint16_t *)&interp.extra->memory[fdstat + 2] = fs_flags;
-        *(uint32_t *)&interp.extra->memory[fdstat + 4] = 0;
-        *(uint64_t *)&interp.extra->memory[fdstat + 8] = fs_rights_base;
-        *(uint64_t *)&interp.extra->memory[fdstat + 16] = fs_rights_inheriting;
+        *(uint16_t *)&interp.memory[fdstat + 0] = fs_filetype;
+        *(uint16_t *)&interp.memory[fdstat + 2] = fs_flags;
+        *(uint32_t *)&interp.memory[fdstat + 4] = 0;
+        *(uint64_t *)&interp.memory[fdstat + 8] = fs_rights_base;
+        *(uint64_t *)&interp.memory[fdstat + 16] = fs_rights_inheriting;
         head = *--returns;
         interp.locals = *--stacks;
         interp.locals[head[2].data.i32_u].i32_u = 0;
@@ -1411,11 +1413,11 @@ exitv: return s0[0];
         uint32_t iovs = interp.locals[1].i32_u;
         uint32_t iovs_len = interp.locals[2].i32_u;
         uint32_t nwritten = interp.locals[3].i32_u;
-        *(uint32_t *)&interp.extra->memory[nwritten] = 0;
+        *(uint32_t *)&interp.memory[nwritten] = 0;
         for (size_t i = 0; i < iovs_len; i++) {
-            uint32_t ptr = *(uint32_t *)&interp.extra->memory[iovs + i * 8];
-            uint32_t len = *(uint32_t *)&interp.extra->memory[iovs + i * 8 + 4];
-            *(uint32_t *)&interp.extra->memory[nwritten] += (uint32_t)write(fd, &interp.extra->memory[ptr], len);
+            uint32_t ptr = *(uint32_t *)&interp.memory[iovs + i * 8];
+            uint32_t len = *(uint32_t *)&interp.memory[iovs + i * 8 + 4];
+            *(uint32_t *)&interp.memory[nwritten] += (uint32_t)write(fd, &interp.memory[ptr], len);
         }
         head = *--returns;
         interp.locals = *--stacks;
@@ -1501,6 +1503,7 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
     web49_section_data_t data_section = {0};
     web49_section_table_t table_section = {0};
     web49_section_element_t element_section = {0};
+    web49_section_memory_t memory_section = {0};
     for (size_t i = 0; i < mod.num_sections; i++) {
         web49_section_t section = mod.sections[i];
         if (section.header.id == WEB49_SECTION_ID_EXPORT) {
@@ -1538,6 +1541,9 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
         if (mod.sections[i].header.id == WEB49_SECTION_ID_ELEMENT) {
             element_section = mod.sections[i].element_section;
         }
+        if (mod.sections[i].header.id == WEB49_SECTION_ID_MEMORY) {
+            memory_section = mod.sections[i].memory_section;
+        }
     }
     uint64_t num_funcs = code_section.num_entries;
     for (size_t j = 0; j < import_section.num_entries; j++) {
@@ -1548,8 +1554,9 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
     }
     uint64_t cur_func = 0;
     web49_interp_data_t *locals = web49_alloc0(sizeof(web49_interp_data_t) * (1 << 16));
-    uint64_t memsize = 65536 * 256;
-    web49_interp_extra_t *extra = web49_alloc0(sizeof(web49_interp_extra_t) + memsize);
+    // printf("%zu\n", (size_t) memory_section.entries[0].initial);
+    uint64_t memsize = 65536 * memory_section.entries[0].initial;
+    web49_interp_extra_t *extra = web49_alloc0(sizeof(web49_interp_extra_t));
     *extra = (web49_interp_extra_t){
         .table = NULL,
         .funcs = web49_malloc(sizeof(web49_interp_block_t) * num_funcs),
@@ -1568,6 +1575,7 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
     web49_interp_t interp = (web49_interp_t){
         .locals = locals,
         .extra = extra,
+        .memory = web49_alloc0(memsize),
     };
     for (size_t j = 0; j < table_section.num_entries; j++) {
         web49_type_table_t entry = table_section.entries[j];
@@ -1597,7 +1605,7 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
     }
     for (size_t j = 0; j < data_section.num_entries; j++) {
         web49_section_data_entry_t entry = data_section.entries[j];
-        memcpy(&interp.extra->memory[entry.offset.immediate.varint32], entry.data, entry.size);
+        memcpy(&interp.memory[entry.offset.immediate.varint32], entry.data, entry.size);
     }
     for (size_t j = 0; j < code_section.num_entries; j++) {
         web49_section_code_entry_t *entry = &code_section.entries[j];

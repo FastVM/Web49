@@ -85,34 +85,25 @@ NAME(WEB49_OPCODE_CALL) {
     interp.locals += head[1].data.i32_u;
     memset(interp.locals + block->nparams, 0, sizeof(web49_interp_data_t) * block->nlocals);
     web49_interp_block_run_comp(block, ptrs, interp);
-    if (block->nparams == 0) {
+    if (block->nlocals == 0) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE0;
-    }
-    else if (block->nparams <= 1) {
+    } else if (block->nlocals <= 1) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE1;
-    }
-    else if (block->nparams <= 2) {
+    } else if (block->nlocals <= 2) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE2;
-    }
-    else if (block->nparams <= 4) {
+    } else if (block->nlocals <= 4) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE4;
-    }
-    else if (block->nparams <= 8) {
+    } else if (block->nlocals <= 8) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE8;
-    }
-    else if (block->nparams <= 16) {
+    } else if (block->nlocals <= 16) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE16;
-    }
-    else if (block->nparams <= 32) {
+    } else if (block->nlocals <= 32) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE32;
-    }
-    else if (block->nparams <= 64) {
+    } else if (block->nlocals <= 64) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE64;
-    }
-    else if (block->nparams <= 128) {
+    } else if (block->nlocals <= 128) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE128;
-    }
-    else if (block->nparams <= 256) {
+    } else if (block->nlocals <= 256) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE256;
     } else {
         __builtin_trap();

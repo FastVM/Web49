@@ -52,6 +52,7 @@ bin/wasm2wasm$(EXE): main/wasm2wasm.o $(OBJS)
 format: .dummy
 	find . -name '*.c' | xargs -I FILENAME clang-format -style=file -i FILENAME
 	find . -name '*.h' | xargs -I FILENAME clang-format -style=file -i FILENAME
+	find . -name '*.inc' | xargs -I FILENAME clang-format -style=file -i FILENAME
 
 # intermediate files
 

@@ -69,72 +69,72 @@ NAME(WEB49_OPCODE_SET_GLOBAL) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_LOAD) {
-    interp.locals[head[1].data.i32_u].i32_u = *(uint32_t *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].i32_u = *(uint32_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD) {
-    interp.locals[head[1].data.i32_u].i64_u = *(uint64_t *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].i64_u = *(uint64_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F32_LOAD) {
-    interp.locals[head[1].data.i32_u].f32 = *(float *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].f32 = *(float *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_LOAD) {
-    interp.locals[head[1].data.i32_u].f64 = *(double *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].f64 = *(double *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_LOAD8_S) {
-    interp.locals[head[1].data.i32_u].i32_s = (int32_t) * (int8_t *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].i32_s = (int32_t) * (int8_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_LOAD8_U) {
-    interp.locals[head[1].data.i32_u].i32_u = (uint32_t) * (uint8_t *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].i32_u = (uint32_t) * (uint8_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_LOAD16_S) {
-    interp.locals[head[1].data.i32_u].i32_s = (int32_t) * (int16_t *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].i32_s = (int32_t) * (int16_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_LOAD16_U) {
-    interp.locals[head[1].data.i32_u].i32_u = (uint32_t) * (uint16_t *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].i32_u = (uint32_t) * (uint16_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD8_S) {
-    interp.locals[head[1].data.i32_u].i64_s = (int64_t) * (int8_t *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].i64_s = (int64_t) * (int8_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD8_U) {
-    interp.locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint8_t *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint8_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD16_S) {
-    interp.locals[head[1].data.i32_u].i64_s = (int64_t) * (int16_t *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].i64_s = (int64_t) * (int16_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD16_U) {
-    interp.locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint16_t *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint16_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD32_S) {
-    interp.locals[head[1].data.i32_u].i64_s = (int64_t) * (int32_t *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].i64_s = (int64_t) * (int32_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD32_U) {
-    interp.locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint32_t *)&interp.extra->memory[LOCAL0.i32_u + head[2].data.i32_u];
+    interp.locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint32_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
     head += 3;
     NEXT();
 }
@@ -148,26 +148,6 @@ NAME(WEB49_OPCODE_MEMORY_GROW) {
     __builtin_trap();
     NEXT();
 }
-NAME(WEB49_OPCODE_I32_CONST) {
-    interp.locals[head[0].data.i32_u] = head[1].data;
-    head += 2;
-    NEXT();
-}
-NAME(WEB49_OPCODE_I64_CONST) {
-    interp.locals[head[0].data.i32_u] = head[1].data;
-    head += 2;
-    NEXT();
-}
-NAME(WEB49_OPCODE_F32_CONST) {
-    interp.locals[head[0].data.i32_u] = head[1].data;
-    head += 2;
-    NEXT();
-}
-NAME(WEB49_OPCODE_F64_CONST) {
-    interp.locals[head[0].data.i32_u] = head[1].data;
-    head += 2;
-    NEXT();
-}
 NAME(WEB49_OPCODE_I32_EQZ) {
     interp.locals[head[1].data.i32_u].i32_u = (uint32_t)(LOCAL0.i32_u == 0);
     head += 2;
@@ -179,11 +159,19 @@ NAME(WEB49_OPCODE_I64_EQZ) {
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I32_EQZ) {
-    if (LOCAL0.i32_u == 0) { head = head[1].ptr; } else { head = head[2].ptr; }
+    if (LOCAL0.i32_u == 0) {
+        head = head[1].ptr;
+    } else {
+        head = head[2].ptr;
+    }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I64_EQZ) {
-    if (LOCAL0.i64_u == 0) { head = head[1].ptr; } else { head = head[2].ptr; }
+    if (LOCAL0.i64_u == 0) {
+        head = head[1].ptr;
+    } else {
+        head = head[2].ptr;
+    }
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_CLZ) {

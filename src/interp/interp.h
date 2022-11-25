@@ -158,11 +158,11 @@ struct web49_interp_extra_t {
     web49_section_data_t data_section;
     web49_section_table_t table_section;
     web49_section_element_t element_section;
-    uint8_t memory[0];
 };
 
 struct web49_interp_t {
     web49_interp_data_t *restrict locals;
+    uint8_t *restrict memory;
     web49_interp_extra_t *restrict extra;
 };
 
