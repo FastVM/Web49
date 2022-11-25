@@ -1,0 +1,40 @@
+/Users/shaws/code/web49/bin/miniwasm binary-trees.wasm 16
+Benchmark #1: /Users/shaws/code/web49/bin/miniwasm binary-trees.wasm 16 > binary-trees.out
+  Time (mean ± σ):      1.891 s ±  0.007 s    [User: 1.886 s, System: 0.004 s]
+  Range (min … max):    1.884 s …  1.909 s    10 runs
+ 
+/Users/shaws/code/web49/bin/miniwasm fannkuch-redux.wasm 10
+Benchmark #1: /Users/shaws/code/web49/bin/miniwasm fannkuch-redux.wasm 10 > fannkuch-redux.out
+  Time (mean ± σ):      1.166 s ±  0.001 s    [User: 1.163 s, System: 0.002 s]
+  Range (min … max):    1.165 s …  1.168 s    10 runs
+ 
+/Users/shaws/code/web49/bin/miniwasm fasta.wasm 5000000
+Benchmark #1: /Users/shaws/code/web49/bin/miniwasm fasta.wasm 5000000 > fasta.out
+  Time (mean ± σ):      3.440 s ±  0.018 s    [User: 3.406 s, System: 0.020 s]
+  Range (min … max):    3.422 s …  3.483 s    10 runs
+ 
+/Users/shaws/code/web49/bin/miniwasm mandelbrot-simd.wasm 2000
+Benchmark #1: /Users/shaws/code/web49/bin/miniwasm mandelbrot-simd.wasm 2000 > mandelbrot-simd.out
+  Time (mean ± σ):      2.400 s ±  0.006 s    [User: 2.394 s, System: 0.005 s]
+  Range (min … max):    2.387 s …  2.405 s    10 runs
+ 
+/Users/shaws/code/web49/bin/miniwasm mandelbrot.wasm 2000
+Benchmark #1: /Users/shaws/code/web49/bin/miniwasm mandelbrot.wasm 2000 > mandelbrot.out
+  Time (mean ± σ):      1.330 s ±  0.001 s    [User: 1.326 s, System: 0.003 s]
+  Range (min … max):    1.328 s …  1.333 s    10 runs
+ 
+/Users/shaws/code/web49/bin/miniwasm nbody.wasm 10000000
+Benchmark #1: /Users/shaws/code/web49/bin/miniwasm nbody.wasm 10000000 > nbody.out
+  Time (mean ± σ):      5.825 s ±  0.022 s    [User: 5.814 s, System: 0.009 s]
+  Range (min … max):    5.793 s …  5.871 s    10 runs
+ 
+/Users/shaws/code/web49/bin/miniwasm nop.wasm 0
+Benchmark #1: /Users/shaws/code/web49/bin/miniwasm nop.wasm 0 > nop.out
+  Time (mean ± σ):       1.0 ms ±   0.1 ms    [User: 0.3 ms, System: 0.5 ms]
+  Range (min … max):     0.9 ms …   1.4 ms    10 runs
+ 
+/Users/shaws/code/web49/bin/miniwasm fib.wasm 40
+Benchmark #1: /Users/shaws/code/web49/bin/miniwasm fib.wasm 40 > fib.out
+  Time (mean ± σ):      1.112 s ±  0.001 s    [User: 1.108 s, System: 0.002 s]
+  Range (min … max):    1.110 s …  1.113 s    10 runs
+ 

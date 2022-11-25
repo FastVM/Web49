@@ -1,0 +1,40 @@
+wasm3 binary-trees.wasm 16
+Benchmark #1: wasm3 binary-trees.wasm 16 > binary-trees.out
+  Time (mean ± σ):      3.004 s ±  0.005 s    [User: 2.996 s, System: 0.007 s]
+  Range (min … max):    2.997 s …  3.013 s    10 runs
+ 
+wasm3 fannkuch-redux.wasm 10
+Benchmark #1: wasm3 fannkuch-redux.wasm 10 > fannkuch-redux.out
+  Time (mean ± σ):      1.629 s ±  0.001 s    [User: 1.623 s, System: 0.004 s]
+  Range (min … max):    1.627 s …  1.631 s    10 runs
+ 
+wasm3 fasta.wasm 5000000
+Benchmark #1: wasm3 fasta.wasm 5000000 > fasta.out
+  Time (mean ± σ):      2.828 s ±  0.003 s    [User: 2.799 s, System: 0.020 s]
+  Range (min … max):    2.824 s …  2.832 s    10 runs
+ 
+wasm3 mandelbrot-simd.wasm 2000
+Benchmark #1: wasm3 mandelbrot-simd.wasm 2000 > mandelbrot-simd.out
+  Time (mean ± σ):      1.035 s ±  0.001 s    [User: 1.030 s, System: 0.004 s]
+  Range (min … max):    1.034 s …  1.038 s    10 runs
+ 
+wasm3 mandelbrot.wasm 2000
+Benchmark #1: wasm3 mandelbrot.wasm 2000 > mandelbrot.out
+  Time (mean ± σ):      1.461 s ±  0.006 s    [User: 1.454 s, System: 0.004 s]
+  Range (min … max):    1.454 s …  1.477 s    10 runs
+ 
+wasm3 nbody.wasm 10000000
+Benchmark #1: wasm3 nbody.wasm 10000000 > nbody.out
+  Time (mean ± σ):      3.896 s ±  0.011 s    [User: 3.883 s, System: 0.008 s]
+  Range (min … max):    3.887 s …  3.922 s    10 runs
+ 
+wasm3 nop.wasm 0
+Benchmark #1: wasm3 nop.wasm 0 > nop.out
+  Time (mean ± σ):       3.0 ms ±   0.1 ms    [User: 1.1 ms, System: 1.6 ms]
+  Range (min … max):     2.9 ms …   3.3 ms    10 runs
+ 
+wasm3 fib.wasm 40
+Benchmark #1: wasm3 fib.wasm 40 > fib.out
+  Time (mean ± σ):      3.298 s ±  0.003 s    [User: 3.291 s, System: 0.006 s]
+  Range (min … max):    3.292 s …  3.303 s    10 runs
+ 
