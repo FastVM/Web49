@@ -165,6 +165,12 @@ static web49_opcode_t web49_interp_cmp_to_ifcmp(web49_opcode_t opcode) {
             return WEB49_OPCODE_IF_F64_LE;
         case WEB49_OPCODE_F64_GE:
             return WEB49_OPCODE_IF_F64_GE;
+        case WEB49_OPCODE_I32_AND:
+            return WEB49_OPCODE_IF_I32_AND;
+        case WEB49_OPCODE_I32_OR:
+            return WEB49_OPCODE_IF_I32_OR;
+        case WEB49_OPCODE_I32_XOR:
+            return WEB49_OPCODE_IF_I32_XOR;
         default:
             return WEB49_OPCODE_IF;
     }
@@ -730,7 +736,9 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         TABLE_PUT2(WEB49_OPCODE_IF_F64_LT),
         TABLE_PUT2(WEB49_OPCODE_IF_F64_GT),
         TABLE_PUT2(WEB49_OPCODE_IF_F64_LE),
-        TABLE_PUT2(WEB49_OPCODE_IF_F64_GE),
+        TABLE_PUT2(WEB49_OPCODE_IF_I32_AND),
+        TABLE_PUT2(WEB49_OPCODE_IF_I32_OR),
+        TABLE_PUT2(WEB49_OPCODE_IF_I32_XOR),
         TABLE_PUT1(WEB49_OPCODE_I32_CLZ),
         TABLE_PUT1(WEB49_OPCODE_I32_CTZ),
         TABLE_PUT1(WEB49_OPCODE_I32_POPCNT),

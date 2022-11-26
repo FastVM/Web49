@@ -689,3 +689,27 @@ NAME(WEB49_OPCODE_F64_COPYSIGN) {
     head += 3;
     NEXT();
 }
+NAME(WEB49_OPCODE_IF_I32_AND) {
+    if (LOCAL0.i32_u & LOCAL1.i32_u) {
+        head = head[2].ptr;
+    } else {
+        head = head[3].ptr;
+    }
+    NEXT();
+}
+NAME(WEB49_OPCODE_IF_I32_OR) {
+    if (LOCAL0.i32_u | LOCAL1.i32_u) {
+        head = head[2].ptr;
+    } else {
+        head = head[3].ptr;
+    }
+    NEXT();
+}
+NAME(WEB49_OPCODE_IF_I32_XOR) {
+    if (LOCAL0.i32_u ^ LOCAL1.i32_u) {
+        head = head[2].ptr;
+    } else {
+        head = head[3].ptr;
+    }
+    NEXT();
+}
