@@ -8,7 +8,7 @@ import time
 os.chdir('test/bench')
 
 runs = 1
-engines = ['miniwasm', 'iwasm', 'wasmer', 'wasm3', 'wasmtime']
+engines = ['miniwasm', 'wasmer', 'wasm3', 'wasmtime']
 tests = {
     'nop': {
         'runs': 10,
