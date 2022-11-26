@@ -4,11 +4,6 @@ jobs:
   benchmark:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup emsdk
-        uses: mymindstorm/setup-emsdk@v11
-        with:
-          version: 3.1.25
-          actions-cache-folder: 'emsdk-cache'
       - uses: actions/checkout@v3
         with:
           submodules: true
@@ -17,7 +12,7 @@ jobs:
       - run: pushd ./; git clone https://github.com/wasm3/wasm3 && cd wasm3 && cmake . && sudo make -Bj install; popd
       - run: curl https://get.wasmer.io -sSfL | sh && sudo cp ~/.wasmer/bin/wasmer /usr/bin/wasmer
       - run: curl https://wasmtime.dev/install.sh -sSf | bash && sudo cp ~/.wasmtime/bin/wasmtime /usr/bin/wasmtime
-      - run: sudo apt install -y python3 python3-pip
+      - run: sudo apt install -y python3 python3-pip emscripten
       - run: pip3 install matplotlib
       - run: python3 bench.py
       - uses: actions/upload-artifact@v3
