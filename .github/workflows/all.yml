@@ -15,8 +15,8 @@ jobs:
       - run: make CC=gcc OPT='-O3 -fomit-frame-pointer -flto' all
       - run: sudo cp bin/miniwasm /usr/bin/miniwasm
       - run: pushd ./; git clone https://github.com/wasm3/wasm3 && cd wasm3 && cmake . && sudo make -Bj install; popd
-      - run: curl https://get.wasmer.io -sSfL | sh
-      - run: curl https://wasmtime.dev/install.sh -sSf | bash
+      - run: curl https://get.wasmer.io -sSfL | sh && sudo cp ~/.wasmer/bin/wasmer /usr/bin/wasmer
+      - run: curl https://wasmtime.dev/install.sh -sSf | bash && sudo cp ~/.wasmtime/bin/wasmtime /usr/bin/wasmtime
       - run: sudo apt install -y python3 python3-pip
       - run: pip3 install matplotlib
       - run: python3 bench.py
