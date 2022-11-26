@@ -4,6 +4,11 @@ jobs:
   benchmark:
     runs-on: ubuntu-latest
     steps:
+    - name: Setup emsdk
+      uses: mymindstorm/setup-emsdk@v11
+      with:
+        version: 3.1.25
+        actions-cache-folder: 'emsdk-cache'
       - uses: actions/checkout@v3
         with:
           submodules: true
