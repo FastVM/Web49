@@ -12,7 +12,7 @@ jobs:
       - run: sudo apt install -y python3 python3-pip
       - run: curl https://get.wasmer.io -sSfL | sh
       - run: curl https://wasmtime.dev/install.sh -sSf | bash
-      - run: git clone https://github.com/wasm3/
+      - run: git clone https://github.com/wasm3/wasm3 && cd wasm3 && cmake . && sudo make -Bj install
       - run: pip3 install matplotlib
       - run: python3 build.py
       - uses: actions/upload-artifact@v3
