@@ -3,10 +3,6 @@
 #include "../src/read_wat.h"
 #include "../src/write_bin.h"
 
-web49_env_func_t web49_env_func(const char *name) {
-    return NULL;
-}
-
 int web49_file_main(const char *inarg, const char *outarg) {
     web49_io_input_t infile = web49_io_input_open(inarg);
     web49_module_t mod = web49_readwat_module(&infile);

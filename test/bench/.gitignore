@@ -3,3 +3,4 @@
 *.wasm
 *.out
 *.err
+*.png

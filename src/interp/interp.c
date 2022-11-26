@@ -1,236 +1,7 @@
 #include "interp.h"
-
-#include <sys/stat.h>
-#include <time.h>
-#include <unistd.h>
-
 #include "../tables.h"
 
 #define OPCODE(n) ({size_t x = (n); if (ptrs[x] == NULL) {__builtin_trap();} ptrs[x]; })
-
-void web49_interp_import(void **ptrs, const char *mod, const char *sym, web49_interp_block_t *block) {
-    if (!strcmp(mod, "env")) {
-        if (ptrs != NULL) {
-            web49_interp_opcode_t *instrs = web49_malloc(sizeof(web49_interp_opcode_t) * 2);
-            instrs[0].opcode = OPCODE(WEB49_OPCODE_FFI_CALL);
-            instrs[1].ptr = web49_env_func(sym);
-            if (instrs[1].ptr == NULL) {
-                fprintf(stderr, "not implemented: env.%s\n", sym);
-            }
-            block->code = instrs;
-        } else {
-            block->code = NULL;
-        }
-        // fprintf(stderr, "block->code = %p\n", block->code);
-        block->nlocals = 0;
-        block->nreturns = 1;
-        block->nparams = 0;
-        return;
-    }
-    if (!strcmp(mod, "wasi_snapshot_preview1")) {
-        size_t iit;
-        uint64_t nargs = UINT64_MAX;
-        uint64_t nreturns = UINT64_MAX;
-        if (!strcmp(sym, "proc_exit")) {
-            iit = WEB49_OPCODE_WASI_PROC_EXIT;
-            nargs = 1;
-            nreturns = 0;
-        } else if (!strcmp(sym, "fd_seek")) {
-            iit = WEB49_OPCODE_WASI_FD_SEEK;
-            nargs = 4;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_filestat_get")) {
-            iit = WEB49_OPCODE_WASI_FD_FILESTAT_GET;
-            nargs = 5;
-            nreturns = 1;
-        } else if (!strcmp(sym, "path_filestat_get")) {
-            iit = WEB49_OPCODE_WASI_PATH_FILESTAT_GET;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "args_get")) {
-            iit = WEB49_OPCODE_WASI_ARGS_GET;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "args_sizes_get")) {
-            iit = WEB49_OPCODE_WASI_ARGS_SIZES_GET;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "clock_res_get")) {
-            iit = WEB49_OPCODE_WASI_CLOCK_RES_GET;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "clock_time_get")) {
-            iit = WEB49_OPCODE_WASI_CLOCK_TIME_GET;
-            nargs = 3;
-            nreturns = 1;
-        } else if (!strcmp(sym, "environ_get")) {
-            iit = WEB49_OPCODE_WASI_ENVIRON_GET;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "environ_sizes_get")) {
-            iit = WEB49_OPCODE_WASI_ENVIRON_SIZES_GET;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_advise")) {
-            iit = WEB49_OPCODE_WASI_FD_ADVISE;
-            nargs = 4;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_allocate")) {
-            iit = WEB49_OPCODE_WASI_FD_ALLOCATE;
-            nargs = 3;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_close")) {
-            iit = WEB49_OPCODE_WASI_FD_CLOSE;
-            nargs = 1;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_datasync")) {
-            iit = WEB49_OPCODE_WASI_FD_DATASYNC;
-            nargs = 1;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_fdstat_get")) {
-            iit = WEB49_OPCODE_WASI_FD_FDSTAT_GET;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_fdstat_set_flags")) {
-            iit = WEB49_OPCODE_WASI_FD_FDSTAT_SET_FLAGS;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_fdstat_set_rights")) {
-            iit = WEB49_OPCODE_WASI_FD_FDSTAT_SET_RIGHTS;
-            nargs = 3;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_filestat_set_size")) {
-            iit = WEB49_OPCODE_WASI_FD_FILESTAT_SET_SIZE;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_filestat_set_times")) {
-            iit = WEB49_OPCODE_WASI_FD_FILESTAT_SET_TIMES;
-            nargs = 4;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_pread")) {
-            iit = WEB49_OPCODE_WASI_FD_PREAD;
-            nargs = 5;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_prestat_get")) {
-            iit = WEB49_OPCODE_WASI_FD_PRESTAT_GET;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_prestat_dir_name")) {
-            iit = WEB49_OPCODE_WASI_FD_PRESTAT_DIR_NAME;
-            nargs = 3;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_pwrite")) {
-            iit = WEB49_OPCODE_WASI_FD_PWRITE;
-            nargs = 5;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_read")) {
-            iit = WEB49_OPCODE_WASI_FD_READ;
-            nargs = 4;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_readdir")) {
-            iit = WEB49_OPCODE_WASI_FD_READDIR;
-            nargs = 5;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_renumber")) {
-            iit = WEB49_OPCODE_WASI_FD_RENUMBER;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_sync")) {
-            iit = WEB49_OPCODE_WASI_FD_SYNC;
-            nargs = 1;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_tell")) {
-            iit = WEB49_OPCODE_WASI_FD_TELL;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "fd_write")) {
-            iit = WEB49_OPCODE_WASI_FD_WRITE;
-            nargs = 4;
-            nreturns = 1;
-        } else if (!strcmp(sym, "path_create_directory")) {
-            iit = WEB49_OPCODE_WASI_PATH_CREATE_DIRECTORY;
-            nargs = 3;
-            nreturns = 1;
-        } else if (!strcmp(sym, "path_filestat_set_times")) {
-            iit = WEB49_OPCODE_WASI_PATH_FILESTAT_SET_TIMES;
-            nargs = 7;
-            nreturns = 1;
-        } else if (!strcmp(sym, "path_link")) {
-            iit = WEB49_OPCODE_WASI_PATH_LINK;
-            nargs = 7;
-            nreturns = 1;
-        } else if (!strcmp(sym, "path_open")) {
-            iit = WEB49_OPCODE_WASI_PATH_OPEN;
-            nargs = 9;
-            nreturns = 1;
-        } else if (!strcmp(sym, "path_readlink")) {
-            iit = WEB49_OPCODE_WASI_PATH_READLINK;
-            nargs = 6;
-            nreturns = 1;
-        } else if (!strcmp(sym, "path_remove_directory")) {
-            iit = WEB49_OPCODE_WASI_PATH_REMOVE_DIRECTORY;
-            nargs = 3;
-            nreturns = 1;
-        } else if (!strcmp(sym, "path_rename")) {
-            iit = WEB49_OPCODE_WASI_PATH_RENAME;
-            nargs = 6;
-            nreturns = 1;
-        } else if (!strcmp(sym, "path_symlink")) {
-            iit = WEB49_OPCODE_WASI_PATH_SYMLINK;
-            nargs = 6;
-            nreturns = 1;
-        } else if (!strcmp(sym, "path_unlink_file")) {
-            iit = WEB49_OPCODE_WASI_PATH_UNLINK_FILE;
-            nargs = 3;
-            nreturns = 1;
-        } else if (!strcmp(sym, "poll_oneoff")) {
-            iit = WEB49_OPCODE_WASI_POLL_ONEOFF;
-            nargs = 4;
-            nreturns = 1;
-        } else if (!strcmp(sym, "proc_raise")) {
-            iit = WEB49_OPCODE_WASI_PROC_RAISE;
-            nargs = 1;
-            nreturns = 1;
-        } else if (!strcmp(sym, "random_get")) {
-            iit = WEB49_OPCODE_WASI_RANDOM_GET;
-            nargs = 2;
-            nreturns = 1;
-        } else if (!strcmp(sym, "sched_yield")) {
-            iit = WEB49_OPCODE_WASI_SCHED_YIELD;
-            nargs = 0;
-            nreturns = 1;
-        } else if (!strcmp(sym, "sock_recv")) {
-            iit = WEB49_OPCODE_WASI_SOCK_RECV;
-            nargs = 6;
-            nreturns = 1;
-        } else if (!strcmp(sym, "sock_send")) {
-            iit = WEB49_OPCODE_WASI_SOCK_SEND;
-            nargs = 5;
-            nreturns = 1;
-        } else if (!strcmp(sym, "sock_shutdown")) {
-            iit = WEB49_OPCODE_WASI_SOCK_SHUTDOWN;
-            nargs = 2;
-            nreturns = 1;
-        } else {
-            fprintf(stderr, "unknown wasi import symbol: %s\n", sym);
-            exit(1);
-        }
-        if (ptrs != NULL) {
-            web49_interp_opcode_t *instrs = web49_malloc(sizeof(web49_interp_opcode_t));
-            instrs[0].opcode = OPCODE(iit);
-            block->code = instrs;
-        } else {
-            block->code = NULL;
-        }
-        // fprintf(stderr, "block->code = %p\n", block->code);
-        block->nlocals = 0;
-        block->nreturns = nreturns;
-        block->nparams = nargs;
-        return;
-    }
-    fprintf(stderr, "unknown import module: %s\n", mod);
-    exit(1);
-}
 
 uint64_t web49_interp_count(web49_instr_t cur) {
     uint64_t ret = 0;
@@ -629,20 +400,17 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         if (ent.num_returns == 1) {
             if (local == UINT32_MAX) {
                 uint32_t out = state->depth + state->nlocals;
-                // fprintf(stderr, "DYNCALL -> %zu\n", (size_t) out);
                 build->code[build->ncode++].data.i32_u = out;
                 build->code[build->ncode++].data.i32_u = cur.nargs - 1;
                 state->depth += 1;
                 return out;
             } else {
-                // fprintf(stderr, "DYNCALL -> locals[%zu]\n", (size_t) local);
                 build->code[build->ncode++].data.i32_u = local;
                 build->code[build->ncode++].data.i32_u = cur.nargs - 1;
                 state->depth += 1;
                 return local;
             }
         } else {
-            // fprintf(stderr, "DYNCALL -> (none %zu)\n", (size_t) (state->nlocals + 256));
             build->code[build->ncode++].data.i32_u = state->nlocals + 256;
             build->code[build->ncode++].data.i32_u = cur.nargs - 1;
             return UINT32_MAX;
@@ -663,13 +431,11 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
                 build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
                 if (local == UINT32_MAX) {
                     uint32_t out = state->depth + state->nlocals;
-                    // fprintf(stderr, "CALL1 %zu -> %zu\n", (size_t) cur.immediate.varint32, (size_t) out);
                     build->code[build->ncode++].data.i32_u = out;
                     build->code[build->ncode++].data.i32_u = cur.nargs;
                     state->depth += 1;
                     return out;
                 } else {
-                    // fprintf(stderr, "CALL1 %zu -> locals[%zu]\n", (size_t) cur.immediate.varint32, (size_t) local);
                     build->code[build->ncode++].data.i32_u = local;
                     build->code[build->ncode++].data.i32_u = cur.nargs;
                     state->depth += 1;
@@ -677,7 +443,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
                 }
                 break;
             default:
-                fprintf(stderr, "cannot compile multiple returns yet\n");
+                fprintf(stderr, "cannot compile %zu returns yet\n", (size_t) state->interp->extra->funcs[cur.immediate.varint32].nreturns);
                 __builtin_trap();
         }
     }
@@ -816,15 +582,10 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
             state.depth = 0;
             state.nlocals = block->nparams + block->nlocals;
             uint32_t ret = UINT32_MAX;
-            // for (uint64_t i = 0; i < entry->num_instrs; i++) {
-            //     debug_print(stderr, entry->instrs[i], 0, SIZE_MAX);
-            // }
             for (uint64_t i = 0; i < entry->num_instrs; i++) {
                 uint32_t tmp = web49_interp_read_instr(&state, entry->instrs[i], UINT32_MAX);
                 if (tmp != UINT32_MAX) {
                     ret = tmp;
-                } else {
-                    // ret = tmp;
                 }
             }
             if (ret == UINT32_MAX) {
@@ -842,7 +603,14 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
             web49_free(data);
         } else {
             web49_section_import_entry_t *entry = block->import_entry;
-            web49_interp_import(ptrs, entry->module_str, entry->field_str, block);
+            web49_interp_opcode_t *instrs = web49_malloc(sizeof(web49_interp_opcode_t) * 2);
+            instrs[0].opcode = OPCODE(WEB49_OPCODE_FFI_CALL);
+            instrs[1].ptr = interp.extra->import_func(interp.extra->import_state, entry->module_str, entry->field_str);
+            if (instrs[1].ptr == NULL) {
+                fprintf(stderr, "not implemented: %s.%s\n", entry->module_str, entry->field_str);
+                __builtin_trap();
+            }
+            block->code = instrs;
         }
     }
 }
@@ -1064,51 +832,6 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         [WEB49_OPCODE_ELEM_DROP] = &&DO_WEB49_OPCODE_ELEM_DROP,
         [WEB49_OPCODE_TABLE_COPY] = &&DO_WEB49_OPCODE_TABLE_COPY,
         [WEB49_OPCODE_FFI_CALL] = &&DO_WEB49_OPCODE_FFI_CALL,
-        [WEB49_OPCODE_WASI_FD_SEEK] = &&DO_WEB49_OPCODE_WASI_FD_SEEK,
-        [WEB49_OPCODE_WASI_FD_FILESTAT_GET] = &&DO_WEB49_OPCODE_WASI_FD_FILESTAT_GET,
-        [WEB49_OPCODE_WASI_PATH_FILESTAT_GET] = &&DO_WEB49_OPCODE_WASI_PATH_FILESTAT_GET,
-        [WEB49_OPCODE_WASI_ARGS_GET] = &&DO_WEB49_OPCODE_WASI_ARGS_GET,
-        [WEB49_OPCODE_WASI_ARGS_SIZES_GET] = &&DO_WEB49_OPCODE_WASI_ARGS_SIZES_GET,
-        [WEB49_OPCODE_WASI_CLOCK_RES_GET] = &&DO_WEB49_OPCODE_WASI_CLOCK_RES_GET,
-        [WEB49_OPCODE_WASI_CLOCK_TIME_GET] = &&DO_WEB49_OPCODE_WASI_CLOCK_TIME_GET,
-        [WEB49_OPCODE_WASI_ENVIRON_GET] = &&DO_WEB49_OPCODE_WASI_ENVIRON_GET,
-        [WEB49_OPCODE_WASI_ENVIRON_SIZES_GET] = &&DO_WEB49_OPCODE_WASI_ENVIRON_SIZES_GET,
-        [WEB49_OPCODE_WASI_FD_ADVISE] = &&DO_WEB49_OPCODE_WASI_FD_ADVISE,
-        [WEB49_OPCODE_WASI_FD_ALLOCATE] = &&DO_WEB49_OPCODE_WASI_FD_ALLOCATE,
-        [WEB49_OPCODE_WASI_FD_CLOSE] = &&DO_WEB49_OPCODE_WASI_FD_CLOSE,
-        [WEB49_OPCODE_WASI_FD_DATASYNC] = &&DO_WEB49_OPCODE_WASI_FD_DATASYNC,
-        [WEB49_OPCODE_WASI_FD_FDSTAT_GET] = &&DO_WEB49_OPCODE_WASI_FD_FDSTAT_GET,
-        [WEB49_OPCODE_WASI_FD_FDSTAT_SET_FLAGS] = &&DO_WEB49_OPCODE_WASI_FD_FDSTAT_SET_FLAGS,
-        [WEB49_OPCODE_WASI_FD_FDSTAT_SET_RIGHTS] = &&DO_WEB49_OPCODE_WASI_FD_FDSTAT_SET_RIGHTS,
-        [WEB49_OPCODE_WASI_FD_FILESTAT_SET_SIZE] = &&DO_WEB49_OPCODE_WASI_FD_FILESTAT_SET_SIZE,
-        [WEB49_OPCODE_WASI_FD_FILESTAT_SET_TIMES] = &&DO_WEB49_OPCODE_WASI_FD_FILESTAT_SET_TIMES,
-        [WEB49_OPCODE_WASI_FD_PREAD] = &&DO_WEB49_OPCODE_WASI_FD_PREAD,
-        [WEB49_OPCODE_WASI_FD_PRESTAT_GET] = &&DO_WEB49_OPCODE_WASI_FD_PRESTAT_GET,
-        [WEB49_OPCODE_WASI_FD_PRESTAT_DIR_NAME] = &&DO_WEB49_OPCODE_WASI_FD_PRESTAT_DIR_NAME,
-        [WEB49_OPCODE_WASI_FD_PWRITE] = &&DO_WEB49_OPCODE_WASI_FD_PWRITE,
-        [WEB49_OPCODE_WASI_FD_READ] = &&DO_WEB49_OPCODE_WASI_FD_READ,
-        [WEB49_OPCODE_WASI_FD_READDIR] = &&DO_WEB49_OPCODE_WASI_FD_READDIR,
-        [WEB49_OPCODE_WASI_FD_RENUMBER] = &&DO_WEB49_OPCODE_WASI_FD_RENUMBER,
-        [WEB49_OPCODE_WASI_FD_SYNC] = &&DO_WEB49_OPCODE_WASI_FD_SYNC,
-        [WEB49_OPCODE_WASI_FD_TELL] = &&DO_WEB49_OPCODE_WASI_FD_TELL,
-        [WEB49_OPCODE_WASI_FD_WRITE] = &&DO_WEB49_OPCODE_WASI_FD_WRITE,
-        [WEB49_OPCODE_WASI_PATH_CREATE_DIRECTORY] = &&DO_WEB49_OPCODE_WASI_PATH_CREATE_DIRECTORY,
-        [WEB49_OPCODE_WASI_PATH_FILESTAT_SET_TIMES] = &&DO_WEB49_OPCODE_WASI_PATH_FILESTAT_SET_TIMES,
-        [WEB49_OPCODE_WASI_PATH_LINK] = &&DO_WEB49_OPCODE_WASI_PATH_LINK,
-        [WEB49_OPCODE_WASI_PATH_OPEN] = &&DO_WEB49_OPCODE_WASI_PATH_OPEN,
-        [WEB49_OPCODE_WASI_PATH_READLINK] = &&DO_WEB49_OPCODE_WASI_PATH_READLINK,
-        [WEB49_OPCODE_WASI_PATH_REMOVE_DIRECTORY] = &&DO_WEB49_OPCODE_WASI_PATH_REMOVE_DIRECTORY,
-        [WEB49_OPCODE_WASI_PATH_RENAME] = &&DO_WEB49_OPCODE_WASI_PATH_RENAME,
-        [WEB49_OPCODE_WASI_PATH_SYMLINK] = &&DO_WEB49_OPCODE_WASI_PATH_SYMLINK,
-        [WEB49_OPCODE_WASI_PATH_UNLINK_FILE] = &&DO_WEB49_OPCODE_WASI_PATH_UNLINK_FILE,
-        [WEB49_OPCODE_WASI_POLL_ONEOFF] = &&DO_WEB49_OPCODE_WASI_POLL_ONEOFF,
-        [WEB49_OPCODE_WASI_PROC_EXIT] = &&DO_WEB49_OPCODE_WASI_PROC_EXIT,
-        [WEB49_OPCODE_WASI_PROC_RAISE] = &&DO_WEB49_OPCODE_WASI_PROC_RAISE,
-        [WEB49_OPCODE_WASI_RANDOM_GET] = &&DO_WEB49_OPCODE_WASI_RANDOM_GET,
-        [WEB49_OPCODE_WASI_SCHED_YIELD] = &&DO_WEB49_OPCODE_WASI_SCHED_YIELD,
-        [WEB49_OPCODE_WASI_SOCK_RECV] = &&DO_WEB49_OPCODE_WASI_SOCK_RECV,
-        [WEB49_OPCODE_WASI_SOCK_SEND] = &&DO_WEB49_OPCODE_WASI_SOCK_SEND,
-        [WEB49_OPCODE_WASI_SOCK_SHUTDOWN] = &&DO_WEB49_OPCODE_WASI_SOCK_SHUTDOWN,
     };
     web49_interp_block_run_comp(block, ptrs, interp);
     web49_interp_data_t **restrict stacks = web49_malloc(sizeof(web49_interp_data_t) * (1 << 14));
@@ -1203,300 +926,12 @@ exitv:
     }
     LABEL(WEB49_OPCODE_FFI_CALL) {
         web49_env_func_t func = head[0].ptr;
+        web49_interp_data_t data = func(interp);
         head = *--returns;
         interp.locals = *--stacks;
-        interp.locals[head[1].data.i32_u] = func(interp.memory, interp.locals);
+        interp.locals[head[2].data.i32_u] = data;
         head += 4;
         NEXT();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_SEEK) {
-        uint32_t fd = interp.locals[0].i32_u;
-        uint32_t offset = interp.locals[1].i32_u;
-        uint32_t wasi_whence = interp.locals[2].i32_u;
-        uint32_t result = interp.locals[3].i32_u;
-        int whence = -1;
-        switch (wasi_whence) {
-            case 0:
-                whence = SEEK_SET;
-                break;
-            case 1:
-                whence = SEEK_CUR;
-                break;
-            case 2:
-                whence = SEEK_END;
-                break;
-        }
-        *(uint32_t *)&interp.memory[result] = lseek(fd, offset, whence);
-        head = *--returns;
-        interp.locals = *--stacks;
-        interp.locals[head[2].data.i32_u].i32_u = 0;
-        head += 4;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_FILESTAT_GET) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_filestat_get");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_PATH_FILESTAT_GET) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_path_filestat_get");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_ARGS_GET) {
-        uint32_t argv = interp.locals[0].i32_u;
-        uint32_t buf = interp.locals[1].i32_u;
-        uint32_t argc = 0;
-        uint32_t head2 = buf;
-        for (size_t i = 0; interp.extra->args[i] != NULL; i++) {
-            *(uint32_t *)&interp.memory[argv + argc * 4] = head2;
-            size_t memlen = strlen(interp.extra->args[i]) + 1;
-            memcpy(&interp.memory[head2], interp.extra->args[i], memlen);
-            head2 += memlen;
-            argc += 1;
-        }
-        *(uint32_t *)&interp.memory[argv + argc * 4] = 0;
-        head = *--returns;
-        interp.locals = *--stacks;
-        interp.locals[head[2].data.i32_u].i32_u = 0;
-        head += 4;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_WASI_ARGS_SIZES_GET) {
-        uint32_t argc = interp.locals[0].i32_u;
-        uint32_t buf_size = interp.locals[1].i32_u;
-        uint32_t buf_len = 0;
-        uint32_t i = 0;
-        while (interp.extra->args[i] != NULL) {
-            buf_len += strlen(interp.extra->args[i]) + 1;
-            i += 1;
-        }
-        *(uint32_t *)&interp.memory[argc] = i;
-        *(uint32_t *)&interp.memory[buf_size] = buf_len;
-        head = *--returns;
-        interp.locals = *--stacks;
-        interp.locals[head[2].data.i32_u].i32_u = 0;
-        head += 4;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_WASI_CLOCK_RES_GET) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_clock_res_get");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_CLOCK_TIME_GET) {
-        uint32_t wasi_clock_id = interp.locals[0].i32_u;
-        // uint64_t precision = interp.locals[1].i64_u;
-        uint32_t time = interp.locals[2].i32_u;
-        int clock_id = -1;
-        switch (wasi_clock_id) {
-            case 0:
-                clock_id = CLOCK_REALTIME;
-                break;
-            case 1:
-                clock_id = CLOCK_MONOTONIC;
-                break;
-            case 2:
-                clock_id = CLOCK_PROCESS_CPUTIME_ID;
-                break;
-            case 3:
-                clock_id = CLOCK_THREAD_CPUTIME_ID;
-                break;
-        }
-        struct timespec ts;
-        clock_gettime(clock_id, &ts);
-        *(uint64_t *)&interp.memory[time] = (uint64_t)ts.tv_sec * 1000000000 + (uint64_t)ts.tv_nsec;
-        head = *--returns;
-        interp.locals = *--stacks;
-        interp.locals[head[2].data.i32_u].i32_u = 0;
-        head += 4;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_WASI_ENVIRON_GET) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_environ_get");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_ENVIRON_SIZES_GET) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_environ_sizes_get");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_ADVISE) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_advise");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_ALLOCATE) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_allocate");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_CLOSE) {
-        uint32_t fd = interp.locals[0].i32_u;
-        close(fd);
-        head = *--returns;
-        interp.locals = *--stacks;
-        interp.locals[head[2].data.i32_u].i32_u = 0;
-        head += 4;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_DATASYNC) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_datasync");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_FDSTAT_GET) {
-        uint32_t fd = interp.locals[0].i32_u;
-        uint32_t fdstat = interp.locals[1].i32_u;
-        struct stat fd_stat;
-        fstat(fd, &fd_stat);
-        int mode = fd_stat.st_mode;
-        uint16_t fs_filetype = (S_ISBLK(mode) ? 1 : 0) | (S_ISCHR(mode) ? 2 : 0) | (S_ISDIR(mode) ? 3 : 0) | (S_ISREG(mode) ? 4 : 0) | (S_ISLNK(mode) ? 7 : 0);
-        uint16_t fs_flags = 0;
-        uint64_t fs_rights_base = UINT64_MAX;
-        uint64_t fs_rights_inheriting = UINT64_MAX;
-        if (fd <= 2) {
-            fs_rights_base &= ~(4 | 32);
-        }
-        *(uint16_t *)&interp.memory[fdstat + 0] = fs_filetype;
-        *(uint16_t *)&interp.memory[fdstat + 2] = fs_flags;
-        *(uint32_t *)&interp.memory[fdstat + 4] = 0;
-        *(uint64_t *)&interp.memory[fdstat + 8] = fs_rights_base;
-        *(uint64_t *)&interp.memory[fdstat + 16] = fs_rights_inheriting;
-        head = *--returns;
-        interp.locals = *--stacks;
-        interp.locals[head[2].data.i32_u].i32_u = 0;
-        head += 4;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_FDSTAT_SET_FLAGS) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_fdstat_set_flags");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_FDSTAT_SET_RIGHTS) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_fdstat_set_rights");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_FILESTAT_SET_SIZE) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_filestat_set_size");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_FILESTAT_SET_TIMES) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_filestat_set_times");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_PREAD) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_pread");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_PRESTAT_GET) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_prestat_get");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_PRESTAT_DIR_NAME) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_prestat_dir_name");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_PWRITE) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_pwrite");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_READ) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_read");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_READDIR) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_readdir");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_RENUMBER) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_renumber");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_SYNC) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_sync");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_TELL) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_fd_tell");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_FD_WRITE) {
-        uint32_t fd = interp.locals[0].i32_u;
-        uint32_t iovs = interp.locals[1].i32_u;
-        uint32_t iovs_len = interp.locals[2].i32_u;
-        uint32_t nwritten = interp.locals[3].i32_u;
-        *(uint32_t *)&interp.memory[nwritten] = 0;
-        for (size_t i = 0; i < iovs_len; i++) {
-            uint32_t ptr = *(uint32_t *)&interp.memory[iovs + i * 8];
-            uint32_t len = *(uint32_t *)&interp.memory[iovs + i * 8 + 4];
-            *(uint32_t *)&interp.memory[nwritten] += (uint32_t)write(fd, &interp.memory[ptr], len);
-        }
-        head = *--returns;
-        interp.locals = *--stacks;
-        interp.locals[head[2].data.i32_u].i32_u = 0;
-        head += 4;
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_WASI_PATH_CREATE_DIRECTORY) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_path_create_directory");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_PATH_FILESTAT_SET_TIMES) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_path_filestat_set_times");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_PATH_LINK) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_path_link");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_PATH_OPEN) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_path_open");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_PATH_READLINK) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_path_readlink");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_PATH_REMOVE_DIRECTORY) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_path_remove_directory");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_PATH_RENAME) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_path_rename");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_PATH_SYMLINK) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_path_symlink");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_PATH_UNLINK_FILE) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_path_unlink_file");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_POLL_ONEOFF) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_poll_oneoff");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_PROC_EXIT) {
-        return interp.locals[0];
-    }
-    LABEL(WEB49_OPCODE_WASI_PROC_RAISE) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_proc_raise");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_RANDOM_GET) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_random_get");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_SCHED_YIELD) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_sched_yield");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_SOCK_RECV) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_sock_recv");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_SOCK_SEND) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_sock_send");
-        __builtin_trap();
-    }
-    LABEL(WEB49_OPCODE_WASI_SOCK_SHUTDOWN) {
-        fprintf(stderr, "no impl for: wasi %s", "wasi_sock_shutdown");
-        __builtin_trap();
     }
 }
 
@@ -1595,8 +1030,10 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
             web49_interp_block_t *block = &interp.extra->funcs[cur_func++];
             block->is_code = false;
             block->import_entry = entry;
-            web49_interp_import(NULL, entry->module_str, entry->field_str, block);
             block->code = NULL;
+            block->nlocals = 0;
+            block->nparams = 0;
+            block->nreturns = 1;
         }
     }
     for (size_t j = 0; j < global_section.num_entries; j++) {

@@ -6,7 +6,7 @@
 typedef uint64_t web49_interp_instr_t;
 
 enum web49_interp_instr_enum_t {
-    WEB49_INTERP_OPCODE_WASI = WEB49_MAX_OPCODE_NUM,
+    WEB49_MIN_OPCODE_INTERP = WEB49_MAX_OPCODE_NUM,
     WEB49_OPCODE_FFI_CALL,
     WEB49_OPCODE_IF_I32_EQZ,
     WEB49_OPCODE_IF_I32_EQ,
@@ -47,51 +47,6 @@ enum web49_interp_instr_enum_t {
     WEB49_OPCODE_WITH_CONST01 = WEB49_OPCODE_WITH_CONST0 * 3,
     WEB49_OPCODE_WITH_TMP = WEB49_OPCODE_WITH_CONST0 * 4,
     WEB49_OPCODE_REST_WASI = WEB49_OPCODE_WITH_CONST0 * 5,
-    WEB49_OPCODE_WASI_FD_SEEK,
-    WEB49_OPCODE_WASI_FD_FILESTAT_GET,
-    WEB49_OPCODE_WASI_PATH_FILESTAT_GET,
-    WEB49_OPCODE_WASI_ARGS_GET,
-    WEB49_OPCODE_WASI_ARGS_SIZES_GET,
-    WEB49_OPCODE_WASI_CLOCK_RES_GET,
-    WEB49_OPCODE_WASI_CLOCK_TIME_GET,
-    WEB49_OPCODE_WASI_ENVIRON_GET,
-    WEB49_OPCODE_WASI_ENVIRON_SIZES_GET,
-    WEB49_OPCODE_WASI_FD_ADVISE,
-    WEB49_OPCODE_WASI_FD_ALLOCATE,
-    WEB49_OPCODE_WASI_FD_CLOSE,
-    WEB49_OPCODE_WASI_FD_DATASYNC,
-    WEB49_OPCODE_WASI_FD_FDSTAT_GET,
-    WEB49_OPCODE_WASI_FD_FDSTAT_SET_FLAGS,
-    WEB49_OPCODE_WASI_FD_FDSTAT_SET_RIGHTS,
-    WEB49_OPCODE_WASI_FD_FILESTAT_SET_SIZE,
-    WEB49_OPCODE_WASI_FD_FILESTAT_SET_TIMES,
-    WEB49_OPCODE_WASI_FD_PREAD,
-    WEB49_OPCODE_WASI_FD_PRESTAT_GET,
-    WEB49_OPCODE_WASI_FD_PRESTAT_DIR_NAME,
-    WEB49_OPCODE_WASI_FD_PWRITE,
-    WEB49_OPCODE_WASI_FD_READ,
-    WEB49_OPCODE_WASI_FD_READDIR,
-    WEB49_OPCODE_WASI_FD_RENUMBER,
-    WEB49_OPCODE_WASI_FD_SYNC,
-    WEB49_OPCODE_WASI_FD_TELL,
-    WEB49_OPCODE_WASI_FD_WRITE,
-    WEB49_OPCODE_WASI_PATH_CREATE_DIRECTORY,
-    WEB49_OPCODE_WASI_PATH_FILESTAT_SET_TIMES,
-    WEB49_OPCODE_WASI_PATH_LINK,
-    WEB49_OPCODE_WASI_PATH_OPEN,
-    WEB49_OPCODE_WASI_PATH_READLINK,
-    WEB49_OPCODE_WASI_PATH_REMOVE_DIRECTORY,
-    WEB49_OPCODE_WASI_PATH_RENAME,
-    WEB49_OPCODE_WASI_PATH_SYMLINK,
-    WEB49_OPCODE_WASI_PATH_UNLINK_FILE,
-    WEB49_OPCODE_WASI_POLL_ONEOFF,
-    WEB49_OPCODE_WASI_PROC_EXIT,
-    WEB49_OPCODE_WASI_PROC_RAISE,
-    WEB49_OPCODE_WASI_RANDOM_GET,
-    WEB49_OPCODE_WASI_SCHED_YIELD,
-    WEB49_OPCODE_WASI_SOCK_RECV,
-    WEB49_OPCODE_WASI_SOCK_SEND,
-    WEB49_OPCODE_WASI_SOCK_SHUTDOWN,
     WEB49_MAX_OPCODE_INTERP_NUM,
 };
 
@@ -144,22 +99,6 @@ union web49_interp_data_t {
     double f64;
 };
 
-struct web49_interp_extra_t {
-    web49_interp_data_t *restrict globals;
-    web49_interp_block_t **table;
-    web49_interp_block_t *funcs;
-    const char **args;
-    uint64_t memsize;
-    web49_section_type_t type_section;
-    web49_section_import_t import_section;
-    web49_section_code_t code_section;
-    web49_section_function_t function_section;
-    web49_section_global_t global_section;
-    web49_section_data_t data_section;
-    web49_section_table_t table_section;
-    web49_section_element_t element_section;
-};
-
 struct web49_interp_t {
     web49_interp_data_t *restrict locals;
     uint8_t *restrict memory;
@@ -198,13 +137,28 @@ struct web49_read_block_state_t {
     uint64_t nlinks;
 };
 
-typedef web49_interp_data_t (*web49_env_func_t)(void *mem, web49_interp_data_t *locals);
+typedef web49_interp_data_t (*web49_env_func_t)(web49_interp_t interp);
+typedef web49_env_func_t (*web49_env_table_t)(void *state, const char *mod, const char *sym);
 
-web49_env_func_t web49_env_func(const char *name);
-
+struct web49_interp_extra_t {
+    web49_env_table_t import_func;
+    void *import_state;
+    web49_interp_data_t *restrict globals;
+    web49_interp_block_t **table;
+    web49_interp_block_t *funcs;
+    const char **args;
+    uint64_t memsize;
+    web49_section_type_t type_section;
+    web49_section_import_t import_section;
+    web49_section_code_t code_section;
+    web49_section_function_t function_section;
+    web49_section_global_t global_section;
+    web49_section_data_t data_section;
+    web49_section_table_t table_section;
+    web49_section_element_t element_section;
+};
 uint64_t *web49_interp_link_box(void);
 void web49_interp_link_get(web49_read_block_state_t *state, uint64_t out, uint64_t *from);
-void web49_interp_import(void **ptrs, const char *mod, const char *sym, web49_interp_block_t *block);
 web49_interp_t web49_interp_module(web49_module_t mod, const char **args);
 web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *block);
 

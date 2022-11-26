@@ -80,11 +80,11 @@ NAME(WEB49_OPCODE_CALL_DONE256) {
 }
 NAME(WEB49_OPCODE_CALL) {
     web49_interp_block_t *block = head[0].ptr;
+    web49_interp_block_run_comp(block, ptrs, interp);
     *returns++ = head;
     *stacks++ = interp.locals;
     interp.locals += head[1].data.i32_u;
     memset(interp.locals + block->nparams, 0, sizeof(web49_interp_data_t) * block->nlocals);
-    web49_interp_block_run_comp(block, ptrs, interp);
     if (block->nlocals == 0) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE0;
     } else if (block->nlocals <= 1) {
