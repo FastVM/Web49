@@ -7,12 +7,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
+      - run: sudo apt install gcc-12
       - name: Setup emsdk
         uses: mymindstorm/setup-emsdk@v11
         with:
           version: 3.1.25
           actions-cache-folder: 'emsdk-cache'
-      - run: make CC=gcc OPT='-O3 -fomit-frame-pointer -flto' all
+      - run: make CC=gcc-12 OPT='-O3 -fomit-frame-pointer -flto' all
       - run: sudo cp bin/miniwasm /usr/bin/miniwasm
       - run: pushd ./; git clone https://github.com/wasm3/wasm3 && cd wasm3 && cmake . && sudo make -Bj install; popd
       - run: curl https://get.wasmer.io -sSfL | sh && sudo cp ~/.wasmer/bin/wasmer /usr/bin/wasmer
