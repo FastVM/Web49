@@ -33,6 +33,8 @@ jobs:
             test/bench/mandelbrot-simd.png
             test/bench/fasta.png
             test/bench/nbody.png
+            test/bench/fibf.png
+            test/bench/coremark.png
   linux-web49:
     runs-on: ubuntu-latest
     steps:
