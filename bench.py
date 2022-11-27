@@ -3,61 +3,93 @@
 import matplotlib.pyplot as plt
 import os
 import subprocess
-import time 
+import time
+import argparse
 
 os.chdir('test/bench')
 
-runs = 1
-engines = ['miniwasm', 'wasmer', 'wasm3', 'wasmtime']
-tests = {
-    'nop': {
-        'runs': 10,
-        'build': [],
-        'args': [],
-    },
-    'binary-trees': {
-        'runs': 1,
-        'build': [],
-        'args': ['16'],
-    },
-    'fannkuch-redux': {
-        'runs': 1,
-        'build': [],
-        'args': ['10'],
-    },
-    'fasta': {
-        'runs': 1,
-        'build': [],
-        'args': ['5000000'],
-    },
-    'mandelbrot-simd': {
-        'runs': 1,
-        'build': [],
-        'args': ['2000'],
-    },
-    'mandelbrot': {
-        'runs': 1,
-        'build': [],
-        'args': ['2000'],
-    },
-    'nbody': {
-        'runs': 1,
-        'build': [],
-        'args': ['10000000'],
-    },
-    'fib': {
-        'runs': 1,
-        'build': [],
-        'args': ['40'],
-    },
-}
+parser = argparse.ArgumentParser(
+    prog='bench',
+    description='Benchmark Wasm Engines',
+)
+
+parser.add_argument('--runs', '-r', type=int, help='number of benchmark runs', default=1)
+parser.add_argument('--engine', '-e', type=str, action='append', default=[])
+parser.add_argument('--test', '-t', type=str, action='append', default=[])
+
+args = parser.parse_args()
+
+runs = args.runs
+engines = args.engine
+
+if len(engines) == 0:
+    engines = ['wasm3', 'miniwasm', 'wasmtime', 'wasmer']
+
+if len(args.test) == 0: 
+    tests = {
+        'fibf': {
+            'runs': 1,
+            'args': ['35'],
+        },
+        'coremark': {
+            'runs': 1,
+            'args': ['3000'],
+        },
+        'nop': {
+            'runs': 1,
+            'args': [],
+        },
+        'binary-trees': {
+            'runs': 1,
+            'args': ['16'],
+        },
+        'fannkuch-redux': {
+            'runs': 1,
+            'args': ['10'],
+        },
+        'fasta': {
+            'runs': 1,
+            'args': ['5000000'],
+        },
+        'mandelbrot-simd': {
+            'runs': 1,
+            'args': ['2000'],
+        },
+        'mandelbrot': {
+            'runs': 1,
+            'args': ['2000'],
+        },
+        'nbody': {
+            'runs': 1,
+            'args': ['10000000'],
+        },
+        'fib': {
+            'runs': 1,
+            'args': ['40'],
+        },
+    }
+else:
+    tests = {}
+    for test in args.test:
+        [name, *args1] = test.split(':')
+        split = name.split('+')
+        if len(split) == 1:
+            n = 1
+        else:
+            name = split[0]
+            n = int(split[1])
+        
+        tests[name] = {
+            'args': args1,
+            'runs': n,
+        }
 
 testdata = {}
 for i in range(1, runs+1):
     print('RUN: #' + str(i))
     for test in tests.keys():
         print('  TEST: ' + test)
-        build = subprocess.call(['emcc', '-sPURE_WASI=1', '-sWASM=1', '-O3', test + '.c', '-o', test + '.wasm', *tests[test]['build']])
+        build = subprocess.call(['emcc', '-sPURE_WASI=1', '-sWASM=1', '-O3', test + '.c', '-o', test + '.wasm'])
         if test not in testdata:
             testdata[test] = {}
         data = testdata[test]

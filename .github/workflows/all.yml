@@ -13,7 +13,7 @@ jobs:
         with:
           version: 3.1.25
           actions-cache-folder: 'emsdk-cache'
-      - run: make CC=gcc-11 OPT='-O3 -fomit-frame-pointer -flto' all
+      - run: make CC=gcc-11 OPT='-Ofast -fomit-frame-pointer -flto' all
       - run: sudo cp bin/miniwasm /usr/bin/miniwasm
       - run: pushd ./; git clone https://github.com/wasm3/wasm3 && cd wasm3 && cmake . && sudo make -Bj install; popd
       - run: curl https://get.wasmer.io -sSfL | sh && sudo cp ~/.wasmer/bin/wasmer /usr/bin/wasmer
@@ -33,6 +33,8 @@ jobs:
             test/bench/mandelbrot-simd.png
             test/bench/fasta.png
             test/bench/nbody.png
+            test/bench/fibf.png
+            test/bench/coremark.png
   linux-web49:
     runs-on: ubuntu-latest
     steps:

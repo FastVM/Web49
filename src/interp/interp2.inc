@@ -697,5 +697,27 @@ NAME(WEB49_OPCODE_MEMORY_FILL) {
 NAME(WEB49_OPCODE_MEMORY_COPY) {
     memmove(&interp.memory[LOCAL0.i32_u], &interp.memory[LOCAL1.i32_u], interp.locals[head[2].data.i32_u].i32_u);
     head += 3;
+NAME(WEB49_OPCODE_IF_I32_AND) {
+    if (LOCAL0.i32_u & LOCAL1.i32_u) {
+        head = head[2].ptr;
+    } else {
+        head = head[3].ptr;
+    }
+    NEXT();
+}
+NAME(WEB49_OPCODE_IF_I32_OR) {
+    if (LOCAL0.i32_u | LOCAL1.i32_u) {
+        head = head[2].ptr;
+    } else {
+        head = head[3].ptr;
+    }
+    NEXT();
+}
+NAME(WEB49_OPCODE_IF_I32_XOR) {
+    if (LOCAL0.i32_u ^ LOCAL1.i32_u) {
+        head = head[2].ptr;
+    } else {
+        head = head[3].ptr;
+    }
     NEXT();
 }
