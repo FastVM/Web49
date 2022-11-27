@@ -78,6 +78,22 @@ NAME(WEB49_OPCODE_CALL_DONE256) {
     head = head[0].ptr;
     NEXT();
 }
+NAME(WEB49_OPCODE_CALL_DONE512) {
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 512);
+    head = head[0].ptr;
+    NEXT();
+}
+NAME(WEB49_OPCODE_CALL_DONE1024) {
+    *returns++ = head;
+    *stacks++ = interp.locals;
+    interp.locals += head[1].data.i32_u;
+    memset(interp.locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 1024);
+    head = head[0].ptr;
+    NEXT();
+}
 NAME(WEB49_OPCODE_CALL) {
     web49_interp_block_t *block = head[0].ptr;
     web49_interp_block_run_comp(block, ptrs, interp);
@@ -105,6 +121,10 @@ NAME(WEB49_OPCODE_CALL) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE128;
     } else if (block->nlocals <= 256) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE256;
+    } else if (block->nlocals <= 512) {
+        head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE512;
+    } else if (block->nlocals <= 1024) {
+        head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE1024;
     } else {
         __builtin_trap();
     }

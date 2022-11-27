@@ -1,6 +1,7 @@
 #include "rlruntime.h"
 #include <raylib.h>
 #include <raymath.h>
+#include <rlgl.h>
 static web49_interp_data_t web49_main_runtime_InitWindow(web49_interp_t interp) {
   web49_interp_data_t ret;
   InitWindow(
@@ -200,7 +201,7 @@ static web49_interp_data_t web49_main_runtime_GetCurrentMonitor(web49_interp_t i
 }
 static web49_interp_data_t web49_main_runtime_GetMonitorPosition(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetMonitorPosition(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetMonitorPosition(
     (int) interp.locals[0].i32_s
   );
   return ret;
@@ -242,13 +243,13 @@ static web49_interp_data_t web49_main_runtime_GetMonitorRefreshRate(web49_interp
 }
 static web49_interp_data_t web49_main_runtime_GetWindowPosition(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetWindowPosition(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetWindowPosition(
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_GetWindowScaleDPI(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetWindowScaleDPI(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetWindowScaleDPI(
   );
   return ret;
 }
@@ -443,7 +444,7 @@ static web49_interp_data_t web49_main_runtime_EndVrStereoMode(web49_interp_t int
 }
 static web49_interp_data_t web49_main_runtime_LoadVrStereoConfig(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadVrStereoConfig(
+  *(VrStereoConfig *) &interp.memory[interp.locals[0].i32_s] = LoadVrStereoConfig(
     *(VrDeviceInfo *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
@@ -457,7 +458,7 @@ static web49_interp_data_t web49_main_runtime_UnloadVrStereoConfig(web49_interp_
 }
 static web49_interp_data_t web49_main_runtime_LoadShader(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadShader(
+  *(Shader *) &interp.memory[interp.locals[0].i32_s] = LoadShader(
     (const char *) &interp.memory[interp.locals[0].i32_s],
     (const char *) &interp.memory[interp.locals[1].i32_s]
   );
@@ -465,7 +466,7 @@ static web49_interp_data_t web49_main_runtime_LoadShader(web49_interp_t interp) 
 }
 static web49_interp_data_t web49_main_runtime_LoadShaderFromMemory(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadShaderFromMemory(
+  *(Shader *) &interp.memory[interp.locals[0].i32_s] = LoadShaderFromMemory(
     (const char *) &interp.memory[interp.locals[0].i32_s],
     (const char *) &interp.memory[interp.locals[1].i32_s]
   );
@@ -535,7 +536,7 @@ static web49_interp_data_t web49_main_runtime_UnloadShader(web49_interp_t interp
 }
 static web49_interp_data_t web49_main_runtime_GetMouseRay(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetMouseRay(
+  *(Ray *) &interp.memory[interp.locals[0].i32_s] = GetMouseRay(
     *(Vector2 *) &interp.memory[interp.locals[0].i32_s],
     *(Camera *) &interp.memory[interp.locals[1].i32_s]
   );
@@ -543,21 +544,21 @@ static web49_interp_data_t web49_main_runtime_GetMouseRay(web49_interp_t interp)
 }
 static web49_interp_data_t web49_main_runtime_GetCameraMatrix(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetCameraMatrix(
+  *(Matrix *) &interp.memory[interp.locals[0].i32_s] = GetCameraMatrix(
     *(Camera *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_GetCameraMatrix2D(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetCameraMatrix2D(
+  *(Matrix *) &interp.memory[interp.locals[0].i32_s] = GetCameraMatrix2D(
     *(Camera2D *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_GetWorldToScreen(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetWorldToScreen(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetWorldToScreen(
     *(Vector3 *) &interp.memory[interp.locals[0].i32_s],
     *(Camera *) &interp.memory[interp.locals[1].i32_s]
   );
@@ -565,7 +566,7 @@ static web49_interp_data_t web49_main_runtime_GetWorldToScreen(web49_interp_t in
 }
 static web49_interp_data_t web49_main_runtime_GetScreenToWorld2D(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetScreenToWorld2D(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetScreenToWorld2D(
     *(Vector2 *) &interp.memory[interp.locals[0].i32_s],
     *(Camera2D *) &interp.memory[interp.locals[1].i32_s]
   );
@@ -573,7 +574,7 @@ static web49_interp_data_t web49_main_runtime_GetScreenToWorld2D(web49_interp_t 
 }
 static web49_interp_data_t web49_main_runtime_GetWorldToScreenEx(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetWorldToScreenEx(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetWorldToScreenEx(
     *(Vector3 *) &interp.memory[interp.locals[0].i32_s],
     *(Camera *) &interp.memory[interp.locals[1].i32_s],
     (int) interp.locals[2].i32_s,
@@ -583,7 +584,7 @@ static web49_interp_data_t web49_main_runtime_GetWorldToScreenEx(web49_interp_t 
 }
 static web49_interp_data_t web49_main_runtime_GetWorldToScreen2D(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetWorldToScreen2D(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetWorldToScreen2D(
     *(Vector2 *) &interp.memory[interp.locals[0].i32_s],
     *(Camera2D *) &interp.memory[interp.locals[1].i32_s]
   );
@@ -766,14 +767,14 @@ static web49_interp_data_t web49_main_runtime_IsPathFile(web49_interp_t interp) 
 }
 static web49_interp_data_t web49_main_runtime_LoadDirectoryFiles(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadDirectoryFiles(
+  *(FilePathList *) &interp.memory[interp.locals[0].i32_s] = LoadDirectoryFiles(
     (const char *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_LoadDirectoryFilesEx(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadDirectoryFilesEx(
+  *(FilePathList *) &interp.memory[interp.locals[0].i32_s] = LoadDirectoryFilesEx(
     (const char *) &interp.memory[interp.locals[0].i32_s],
     (const char *) &interp.memory[interp.locals[1].i32_s],
     (bool) interp.locals[2].i32_s
@@ -795,7 +796,7 @@ static web49_interp_data_t web49_main_runtime_IsFileDropped(web49_interp_t inter
 }
 static web49_interp_data_t web49_main_runtime_LoadDroppedFiles(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadDroppedFiles(
+  *(FilePathList *) &interp.memory[interp.locals[0].i32_s] = LoadDroppedFiles(
   );
   return ret;
 }
@@ -974,13 +975,13 @@ static web49_interp_data_t web49_main_runtime_GetMouseY(web49_interp_t interp) {
 }
 static web49_interp_data_t web49_main_runtime_GetMousePosition(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetMousePosition(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetMousePosition(
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_GetMouseDelta(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetMouseDelta(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetMouseDelta(
   );
   return ret;
 }
@@ -1016,7 +1017,7 @@ static web49_interp_data_t web49_main_runtime_GetMouseWheelMove(web49_interp_t i
 }
 static web49_interp_data_t web49_main_runtime_GetMouseWheelMoveV(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetMouseWheelMoveV(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetMouseWheelMoveV(
   );
   return ret;
 }
@@ -1041,7 +1042,7 @@ static web49_interp_data_t web49_main_runtime_GetTouchY(web49_interp_t interp) {
 }
 static web49_interp_data_t web49_main_runtime_GetTouchPosition(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetTouchPosition(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetTouchPosition(
     (int) interp.locals[0].i32_s
   );
   return ret;
@@ -1087,7 +1088,7 @@ static web49_interp_data_t web49_main_runtime_GetGestureHoldDuration(web49_inter
 }
 static web49_interp_data_t web49_main_runtime_GetGestureDragVector(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetGestureDragVector(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetGestureDragVector(
   );
   return ret;
 }
@@ -1099,7 +1100,7 @@ static web49_interp_data_t web49_main_runtime_GetGestureDragAngle(web49_interp_t
 }
 static web49_interp_data_t web49_main_runtime_GetGesturePinchVector(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetGesturePinchVector(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = GetGesturePinchVector(
   );
   return ret;
 }
@@ -1629,7 +1630,7 @@ static web49_interp_data_t web49_main_runtime_CheckCollisionPointLine(web49_inte
 }
 static web49_interp_data_t web49_main_runtime_GetCollisionRec(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetCollisionRec(
+  *(Rectangle *) &interp.memory[interp.locals[0].i32_s] = GetCollisionRec(
     *(Rectangle *) &interp.memory[interp.locals[0].i32_s],
     *(Rectangle *) &interp.memory[interp.locals[1].i32_s]
   );
@@ -1637,14 +1638,14 @@ static web49_interp_data_t web49_main_runtime_GetCollisionRec(web49_interp_t int
 }
 static web49_interp_data_t web49_main_runtime_LoadImage(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadImage(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = LoadImage(
     (const char *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_LoadImageRaw(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadImageRaw(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = LoadImageRaw(
     (const char *) &interp.memory[interp.locals[0].i32_s],
     (int) interp.locals[1].i32_s,
     (int) interp.locals[2].i32_s,
@@ -1655,7 +1656,7 @@ static web49_interp_data_t web49_main_runtime_LoadImageRaw(web49_interp_t interp
 }
 static web49_interp_data_t web49_main_runtime_LoadImageAnim(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadImageAnim(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = LoadImageAnim(
     (const char *) &interp.memory[interp.locals[0].i32_s],
     (int *) &interp.memory[interp.locals[1].i32_s]
   );
@@ -1663,7 +1664,7 @@ static web49_interp_data_t web49_main_runtime_LoadImageAnim(web49_interp_t inter
 }
 static web49_interp_data_t web49_main_runtime_LoadImageFromMemory(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadImageFromMemory(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = LoadImageFromMemory(
     (const char *) &interp.memory[interp.locals[0].i32_s],
     (const unsigned char *) &interp.memory[interp.locals[1].i32_s],
     (int) interp.locals[2].i32_s
@@ -1672,14 +1673,14 @@ static web49_interp_data_t web49_main_runtime_LoadImageFromMemory(web49_interp_t
 }
 static web49_interp_data_t web49_main_runtime_LoadImageFromTexture(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadImageFromTexture(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = LoadImageFromTexture(
     *(Texture2D *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_LoadImageFromScreen(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadImageFromScreen(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = LoadImageFromScreen(
   );
   return ret;
 }
@@ -1708,7 +1709,7 @@ static web49_interp_data_t web49_main_runtime_ExportImageAsCode(web49_interp_t i
 }
 static web49_interp_data_t web49_main_runtime_GenImageColor(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenImageColor(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = GenImageColor(
     (int) interp.locals[0].i32_s,
     (int) interp.locals[1].i32_s,
     *(Color *) &interp.memory[interp.locals[2].i32_s]
@@ -1717,7 +1718,7 @@ static web49_interp_data_t web49_main_runtime_GenImageColor(web49_interp_t inter
 }
 static web49_interp_data_t web49_main_runtime_GenImageGradientV(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenImageGradientV(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = GenImageGradientV(
     (int) interp.locals[0].i32_s,
     (int) interp.locals[1].i32_s,
     *(Color *) &interp.memory[interp.locals[2].i32_s],
@@ -1727,7 +1728,7 @@ static web49_interp_data_t web49_main_runtime_GenImageGradientV(web49_interp_t i
 }
 static web49_interp_data_t web49_main_runtime_GenImageGradientH(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenImageGradientH(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = GenImageGradientH(
     (int) interp.locals[0].i32_s,
     (int) interp.locals[1].i32_s,
     *(Color *) &interp.memory[interp.locals[2].i32_s],
@@ -1737,7 +1738,7 @@ static web49_interp_data_t web49_main_runtime_GenImageGradientH(web49_interp_t i
 }
 static web49_interp_data_t web49_main_runtime_GenImageGradientRadial(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenImageGradientRadial(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = GenImageGradientRadial(
     (int) interp.locals[0].i32_s,
     (int) interp.locals[1].i32_s,
     (float) interp.locals[2].i32_s,
@@ -1748,7 +1749,7 @@ static web49_interp_data_t web49_main_runtime_GenImageGradientRadial(web49_inter
 }
 static web49_interp_data_t web49_main_runtime_GenImageChecked(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenImageChecked(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = GenImageChecked(
     (int) interp.locals[0].i32_s,
     (int) interp.locals[1].i32_s,
     (int) interp.locals[2].i32_s,
@@ -1760,7 +1761,7 @@ static web49_interp_data_t web49_main_runtime_GenImageChecked(web49_interp_t int
 }
 static web49_interp_data_t web49_main_runtime_GenImageWhiteNoise(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenImageWhiteNoise(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = GenImageWhiteNoise(
     (int) interp.locals[0].i32_s,
     (int) interp.locals[1].i32_s,
     (float) interp.locals[2].i32_s
@@ -1769,7 +1770,7 @@ static web49_interp_data_t web49_main_runtime_GenImageWhiteNoise(web49_interp_t 
 }
 static web49_interp_data_t web49_main_runtime_GenImageCellular(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenImageCellular(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = GenImageCellular(
     (int) interp.locals[0].i32_s,
     (int) interp.locals[1].i32_s,
     (int) interp.locals[2].i32_s
@@ -1778,14 +1779,14 @@ static web49_interp_data_t web49_main_runtime_GenImageCellular(web49_interp_t in
 }
 static web49_interp_data_t web49_main_runtime_ImageCopy(web49_interp_t interp) {
   web49_interp_data_t ret;
-  ImageCopy(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = ImageCopy(
     *(Image *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_ImageFromImage(web49_interp_t interp) {
   web49_interp_data_t ret;
-  ImageFromImage(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = ImageFromImage(
     *(Image *) &interp.memory[interp.locals[0].i32_s],
     *(Rectangle *) &interp.memory[interp.locals[1].i32_s]
   );
@@ -1793,7 +1794,7 @@ static web49_interp_data_t web49_main_runtime_ImageFromImage(web49_interp_t inte
 }
 static web49_interp_data_t web49_main_runtime_ImageText(web49_interp_t interp) {
   web49_interp_data_t ret;
-  ImageText(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = ImageText(
     (const char *) &interp.memory[interp.locals[0].i32_s],
     (int) interp.locals[1].i32_s,
     *(Color *) &interp.memory[interp.locals[2].i32_s]
@@ -1802,7 +1803,7 @@ static web49_interp_data_t web49_main_runtime_ImageText(web49_interp_t interp) {
 }
 static web49_interp_data_t web49_main_runtime_ImageTextEx(web49_interp_t interp) {
   web49_interp_data_t ret;
-  ImageTextEx(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = ImageTextEx(
     *(Font *) &interp.memory[interp.locals[0].i32_s],
     (const char *) &interp.memory[interp.locals[1].i32_s],
     (float) interp.locals[2].i32_s,
@@ -2008,7 +2009,7 @@ static web49_interp_data_t web49_main_runtime_UnloadImagePalette(web49_interp_t 
 }
 static web49_interp_data_t web49_main_runtime_GetImageAlphaBorder(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetImageAlphaBorder(
+  *(Rectangle *) &interp.memory[interp.locals[0].i32_s] = GetImageAlphaBorder(
     *(Image *) &interp.memory[interp.locals[0].i32_s],
     (float) interp.locals[1].i32_s
   );
@@ -2016,7 +2017,7 @@ static web49_interp_data_t web49_main_runtime_GetImageAlphaBorder(web49_interp_t
 }
 static web49_interp_data_t web49_main_runtime_GetImageColor(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetImageColor(
+  *(Color *) &interp.memory[interp.locals[0].i32_s] = GetImageColor(
     *(Image *) &interp.memory[interp.locals[0].i32_s],
     (int) interp.locals[1].i32_s,
     (int) interp.locals[2].i32_s
@@ -2172,21 +2173,21 @@ static web49_interp_data_t web49_main_runtime_ImageDrawTextEx(web49_interp_t int
 }
 static web49_interp_data_t web49_main_runtime_LoadTexture(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadTexture(
+  *(Texture2D *) &interp.memory[interp.locals[0].i32_s] = LoadTexture(
     (const char *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_LoadTextureFromImage(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadTextureFromImage(
+  *(Texture2D *) &interp.memory[interp.locals[0].i32_s] = LoadTextureFromImage(
     *(Image *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_LoadTextureCubemap(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadTextureCubemap(
+  *(TextureCubemap *) &interp.memory[interp.locals[0].i32_s] = LoadTextureCubemap(
     *(Image *) &interp.memory[interp.locals[0].i32_s],
     (int) interp.locals[1].i32_s
   );
@@ -2194,7 +2195,7 @@ static web49_interp_data_t web49_main_runtime_LoadTextureCubemap(web49_interp_t 
 }
 static web49_interp_data_t web49_main_runtime_LoadRenderTexture(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadRenderTexture(
+  *(RenderTexture2D *) &interp.memory[interp.locals[0].i32_s] = LoadRenderTexture(
     (int) interp.locals[0].i32_s,
     (int) interp.locals[1].i32_s
   );
@@ -2356,7 +2357,7 @@ static web49_interp_data_t web49_main_runtime_DrawTexturePoly(web49_interp_t int
 }
 static web49_interp_data_t web49_main_runtime_Fade(web49_interp_t interp) {
   web49_interp_data_t ret;
-  Fade(
+  *(Color *) &interp.memory[interp.locals[0].i32_s] = Fade(
     *(Color *) &interp.memory[interp.locals[0].i32_s],
     (float) interp.locals[1].i32_s
   );
@@ -2371,28 +2372,28 @@ static web49_interp_data_t web49_main_runtime_ColorToInt(web49_interp_t interp) 
 }
 static web49_interp_data_t web49_main_runtime_ColorNormalize(web49_interp_t interp) {
   web49_interp_data_t ret;
-  ColorNormalize(
+  *(Vector4 *) &interp.memory[interp.locals[0].i32_s] = ColorNormalize(
     *(Color *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_ColorFromNormalized(web49_interp_t interp) {
   web49_interp_data_t ret;
-  ColorFromNormalized(
+  *(Color *) &interp.memory[interp.locals[0].i32_s] = ColorFromNormalized(
     *(Vector4 *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_ColorToHSV(web49_interp_t interp) {
   web49_interp_data_t ret;
-  ColorToHSV(
+  *(Vector3 *) &interp.memory[interp.locals[0].i32_s] = ColorToHSV(
     *(Color *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_ColorFromHSV(web49_interp_t interp) {
   web49_interp_data_t ret;
-  ColorFromHSV(
+  *(Color *) &interp.memory[interp.locals[0].i32_s] = ColorFromHSV(
     (float) interp.locals[0].i32_s,
     (float) interp.locals[1].i32_s,
     (float) interp.locals[2].i32_s
@@ -2401,7 +2402,7 @@ static web49_interp_data_t web49_main_runtime_ColorFromHSV(web49_interp_t interp
 }
 static web49_interp_data_t web49_main_runtime_ColorAlpha(web49_interp_t interp) {
   web49_interp_data_t ret;
-  ColorAlpha(
+  *(Color *) &interp.memory[interp.locals[0].i32_s] = ColorAlpha(
     *(Color *) &interp.memory[interp.locals[0].i32_s],
     (float) interp.locals[1].i32_s
   );
@@ -2409,7 +2410,7 @@ static web49_interp_data_t web49_main_runtime_ColorAlpha(web49_interp_t interp) 
 }
 static web49_interp_data_t web49_main_runtime_ColorAlphaBlend(web49_interp_t interp) {
   web49_interp_data_t ret;
-  ColorAlphaBlend(
+  *(Color *) &interp.memory[interp.locals[0].i32_s] = ColorAlphaBlend(
     *(Color *) &interp.memory[interp.locals[0].i32_s],
     *(Color *) &interp.memory[interp.locals[1].i32_s],
     *(Color *) &interp.memory[interp.locals[2].i32_s]
@@ -2418,14 +2419,14 @@ static web49_interp_data_t web49_main_runtime_ColorAlphaBlend(web49_interp_t int
 }
 static web49_interp_data_t web49_main_runtime_GetColor(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetColor(
+  *(Color *) &interp.memory[interp.locals[0].i32_s] = GetColor(
     (unsigned int) interp.locals[0].i32_s
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_GetPixelColor(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetPixelColor(
+  *(Color *) &interp.memory[interp.locals[0].i32_s] = GetPixelColor(
     (void *) &interp.memory[interp.locals[0].i32_s],
     (int) interp.locals[1].i32_s
   );
@@ -2451,20 +2452,20 @@ static web49_interp_data_t web49_main_runtime_GetPixelDataSize(web49_interp_t in
 }
 static web49_interp_data_t web49_main_runtime_GetFontDefault(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetFontDefault(
+  *(Font *) &interp.memory[interp.locals[0].i32_s] = GetFontDefault(
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_LoadFont(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadFont(
+  *(Font *) &interp.memory[interp.locals[0].i32_s] = LoadFont(
     (const char *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_LoadFontEx(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadFontEx(
+  *(Font *) &interp.memory[interp.locals[0].i32_s] = LoadFontEx(
     (const char *) &interp.memory[interp.locals[0].i32_s],
     (int) interp.locals[1].i32_s,
     (int *) &interp.memory[interp.locals[2].i32_s],
@@ -2474,7 +2475,7 @@ static web49_interp_data_t web49_main_runtime_LoadFontEx(web49_interp_t interp) 
 }
 static web49_interp_data_t web49_main_runtime_LoadFontFromImage(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadFontFromImage(
+  *(Font *) &interp.memory[interp.locals[0].i32_s] = LoadFontFromImage(
     *(Image *) &interp.memory[interp.locals[0].i32_s],
     *(Color *) &interp.memory[interp.locals[1].i32_s],
     (int) interp.locals[2].i32_s
@@ -2483,7 +2484,7 @@ static web49_interp_data_t web49_main_runtime_LoadFontFromImage(web49_interp_t i
 }
 static web49_interp_data_t web49_main_runtime_LoadFontFromMemory(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadFontFromMemory(
+  *(Font *) &interp.memory[interp.locals[0].i32_s] = LoadFontFromMemory(
     (const char *) &interp.memory[interp.locals[0].i32_s],
     (const unsigned char *) &interp.memory[interp.locals[1].i32_s],
     (int) interp.locals[2].i32_s,
@@ -2496,7 +2497,7 @@ static web49_interp_data_t web49_main_runtime_LoadFontFromMemory(web49_interp_t 
 // returns ptr: LoadFontData
 static web49_interp_data_t web49_main_runtime_GenImageFontAtlas(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenImageFontAtlas(
+  *(Image *) &interp.memory[interp.locals[0].i32_s] = GenImageFontAtlas(
     (const GlyphInfo *) &interp.memory[interp.locals[0].i32_s],
     (Rectangle **) &interp.memory[interp.locals[1].i32_s],
     (int) interp.locals[2].i32_s,
@@ -2608,7 +2609,7 @@ static web49_interp_data_t web49_main_runtime_MeasureText(web49_interp_t interp)
 }
 static web49_interp_data_t web49_main_runtime_MeasureTextEx(web49_interp_t interp) {
   web49_interp_data_t ret;
-  MeasureTextEx(
+  *(Vector2 *) &interp.memory[interp.locals[0].i32_s] = MeasureTextEx(
     *(Font *) &interp.memory[interp.locals[0].i32_s],
     (const char *) &interp.memory[interp.locals[1].i32_s],
     (float) interp.locals[2].i32_s,
@@ -2626,7 +2627,7 @@ static web49_interp_data_t web49_main_runtime_GetGlyphIndex(web49_interp_t inter
 }
 static web49_interp_data_t web49_main_runtime_GetGlyphInfo(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetGlyphInfo(
+  *(GlyphInfo *) &interp.memory[interp.locals[0].i32_s] = GetGlyphInfo(
     *(Font *) &interp.memory[interp.locals[0].i32_s],
     (int) interp.locals[1].i32_s
   );
@@ -2634,7 +2635,7 @@ static web49_interp_data_t web49_main_runtime_GetGlyphInfo(web49_interp_t interp
 }
 static web49_interp_data_t web49_main_runtime_GetGlyphAtlasRec(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetGlyphAtlasRec(
+  *(Rectangle *) &interp.memory[interp.locals[0].i32_s] = GetGlyphAtlasRec(
     *(Font *) &interp.memory[interp.locals[0].i32_s],
     (int) interp.locals[1].i32_s
   );
@@ -2940,14 +2941,14 @@ static web49_interp_data_t web49_main_runtime_DrawGrid(web49_interp_t interp) {
 }
 static web49_interp_data_t web49_main_runtime_LoadModel(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadModel(
+  *(Model *) &interp.memory[interp.locals[0].i32_s] = LoadModel(
     (const char *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_LoadModelFromMesh(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadModelFromMesh(
+  *(Model *) &interp.memory[interp.locals[0].i32_s] = LoadModelFromMesh(
     *(Mesh *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
@@ -2968,7 +2969,7 @@ static web49_interp_data_t web49_main_runtime_UnloadModelKeepMeshes(web49_interp
 }
 static web49_interp_data_t web49_main_runtime_GetModelBoundingBox(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetModelBoundingBox(
+  *(BoundingBox *) &interp.memory[interp.locals[0].i32_s] = GetModelBoundingBox(
     *(Model *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
@@ -3118,7 +3119,7 @@ static web49_interp_data_t web49_main_runtime_ExportMesh(web49_interp_t interp) 
 }
 static web49_interp_data_t web49_main_runtime_GetMeshBoundingBox(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetMeshBoundingBox(
+  *(BoundingBox *) &interp.memory[interp.locals[0].i32_s] = GetMeshBoundingBox(
     *(Mesh *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
@@ -3132,7 +3133,7 @@ static web49_interp_data_t web49_main_runtime_GenMeshTangents(web49_interp_t int
 }
 static web49_interp_data_t web49_main_runtime_GenMeshPoly(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenMeshPoly(
+  *(Mesh *) &interp.memory[interp.locals[0].i32_s] = GenMeshPoly(
     (int) interp.locals[0].i32_s,
     (float) interp.locals[1].i32_s
   );
@@ -3140,7 +3141,7 @@ static web49_interp_data_t web49_main_runtime_GenMeshPoly(web49_interp_t interp)
 }
 static web49_interp_data_t web49_main_runtime_GenMeshPlane(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenMeshPlane(
+  *(Mesh *) &interp.memory[interp.locals[0].i32_s] = GenMeshPlane(
     (float) interp.locals[0].i32_s,
     (float) interp.locals[1].i32_s,
     (int) interp.locals[2].i32_s,
@@ -3150,7 +3151,7 @@ static web49_interp_data_t web49_main_runtime_GenMeshPlane(web49_interp_t interp
 }
 static web49_interp_data_t web49_main_runtime_GenMeshCube(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenMeshCube(
+  *(Mesh *) &interp.memory[interp.locals[0].i32_s] = GenMeshCube(
     (float) interp.locals[0].i32_s,
     (float) interp.locals[1].i32_s,
     (float) interp.locals[2].i32_s
@@ -3159,7 +3160,7 @@ static web49_interp_data_t web49_main_runtime_GenMeshCube(web49_interp_t interp)
 }
 static web49_interp_data_t web49_main_runtime_GenMeshSphere(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenMeshSphere(
+  *(Mesh *) &interp.memory[interp.locals[0].i32_s] = GenMeshSphere(
     (float) interp.locals[0].i32_s,
     (int) interp.locals[1].i32_s,
     (int) interp.locals[2].i32_s
@@ -3168,7 +3169,7 @@ static web49_interp_data_t web49_main_runtime_GenMeshSphere(web49_interp_t inter
 }
 static web49_interp_data_t web49_main_runtime_GenMeshHemiSphere(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenMeshHemiSphere(
+  *(Mesh *) &interp.memory[interp.locals[0].i32_s] = GenMeshHemiSphere(
     (float) interp.locals[0].i32_s,
     (int) interp.locals[1].i32_s,
     (int) interp.locals[2].i32_s
@@ -3177,7 +3178,7 @@ static web49_interp_data_t web49_main_runtime_GenMeshHemiSphere(web49_interp_t i
 }
 static web49_interp_data_t web49_main_runtime_GenMeshCylinder(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenMeshCylinder(
+  *(Mesh *) &interp.memory[interp.locals[0].i32_s] = GenMeshCylinder(
     (float) interp.locals[0].i32_s,
     (float) interp.locals[1].i32_s,
     (int) interp.locals[2].i32_s
@@ -3186,7 +3187,7 @@ static web49_interp_data_t web49_main_runtime_GenMeshCylinder(web49_interp_t int
 }
 static web49_interp_data_t web49_main_runtime_GenMeshCone(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenMeshCone(
+  *(Mesh *) &interp.memory[interp.locals[0].i32_s] = GenMeshCone(
     (float) interp.locals[0].i32_s,
     (float) interp.locals[1].i32_s,
     (int) interp.locals[2].i32_s
@@ -3195,7 +3196,7 @@ static web49_interp_data_t web49_main_runtime_GenMeshCone(web49_interp_t interp)
 }
 static web49_interp_data_t web49_main_runtime_GenMeshTorus(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenMeshTorus(
+  *(Mesh *) &interp.memory[interp.locals[0].i32_s] = GenMeshTorus(
     (float) interp.locals[0].i32_s,
     (float) interp.locals[1].i32_s,
     (int) interp.locals[2].i32_s,
@@ -3205,7 +3206,7 @@ static web49_interp_data_t web49_main_runtime_GenMeshTorus(web49_interp_t interp
 }
 static web49_interp_data_t web49_main_runtime_GenMeshKnot(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenMeshKnot(
+  *(Mesh *) &interp.memory[interp.locals[0].i32_s] = GenMeshKnot(
     (float) interp.locals[0].i32_s,
     (float) interp.locals[1].i32_s,
     (int) interp.locals[2].i32_s,
@@ -3215,7 +3216,7 @@ static web49_interp_data_t web49_main_runtime_GenMeshKnot(web49_interp_t interp)
 }
 static web49_interp_data_t web49_main_runtime_GenMeshHeightmap(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenMeshHeightmap(
+  *(Mesh *) &interp.memory[interp.locals[0].i32_s] = GenMeshHeightmap(
     *(Image *) &interp.memory[interp.locals[0].i32_s],
     *(Vector3 *) &interp.memory[interp.locals[1].i32_s]
   );
@@ -3223,7 +3224,7 @@ static web49_interp_data_t web49_main_runtime_GenMeshHeightmap(web49_interp_t in
 }
 static web49_interp_data_t web49_main_runtime_GenMeshCubicmap(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GenMeshCubicmap(
+  *(Mesh *) &interp.memory[interp.locals[0].i32_s] = GenMeshCubicmap(
     *(Image *) &interp.memory[interp.locals[0].i32_s],
     *(Vector3 *) &interp.memory[interp.locals[1].i32_s]
   );
@@ -3232,7 +3233,7 @@ static web49_interp_data_t web49_main_runtime_GenMeshCubicmap(web49_interp_t int
 // returns ptr: LoadMaterials
 static web49_interp_data_t web49_main_runtime_LoadMaterialDefault(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadMaterialDefault(
+  *(Material *) &interp.memory[interp.locals[0].i32_s] = LoadMaterialDefault(
   );
   return ret;
 }
@@ -3323,7 +3324,7 @@ static web49_interp_data_t web49_main_runtime_CheckCollisionBoxSphere(web49_inte
 }
 static web49_interp_data_t web49_main_runtime_GetRayCollisionSphere(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetRayCollisionSphere(
+  *(RayCollision *) &interp.memory[interp.locals[0].i32_s] = GetRayCollisionSphere(
     *(Ray *) &interp.memory[interp.locals[0].i32_s],
     *(Vector3 *) &interp.memory[interp.locals[1].i32_s],
     (float) interp.locals[2].i32_s
@@ -3332,7 +3333,7 @@ static web49_interp_data_t web49_main_runtime_GetRayCollisionSphere(web49_interp
 }
 static web49_interp_data_t web49_main_runtime_GetRayCollisionBox(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetRayCollisionBox(
+  *(RayCollision *) &interp.memory[interp.locals[0].i32_s] = GetRayCollisionBox(
     *(Ray *) &interp.memory[interp.locals[0].i32_s],
     *(BoundingBox *) &interp.memory[interp.locals[1].i32_s]
   );
@@ -3340,7 +3341,7 @@ static web49_interp_data_t web49_main_runtime_GetRayCollisionBox(web49_interp_t 
 }
 static web49_interp_data_t web49_main_runtime_GetRayCollisionMesh(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetRayCollisionMesh(
+  *(RayCollision *) &interp.memory[interp.locals[0].i32_s] = GetRayCollisionMesh(
     *(Ray *) &interp.memory[interp.locals[0].i32_s],
     *(Mesh *) &interp.memory[interp.locals[1].i32_s],
     *(Matrix *) &interp.memory[interp.locals[2].i32_s]
@@ -3349,7 +3350,7 @@ static web49_interp_data_t web49_main_runtime_GetRayCollisionMesh(web49_interp_t
 }
 static web49_interp_data_t web49_main_runtime_GetRayCollisionTriangle(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetRayCollisionTriangle(
+  *(RayCollision *) &interp.memory[interp.locals[0].i32_s] = GetRayCollisionTriangle(
     *(Ray *) &interp.memory[interp.locals[0].i32_s],
     *(Vector3 *) &interp.memory[interp.locals[1].i32_s],
     *(Vector3 *) &interp.memory[interp.locals[2].i32_s],
@@ -3359,7 +3360,7 @@ static web49_interp_data_t web49_main_runtime_GetRayCollisionTriangle(web49_inte
 }
 static web49_interp_data_t web49_main_runtime_GetRayCollisionQuad(web49_interp_t interp) {
   web49_interp_data_t ret;
-  GetRayCollisionQuad(
+  *(RayCollision *) &interp.memory[interp.locals[0].i32_s] = GetRayCollisionQuad(
     *(Ray *) &interp.memory[interp.locals[0].i32_s],
     *(Vector3 *) &interp.memory[interp.locals[1].i32_s],
     *(Vector3 *) &interp.memory[interp.locals[2].i32_s],
@@ -3395,14 +3396,14 @@ static web49_interp_data_t web49_main_runtime_SetMasterVolume(web49_interp_t int
 }
 static web49_interp_data_t web49_main_runtime_LoadWave(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadWave(
+  *(Wave *) &interp.memory[interp.locals[0].i32_s] = LoadWave(
     (const char *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_LoadWaveFromMemory(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadWaveFromMemory(
+  *(Wave *) &interp.memory[interp.locals[0].i32_s] = LoadWaveFromMemory(
     (const char *) &interp.memory[interp.locals[0].i32_s],
     (const unsigned char *) &interp.memory[interp.locals[1].i32_s],
     (int) interp.locals[2].i32_s
@@ -3411,14 +3412,14 @@ static web49_interp_data_t web49_main_runtime_LoadWaveFromMemory(web49_interp_t 
 }
 static web49_interp_data_t web49_main_runtime_LoadSound(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadSound(
+  *(Sound *) &interp.memory[interp.locals[0].i32_s] = LoadSound(
     (const char *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_LoadSoundFromWave(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadSoundFromWave(
+  *(Sound *) &interp.memory[interp.locals[0].i32_s] = LoadSoundFromWave(
     *(Wave *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
@@ -3542,7 +3543,7 @@ static web49_interp_data_t web49_main_runtime_SetSoundPan(web49_interp_t interp)
 }
 static web49_interp_data_t web49_main_runtime_WaveCopy(web49_interp_t interp) {
   web49_interp_data_t ret;
-  WaveCopy(
+  *(Wave *) &interp.memory[interp.locals[0].i32_s] = WaveCopy(
     *(Wave *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
@@ -3576,14 +3577,14 @@ static web49_interp_data_t web49_main_runtime_UnloadWaveSamples(web49_interp_t i
 }
 static web49_interp_data_t web49_main_runtime_LoadMusicStream(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadMusicStream(
+  *(Music *) &interp.memory[interp.locals[0].i32_s] = LoadMusicStream(
     (const char *) &interp.memory[interp.locals[0].i32_s]
   );
   return ret;
 }
 static web49_interp_data_t web49_main_runtime_LoadMusicStreamFromMemory(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadMusicStreamFromMemory(
+  *(Music *) &interp.memory[interp.locals[0].i32_s] = LoadMusicStreamFromMemory(
     (const char *) &interp.memory[interp.locals[0].i32_s],
     (const unsigned char *) &interp.memory[interp.locals[1].i32_s],
     (int) interp.locals[2].i32_s
@@ -3687,7 +3688,7 @@ static web49_interp_data_t web49_main_runtime_GetMusicTimePlayed(web49_interp_t 
 }
 static web49_interp_data_t web49_main_runtime_LoadAudioStream(web49_interp_t interp) {
   web49_interp_data_t ret;
-  LoadAudioStream(
+  *(AudioStream *) &interp.memory[interp.locals[0].i32_s] = LoadAudioStream(
     (unsigned int) interp.locals[0].i32_s,
     (unsigned int) interp.locals[1].i32_s,
     (unsigned int) interp.locals[2].i32_s
@@ -3786,6 +3787,1063 @@ static web49_interp_data_t web49_main_runtime_SetAudioStreamBufferSizeDefault(we
 // is callback: SetAudioStreamCallback
 // is callback: AttachAudioStreamProcessor
 // is callback: DetachAudioStreamProcessor
+static web49_interp_data_t web49_main_runtime_rlMatrixMode(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlMatrixMode(
+    (int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlPushMatrix(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlPushMatrix(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlPopMatrix(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlPopMatrix(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadIdentity(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlLoadIdentity(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlTranslatef(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlTranslatef(
+    (float) interp.locals[0].i32_s,
+    (float) interp.locals[1].i32_s,
+    (float) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlRotatef(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlRotatef(
+    (float) interp.locals[0].i32_s,
+    (float) interp.locals[1].i32_s,
+    (float) interp.locals[2].i32_s,
+    (float) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlScalef(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlScalef(
+    (float) interp.locals[0].i32_s,
+    (float) interp.locals[1].i32_s,
+    (float) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlMultMatrixf(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlMultMatrixf(
+    (float *) &interp.memory[interp.locals[0].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlFrustum(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlFrustum(
+    (double) interp.locals[0].i32_s,
+    (double) interp.locals[1].i32_s,
+    (double) interp.locals[2].i32_s,
+    (double) interp.locals[3].i32_s,
+    (double) interp.locals[4].i32_s,
+    (double) interp.locals[5].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlOrtho(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlOrtho(
+    (double) interp.locals[0].i32_s,
+    (double) interp.locals[1].i32_s,
+    (double) interp.locals[2].i32_s,
+    (double) interp.locals[3].i32_s,
+    (double) interp.locals[4].i32_s,
+    (double) interp.locals[5].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlViewport(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlViewport(
+    (int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s,
+    (int) interp.locals[2].i32_s,
+    (int) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlBegin(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlBegin(
+    (int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnd(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnd(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlVertex2i(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlVertex2i(
+    (int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlVertex2f(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlVertex2f(
+    (float) interp.locals[0].i32_s,
+    (float) interp.locals[1].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlVertex3f(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlVertex3f(
+    (float) interp.locals[0].i32_s,
+    (float) interp.locals[1].i32_s,
+    (float) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlTexCoord2f(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlTexCoord2f(
+    (float) interp.locals[0].i32_s,
+    (float) interp.locals[1].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlNormal3f(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlNormal3f(
+    (float) interp.locals[0].i32_s,
+    (float) interp.locals[1].i32_s,
+    (float) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlColor4ub(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlColor4ub(
+    (unsigned char) interp.locals[0].i32_s,
+    (unsigned char) interp.locals[1].i32_s,
+    (unsigned char) interp.locals[2].i32_s,
+    (unsigned char) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlColor3f(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlColor3f(
+    (float) interp.locals[0].i32_s,
+    (float) interp.locals[1].i32_s,
+    (float) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlColor4f(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlColor4f(
+    (float) interp.locals[0].i32_s,
+    (float) interp.locals[1].i32_s,
+    (float) interp.locals[2].i32_s,
+    (float) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableVertexArray(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_s = (int32_t) rlEnableVertexArray(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableVertexArray(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableVertexArray(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableVertexBuffer(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableVertexBuffer(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableVertexBuffer(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableVertexBuffer(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableVertexBufferElement(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableVertexBufferElement(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableVertexBufferElement(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableVertexBufferElement(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableVertexAttribute(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableVertexAttribute(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableVertexAttribute(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableVertexAttribute(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlActiveTextureSlot(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlActiveTextureSlot(
+    (int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableTexture(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableTexture(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableTexture(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableTexture(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableTextureCubemap(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableTextureCubemap(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableTextureCubemap(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableTextureCubemap(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlTextureParameters(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlTextureParameters(
+    (unsigned int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s,
+    (int) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableShader(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableShader(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableShader(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableShader(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableFramebuffer(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableFramebuffer(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableFramebuffer(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableFramebuffer(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlActiveDrawBuffers(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlActiveDrawBuffers(
+    (int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableColorBlend(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableColorBlend(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableColorBlend(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableColorBlend(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableDepthTest(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableDepthTest(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableDepthTest(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableDepthTest(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableDepthMask(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableDepthMask(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableDepthMask(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableDepthMask(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableBackfaceCulling(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableBackfaceCulling(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableBackfaceCulling(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableBackfaceCulling(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableScissorTest(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableScissorTest(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableScissorTest(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableScissorTest(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlScissor(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlScissor(
+    (int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s,
+    (int) interp.locals[2].i32_s,
+    (int) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableWireMode(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableWireMode(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableWireMode(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableWireMode(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetLineWidth(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetLineWidth(
+    (float) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetLineWidth(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlGetLineWidth(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableSmoothLines(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableSmoothLines(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableSmoothLines(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableSmoothLines(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlEnableStereoRender(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlEnableStereoRender(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDisableStereoRender(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDisableStereoRender(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlIsStereoRenderEnabled(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_s = (int32_t) rlIsStereoRenderEnabled(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlClearColor(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlClearColor(
+    (unsigned char) interp.locals[0].i32_s,
+    (unsigned char) interp.locals[1].i32_s,
+    (unsigned char) interp.locals[2].i32_s,
+    (unsigned char) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlClearScreenBuffers(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlClearScreenBuffers(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlCheckErrors(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlCheckErrors(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetBlendMode(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetBlendMode(
+    (int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetBlendFactors(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetBlendFactors(
+    (int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s,
+    (int) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlglInit(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlglInit(
+    (int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlglClose(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlglClose(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadExtensions(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlLoadExtensions(
+    (void *) &interp.memory[interp.locals[0].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetVersion(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_s = (int32_t) rlGetVersion(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetFramebufferWidth(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetFramebufferWidth(
+    (int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetFramebufferWidth(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_s = (int32_t) rlGetFramebufferWidth(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetFramebufferHeight(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetFramebufferHeight(
+    (int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetFramebufferHeight(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_s = (int32_t) rlGetFramebufferHeight(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetTextureIdDefault(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlGetTextureIdDefault(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetShaderIdDefault(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlGetShaderIdDefault(
+  );
+  return ret;
+}
+// returns ptr: rlGetShaderLocsDefault
+static web49_interp_data_t web49_main_runtime_rlLoadRenderBatch(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlLoadRenderBatch(
+    (int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlUnloadRenderBatch(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlUnloadRenderBatch(
+    *(rlRenderBatch *) &interp.memory[interp.locals[0].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDrawRenderBatch(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDrawRenderBatch(
+    (rlRenderBatch *) &interp.memory[interp.locals[0].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetRenderBatchActive(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetRenderBatchActive(
+    (rlRenderBatch *) &interp.memory[interp.locals[0].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDrawRenderBatchActive(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDrawRenderBatchActive(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlCheckRenderBatchLimit(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_s = (int32_t) rlCheckRenderBatchLimit(
+    (int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetTexture(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetTexture(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadVertexArray(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlLoadVertexArray(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadVertexBuffer(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlLoadVertexBuffer(
+    (const void *) &interp.memory[interp.locals[0].i32_s],
+    (int) interp.locals[1].i32_s,
+    (bool) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadVertexBufferElement(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlLoadVertexBufferElement(
+    (const void *) &interp.memory[interp.locals[0].i32_s],
+    (int) interp.locals[1].i32_s,
+    (bool) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlUpdateVertexBuffer(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlUpdateVertexBuffer(
+    (unsigned int) interp.locals[0].i32_s,
+    (const void *) &interp.memory[interp.locals[1].i32_s],
+    (int) interp.locals[2].i32_s,
+    (int) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlUpdateVertexBufferElements(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlUpdateVertexBufferElements(
+    (unsigned int) interp.locals[0].i32_s,
+    (const void *) &interp.memory[interp.locals[1].i32_s],
+    (int) interp.locals[2].i32_s,
+    (int) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlUnloadVertexArray(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlUnloadVertexArray(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlUnloadVertexBuffer(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlUnloadVertexBuffer(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetVertexAttribute(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetVertexAttribute(
+    (unsigned int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s,
+    (int) interp.locals[2].i32_s,
+    (bool) interp.locals[3].i32_s,
+    (int) interp.locals[4].i32_s,
+    (const void *) &interp.memory[interp.locals[5].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetVertexAttributeDivisor(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetVertexAttributeDivisor(
+    (unsigned int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetVertexAttributeDefault(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetVertexAttributeDefault(
+    (int) interp.locals[0].i32_s,
+    (const void *) &interp.memory[interp.locals[1].i32_s],
+    (int) interp.locals[2].i32_s,
+    (int) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDrawVertexArray(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDrawVertexArray(
+    (int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDrawVertexArrayElements(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDrawVertexArrayElements(
+    (int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s,
+    (const void *) &interp.memory[interp.locals[2].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDrawVertexArrayInstanced(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDrawVertexArrayInstanced(
+    (int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s,
+    (int) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlDrawVertexArrayElementsInstanced(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlDrawVertexArrayElementsInstanced(
+    (int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s,
+    (const void *) &interp.memory[interp.locals[2].i32_s],
+    (int) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadTexture(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlLoadTexture(
+    (const void *) &interp.memory[interp.locals[0].i32_s],
+    (int) interp.locals[1].i32_s,
+    (int) interp.locals[2].i32_s,
+    (int) interp.locals[3].i32_s,
+    (int) interp.locals[4].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadTextureDepth(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlLoadTextureDepth(
+    (int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s,
+    (bool) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadTextureCubemap(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlLoadTextureCubemap(
+    (const void *) &interp.memory[interp.locals[0].i32_s],
+    (int) interp.locals[1].i32_s,
+    (int) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlUpdateTexture(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlUpdateTexture(
+    (unsigned int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s,
+    (int) interp.locals[2].i32_s,
+    (int) interp.locals[3].i32_s,
+    (int) interp.locals[4].i32_s,
+    (int) interp.locals[5].i32_s,
+    (const void *) &interp.memory[interp.locals[6].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetGlTextureFormats(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlGetGlTextureFormats(
+    (int) interp.locals[0].i32_s,
+    (unsigned int *) &interp.memory[interp.locals[1].i32_s],
+    (unsigned int *) &interp.memory[interp.locals[2].i32_s],
+    (unsigned int *) &interp.memory[interp.locals[3].i32_s]
+  );
+  return ret;
+}
+// returns ptr: rlGetPixelFormatName
+static web49_interp_data_t web49_main_runtime_rlUnloadTexture(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlUnloadTexture(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGenTextureMipmaps(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlGenTextureMipmaps(
+    (unsigned int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s,
+    (int) interp.locals[2].i32_s,
+    (int) interp.locals[3].i32_s,
+    (int *) &interp.memory[interp.locals[4].i32_s]
+  );
+  return ret;
+}
+// returns ptr: rlReadTexturePixels
+// returns ptr: rlReadScreenPixels
+static web49_interp_data_t web49_main_runtime_rlLoadFramebuffer(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlLoadFramebuffer(
+    (int) interp.locals[0].i32_s,
+    (int) interp.locals[1].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlFramebufferAttach(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlFramebufferAttach(
+    (unsigned int) interp.locals[0].i32_s,
+    (unsigned int) interp.locals[1].i32_s,
+    (int) interp.locals[2].i32_s,
+    (int) interp.locals[3].i32_s,
+    (int) interp.locals[4].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlFramebufferComplete(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_s = (int32_t) rlFramebufferComplete(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlUnloadFramebuffer(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlUnloadFramebuffer(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadShaderCode(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlLoadShaderCode(
+    (const char *) &interp.memory[interp.locals[0].i32_s],
+    (const char *) &interp.memory[interp.locals[1].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlCompileShader(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlCompileShader(
+    (const char *) &interp.memory[interp.locals[0].i32_s],
+    (int) interp.locals[1].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadShaderProgram(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlLoadShaderProgram(
+    (unsigned int) interp.locals[0].i32_s,
+    (unsigned int) interp.locals[1].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlUnloadShaderProgram(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlUnloadShaderProgram(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetLocationUniform(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_s = (int32_t) rlGetLocationUniform(
+    (unsigned int) interp.locals[0].i32_s,
+    (const char *) &interp.memory[interp.locals[1].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetLocationAttrib(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_s = (int32_t) rlGetLocationAttrib(
+    (unsigned int) interp.locals[0].i32_s,
+    (const char *) &interp.memory[interp.locals[1].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetUniform(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetUniform(
+    (int) interp.locals[0].i32_s,
+    (const void *) &interp.memory[interp.locals[1].i32_s],
+    (int) interp.locals[2].i32_s,
+    (int) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetUniformMatrix(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetUniformMatrix(
+    (int) interp.locals[0].i32_s,
+    *(Matrix *) &interp.memory[interp.locals[1].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetUniformSampler(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetUniformSampler(
+    (int) interp.locals[0].i32_s,
+    (unsigned int) interp.locals[1].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetShader(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetShader(
+    (unsigned int) interp.locals[0].i32_s,
+    (int *) &interp.memory[interp.locals[1].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadComputeShaderProgram(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlLoadComputeShaderProgram(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlComputeShaderDispatch(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlComputeShaderDispatch(
+    (unsigned int) interp.locals[0].i32_s,
+    (unsigned int) interp.locals[1].i32_s,
+    (unsigned int) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadShaderBuffer(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  ret.i32_u = (uint32_t) rlLoadShaderBuffer(
+    (unsigned long long) interp.locals[0].i32_s,
+    (const void *) &interp.memory[interp.locals[1].i32_s],
+    (int) interp.locals[2].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlUnloadShaderBuffer(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlUnloadShaderBuffer(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlUpdateShaderBufferElements(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlUpdateShaderBufferElements(
+    (unsigned int) interp.locals[0].i32_s,
+    (const void *) &interp.memory[interp.locals[1].i32_s],
+    (unsigned long long) interp.locals[2].i32_s,
+    (unsigned long long) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetShaderBufferSize(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlGetShaderBufferSize(
+    (unsigned int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlReadShaderBufferElements(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlReadShaderBufferElements(
+    (unsigned int) interp.locals[0].i32_s,
+    (void *) &interp.memory[interp.locals[1].i32_s],
+    (unsigned long long) interp.locals[2].i32_s,
+    (unsigned long long) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlBindShaderBuffer(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlBindShaderBuffer(
+    (unsigned int) interp.locals[0].i32_s,
+    (unsigned int) interp.locals[1].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlCopyBuffersElements(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlCopyBuffersElements(
+    (unsigned int) interp.locals[0].i32_s,
+    (unsigned int) interp.locals[1].i32_s,
+    (unsigned long long) interp.locals[2].i32_s,
+    (unsigned long long) interp.locals[3].i32_s,
+    (unsigned long long) interp.locals[4].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlBindImageTexture(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlBindImageTexture(
+    (unsigned int) interp.locals[0].i32_s,
+    (unsigned int) interp.locals[1].i32_s,
+    (unsigned int) interp.locals[2].i32_s,
+    (int) interp.locals[3].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetMatrixModelview(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  *(Matrix *) &interp.memory[interp.locals[0].i32_s] = rlGetMatrixModelview(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetMatrixProjection(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  *(Matrix *) &interp.memory[interp.locals[0].i32_s] = rlGetMatrixProjection(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetMatrixTransform(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  *(Matrix *) &interp.memory[interp.locals[0].i32_s] = rlGetMatrixTransform(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetMatrixProjectionStereo(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  *(Matrix *) &interp.memory[interp.locals[0].i32_s] = rlGetMatrixProjectionStereo(
+    (int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlGetMatrixViewOffsetStereo(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  *(Matrix *) &interp.memory[interp.locals[0].i32_s] = rlGetMatrixViewOffsetStereo(
+    (int) interp.locals[0].i32_s
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetMatrixProjection(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetMatrixProjection(
+    *(Matrix *) &interp.memory[interp.locals[0].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetMatrixModelview(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetMatrixModelview(
+    *(Matrix *) &interp.memory[interp.locals[0].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetMatrixProjectionStereo(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetMatrixProjectionStereo(
+    *(Matrix *) &interp.memory[interp.locals[0].i32_s],
+    *(Matrix *) &interp.memory[interp.locals[1].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlSetMatrixViewOffsetStereo(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlSetMatrixViewOffsetStereo(
+    *(Matrix *) &interp.memory[interp.locals[0].i32_s],
+    *(Matrix *) &interp.memory[interp.locals[1].i32_s]
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadDrawCube(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlLoadDrawCube(
+  );
+  return ret;
+}
+static web49_interp_data_t web49_main_runtime_rlLoadDrawQuad(web49_interp_t interp) {
+  web49_interp_data_t ret;
+  rlLoadDrawQuad(
+  );
+  return ret;
+}
 web49_env_func_t web49_main_import_raylib(const char *name) {
   if (!strcmp(name, "InitWindow")) {
     return &web49_main_runtime_InitWindow;
@@ -5154,6 +6212,420 @@ web49_env_func_t web49_main_import_raylib(const char *name) {
   }
   if (!strcmp(name, "SetAudioStreamBufferSizeDefault")) {
     return &web49_main_runtime_SetAudioStreamBufferSizeDefault;
+  }
+  if (!strcmp(name, "rlMatrixMode")) {
+    return &web49_main_runtime_rlMatrixMode;
+  }
+  if (!strcmp(name, "rlPushMatrix")) {
+    return &web49_main_runtime_rlPushMatrix;
+  }
+  if (!strcmp(name, "rlPopMatrix")) {
+    return &web49_main_runtime_rlPopMatrix;
+  }
+  if (!strcmp(name, "rlLoadIdentity")) {
+    return &web49_main_runtime_rlLoadIdentity;
+  }
+  if (!strcmp(name, "rlTranslatef")) {
+    return &web49_main_runtime_rlTranslatef;
+  }
+  if (!strcmp(name, "rlRotatef")) {
+    return &web49_main_runtime_rlRotatef;
+  }
+  if (!strcmp(name, "rlScalef")) {
+    return &web49_main_runtime_rlScalef;
+  }
+  if (!strcmp(name, "rlMultMatrixf")) {
+    return &web49_main_runtime_rlMultMatrixf;
+  }
+  if (!strcmp(name, "rlFrustum")) {
+    return &web49_main_runtime_rlFrustum;
+  }
+  if (!strcmp(name, "rlOrtho")) {
+    return &web49_main_runtime_rlOrtho;
+  }
+  if (!strcmp(name, "rlViewport")) {
+    return &web49_main_runtime_rlViewport;
+  }
+  if (!strcmp(name, "rlBegin")) {
+    return &web49_main_runtime_rlBegin;
+  }
+  if (!strcmp(name, "rlEnd")) {
+    return &web49_main_runtime_rlEnd;
+  }
+  if (!strcmp(name, "rlVertex2i")) {
+    return &web49_main_runtime_rlVertex2i;
+  }
+  if (!strcmp(name, "rlVertex2f")) {
+    return &web49_main_runtime_rlVertex2f;
+  }
+  if (!strcmp(name, "rlVertex3f")) {
+    return &web49_main_runtime_rlVertex3f;
+  }
+  if (!strcmp(name, "rlTexCoord2f")) {
+    return &web49_main_runtime_rlTexCoord2f;
+  }
+  if (!strcmp(name, "rlNormal3f")) {
+    return &web49_main_runtime_rlNormal3f;
+  }
+  if (!strcmp(name, "rlColor4ub")) {
+    return &web49_main_runtime_rlColor4ub;
+  }
+  if (!strcmp(name, "rlColor3f")) {
+    return &web49_main_runtime_rlColor3f;
+  }
+  if (!strcmp(name, "rlColor4f")) {
+    return &web49_main_runtime_rlColor4f;
+  }
+  if (!strcmp(name, "rlEnableVertexArray")) {
+    return &web49_main_runtime_rlEnableVertexArray;
+  }
+  if (!strcmp(name, "rlDisableVertexArray")) {
+    return &web49_main_runtime_rlDisableVertexArray;
+  }
+  if (!strcmp(name, "rlEnableVertexBuffer")) {
+    return &web49_main_runtime_rlEnableVertexBuffer;
+  }
+  if (!strcmp(name, "rlDisableVertexBuffer")) {
+    return &web49_main_runtime_rlDisableVertexBuffer;
+  }
+  if (!strcmp(name, "rlEnableVertexBufferElement")) {
+    return &web49_main_runtime_rlEnableVertexBufferElement;
+  }
+  if (!strcmp(name, "rlDisableVertexBufferElement")) {
+    return &web49_main_runtime_rlDisableVertexBufferElement;
+  }
+  if (!strcmp(name, "rlEnableVertexAttribute")) {
+    return &web49_main_runtime_rlEnableVertexAttribute;
+  }
+  if (!strcmp(name, "rlDisableVertexAttribute")) {
+    return &web49_main_runtime_rlDisableVertexAttribute;
+  }
+  if (!strcmp(name, "rlActiveTextureSlot")) {
+    return &web49_main_runtime_rlActiveTextureSlot;
+  }
+  if (!strcmp(name, "rlEnableTexture")) {
+    return &web49_main_runtime_rlEnableTexture;
+  }
+  if (!strcmp(name, "rlDisableTexture")) {
+    return &web49_main_runtime_rlDisableTexture;
+  }
+  if (!strcmp(name, "rlEnableTextureCubemap")) {
+    return &web49_main_runtime_rlEnableTextureCubemap;
+  }
+  if (!strcmp(name, "rlDisableTextureCubemap")) {
+    return &web49_main_runtime_rlDisableTextureCubemap;
+  }
+  if (!strcmp(name, "rlTextureParameters")) {
+    return &web49_main_runtime_rlTextureParameters;
+  }
+  if (!strcmp(name, "rlEnableShader")) {
+    return &web49_main_runtime_rlEnableShader;
+  }
+  if (!strcmp(name, "rlDisableShader")) {
+    return &web49_main_runtime_rlDisableShader;
+  }
+  if (!strcmp(name, "rlEnableFramebuffer")) {
+    return &web49_main_runtime_rlEnableFramebuffer;
+  }
+  if (!strcmp(name, "rlDisableFramebuffer")) {
+    return &web49_main_runtime_rlDisableFramebuffer;
+  }
+  if (!strcmp(name, "rlActiveDrawBuffers")) {
+    return &web49_main_runtime_rlActiveDrawBuffers;
+  }
+  if (!strcmp(name, "rlEnableColorBlend")) {
+    return &web49_main_runtime_rlEnableColorBlend;
+  }
+  if (!strcmp(name, "rlDisableColorBlend")) {
+    return &web49_main_runtime_rlDisableColorBlend;
+  }
+  if (!strcmp(name, "rlEnableDepthTest")) {
+    return &web49_main_runtime_rlEnableDepthTest;
+  }
+  if (!strcmp(name, "rlDisableDepthTest")) {
+    return &web49_main_runtime_rlDisableDepthTest;
+  }
+  if (!strcmp(name, "rlEnableDepthMask")) {
+    return &web49_main_runtime_rlEnableDepthMask;
+  }
+  if (!strcmp(name, "rlDisableDepthMask")) {
+    return &web49_main_runtime_rlDisableDepthMask;
+  }
+  if (!strcmp(name, "rlEnableBackfaceCulling")) {
+    return &web49_main_runtime_rlEnableBackfaceCulling;
+  }
+  if (!strcmp(name, "rlDisableBackfaceCulling")) {
+    return &web49_main_runtime_rlDisableBackfaceCulling;
+  }
+  if (!strcmp(name, "rlEnableScissorTest")) {
+    return &web49_main_runtime_rlEnableScissorTest;
+  }
+  if (!strcmp(name, "rlDisableScissorTest")) {
+    return &web49_main_runtime_rlDisableScissorTest;
+  }
+  if (!strcmp(name, "rlScissor")) {
+    return &web49_main_runtime_rlScissor;
+  }
+  if (!strcmp(name, "rlEnableWireMode")) {
+    return &web49_main_runtime_rlEnableWireMode;
+  }
+  if (!strcmp(name, "rlDisableWireMode")) {
+    return &web49_main_runtime_rlDisableWireMode;
+  }
+  if (!strcmp(name, "rlSetLineWidth")) {
+    return &web49_main_runtime_rlSetLineWidth;
+  }
+  if (!strcmp(name, "rlGetLineWidth")) {
+    return &web49_main_runtime_rlGetLineWidth;
+  }
+  if (!strcmp(name, "rlEnableSmoothLines")) {
+    return &web49_main_runtime_rlEnableSmoothLines;
+  }
+  if (!strcmp(name, "rlDisableSmoothLines")) {
+    return &web49_main_runtime_rlDisableSmoothLines;
+  }
+  if (!strcmp(name, "rlEnableStereoRender")) {
+    return &web49_main_runtime_rlEnableStereoRender;
+  }
+  if (!strcmp(name, "rlDisableStereoRender")) {
+    return &web49_main_runtime_rlDisableStereoRender;
+  }
+  if (!strcmp(name, "rlIsStereoRenderEnabled")) {
+    return &web49_main_runtime_rlIsStereoRenderEnabled;
+  }
+  if (!strcmp(name, "rlClearColor")) {
+    return &web49_main_runtime_rlClearColor;
+  }
+  if (!strcmp(name, "rlClearScreenBuffers")) {
+    return &web49_main_runtime_rlClearScreenBuffers;
+  }
+  if (!strcmp(name, "rlCheckErrors")) {
+    return &web49_main_runtime_rlCheckErrors;
+  }
+  if (!strcmp(name, "rlSetBlendMode")) {
+    return &web49_main_runtime_rlSetBlendMode;
+  }
+  if (!strcmp(name, "rlSetBlendFactors")) {
+    return &web49_main_runtime_rlSetBlendFactors;
+  }
+  if (!strcmp(name, "rlglInit")) {
+    return &web49_main_runtime_rlglInit;
+  }
+  if (!strcmp(name, "rlglClose")) {
+    return &web49_main_runtime_rlglClose;
+  }
+  if (!strcmp(name, "rlLoadExtensions")) {
+    return &web49_main_runtime_rlLoadExtensions;
+  }
+  if (!strcmp(name, "rlGetVersion")) {
+    return &web49_main_runtime_rlGetVersion;
+  }
+  if (!strcmp(name, "rlSetFramebufferWidth")) {
+    return &web49_main_runtime_rlSetFramebufferWidth;
+  }
+  if (!strcmp(name, "rlGetFramebufferWidth")) {
+    return &web49_main_runtime_rlGetFramebufferWidth;
+  }
+  if (!strcmp(name, "rlSetFramebufferHeight")) {
+    return &web49_main_runtime_rlSetFramebufferHeight;
+  }
+  if (!strcmp(name, "rlGetFramebufferHeight")) {
+    return &web49_main_runtime_rlGetFramebufferHeight;
+  }
+  if (!strcmp(name, "rlGetTextureIdDefault")) {
+    return &web49_main_runtime_rlGetTextureIdDefault;
+  }
+  if (!strcmp(name, "rlGetShaderIdDefault")) {
+    return &web49_main_runtime_rlGetShaderIdDefault;
+  }
+  if (!strcmp(name, "rlLoadRenderBatch")) {
+    return &web49_main_runtime_rlLoadRenderBatch;
+  }
+  if (!strcmp(name, "rlUnloadRenderBatch")) {
+    return &web49_main_runtime_rlUnloadRenderBatch;
+  }
+  if (!strcmp(name, "rlDrawRenderBatch")) {
+    return &web49_main_runtime_rlDrawRenderBatch;
+  }
+  if (!strcmp(name, "rlSetRenderBatchActive")) {
+    return &web49_main_runtime_rlSetRenderBatchActive;
+  }
+  if (!strcmp(name, "rlDrawRenderBatchActive")) {
+    return &web49_main_runtime_rlDrawRenderBatchActive;
+  }
+  if (!strcmp(name, "rlCheckRenderBatchLimit")) {
+    return &web49_main_runtime_rlCheckRenderBatchLimit;
+  }
+  if (!strcmp(name, "rlSetTexture")) {
+    return &web49_main_runtime_rlSetTexture;
+  }
+  if (!strcmp(name, "rlLoadVertexArray")) {
+    return &web49_main_runtime_rlLoadVertexArray;
+  }
+  if (!strcmp(name, "rlLoadVertexBuffer")) {
+    return &web49_main_runtime_rlLoadVertexBuffer;
+  }
+  if (!strcmp(name, "rlLoadVertexBufferElement")) {
+    return &web49_main_runtime_rlLoadVertexBufferElement;
+  }
+  if (!strcmp(name, "rlUpdateVertexBuffer")) {
+    return &web49_main_runtime_rlUpdateVertexBuffer;
+  }
+  if (!strcmp(name, "rlUpdateVertexBufferElements")) {
+    return &web49_main_runtime_rlUpdateVertexBufferElements;
+  }
+  if (!strcmp(name, "rlUnloadVertexArray")) {
+    return &web49_main_runtime_rlUnloadVertexArray;
+  }
+  if (!strcmp(name, "rlUnloadVertexBuffer")) {
+    return &web49_main_runtime_rlUnloadVertexBuffer;
+  }
+  if (!strcmp(name, "rlSetVertexAttribute")) {
+    return &web49_main_runtime_rlSetVertexAttribute;
+  }
+  if (!strcmp(name, "rlSetVertexAttributeDivisor")) {
+    return &web49_main_runtime_rlSetVertexAttributeDivisor;
+  }
+  if (!strcmp(name, "rlSetVertexAttributeDefault")) {
+    return &web49_main_runtime_rlSetVertexAttributeDefault;
+  }
+  if (!strcmp(name, "rlDrawVertexArray")) {
+    return &web49_main_runtime_rlDrawVertexArray;
+  }
+  if (!strcmp(name, "rlDrawVertexArrayElements")) {
+    return &web49_main_runtime_rlDrawVertexArrayElements;
+  }
+  if (!strcmp(name, "rlDrawVertexArrayInstanced")) {
+    return &web49_main_runtime_rlDrawVertexArrayInstanced;
+  }
+  if (!strcmp(name, "rlDrawVertexArrayElementsInstanced")) {
+    return &web49_main_runtime_rlDrawVertexArrayElementsInstanced;
+  }
+  if (!strcmp(name, "rlLoadTexture")) {
+    return &web49_main_runtime_rlLoadTexture;
+  }
+  if (!strcmp(name, "rlLoadTextureDepth")) {
+    return &web49_main_runtime_rlLoadTextureDepth;
+  }
+  if (!strcmp(name, "rlLoadTextureCubemap")) {
+    return &web49_main_runtime_rlLoadTextureCubemap;
+  }
+  if (!strcmp(name, "rlUpdateTexture")) {
+    return &web49_main_runtime_rlUpdateTexture;
+  }
+  if (!strcmp(name, "rlGetGlTextureFormats")) {
+    return &web49_main_runtime_rlGetGlTextureFormats;
+  }
+  if (!strcmp(name, "rlUnloadTexture")) {
+    return &web49_main_runtime_rlUnloadTexture;
+  }
+  if (!strcmp(name, "rlGenTextureMipmaps")) {
+    return &web49_main_runtime_rlGenTextureMipmaps;
+  }
+  if (!strcmp(name, "rlLoadFramebuffer")) {
+    return &web49_main_runtime_rlLoadFramebuffer;
+  }
+  if (!strcmp(name, "rlFramebufferAttach")) {
+    return &web49_main_runtime_rlFramebufferAttach;
+  }
+  if (!strcmp(name, "rlFramebufferComplete")) {
+    return &web49_main_runtime_rlFramebufferComplete;
+  }
+  if (!strcmp(name, "rlUnloadFramebuffer")) {
+    return &web49_main_runtime_rlUnloadFramebuffer;
+  }
+  if (!strcmp(name, "rlLoadShaderCode")) {
+    return &web49_main_runtime_rlLoadShaderCode;
+  }
+  if (!strcmp(name, "rlCompileShader")) {
+    return &web49_main_runtime_rlCompileShader;
+  }
+  if (!strcmp(name, "rlLoadShaderProgram")) {
+    return &web49_main_runtime_rlLoadShaderProgram;
+  }
+  if (!strcmp(name, "rlUnloadShaderProgram")) {
+    return &web49_main_runtime_rlUnloadShaderProgram;
+  }
+  if (!strcmp(name, "rlGetLocationUniform")) {
+    return &web49_main_runtime_rlGetLocationUniform;
+  }
+  if (!strcmp(name, "rlGetLocationAttrib")) {
+    return &web49_main_runtime_rlGetLocationAttrib;
+  }
+  if (!strcmp(name, "rlSetUniform")) {
+    return &web49_main_runtime_rlSetUniform;
+  }
+  if (!strcmp(name, "rlSetUniformMatrix")) {
+    return &web49_main_runtime_rlSetUniformMatrix;
+  }
+  if (!strcmp(name, "rlSetUniformSampler")) {
+    return &web49_main_runtime_rlSetUniformSampler;
+  }
+  if (!strcmp(name, "rlSetShader")) {
+    return &web49_main_runtime_rlSetShader;
+  }
+  if (!strcmp(name, "rlLoadComputeShaderProgram")) {
+    return &web49_main_runtime_rlLoadComputeShaderProgram;
+  }
+  if (!strcmp(name, "rlComputeShaderDispatch")) {
+    return &web49_main_runtime_rlComputeShaderDispatch;
+  }
+  if (!strcmp(name, "rlLoadShaderBuffer")) {
+    return &web49_main_runtime_rlLoadShaderBuffer;
+  }
+  if (!strcmp(name, "rlUnloadShaderBuffer")) {
+    return &web49_main_runtime_rlUnloadShaderBuffer;
+  }
+  if (!strcmp(name, "rlUpdateShaderBufferElements")) {
+    return &web49_main_runtime_rlUpdateShaderBufferElements;
+  }
+  if (!strcmp(name, "rlGetShaderBufferSize")) {
+    return &web49_main_runtime_rlGetShaderBufferSize;
+  }
+  if (!strcmp(name, "rlReadShaderBufferElements")) {
+    return &web49_main_runtime_rlReadShaderBufferElements;
+  }
+  if (!strcmp(name, "rlBindShaderBuffer")) {
+    return &web49_main_runtime_rlBindShaderBuffer;
+  }
+  if (!strcmp(name, "rlCopyBuffersElements")) {
+    return &web49_main_runtime_rlCopyBuffersElements;
+  }
+  if (!strcmp(name, "rlBindImageTexture")) {
+    return &web49_main_runtime_rlBindImageTexture;
+  }
+  if (!strcmp(name, "rlGetMatrixModelview")) {
+    return &web49_main_runtime_rlGetMatrixModelview;
+  }
+  if (!strcmp(name, "rlGetMatrixProjection")) {
+    return &web49_main_runtime_rlGetMatrixProjection;
+  }
+  if (!strcmp(name, "rlGetMatrixTransform")) {
+    return &web49_main_runtime_rlGetMatrixTransform;
+  }
+  if (!strcmp(name, "rlGetMatrixProjectionStereo")) {
+    return &web49_main_runtime_rlGetMatrixProjectionStereo;
+  }
+  if (!strcmp(name, "rlGetMatrixViewOffsetStereo")) {
+    return &web49_main_runtime_rlGetMatrixViewOffsetStereo;
+  }
+  if (!strcmp(name, "rlSetMatrixProjection")) {
+    return &web49_main_runtime_rlSetMatrixProjection;
+  }
+  if (!strcmp(name, "rlSetMatrixModelview")) {
+    return &web49_main_runtime_rlSetMatrixModelview;
+  }
+  if (!strcmp(name, "rlSetMatrixProjectionStereo")) {
+    return &web49_main_runtime_rlSetMatrixProjectionStereo;
+  }
+  if (!strcmp(name, "rlSetMatrixViewOffsetStereo")) {
+    return &web49_main_runtime_rlSetMatrixViewOffsetStereo;
+  }
+  if (!strcmp(name, "rlLoadDrawCube")) {
+    return &web49_main_runtime_rlLoadDrawCube;
+  }
+  if (!strcmp(name, "rlLoadDrawQuad")) {
+    return &web49_main_runtime_rlLoadDrawQuad;
   }
   return NULL;
 }

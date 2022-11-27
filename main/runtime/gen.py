@@ -10,6 +10,7 @@ with open('rlruntime.c', 'w') as outfile:
     print(f'#include "rlruntime.h"', file=outfile)
     print('#include <raylib.h>', file=outfile)
     print('#include <raymath.h>', file=outfile)
+    print('#include <rlgl.h>', file=outfile)
     names = []
     for func in src['functions']:
         fname = func['name']
@@ -27,14 +28,12 @@ with open('rlruntime.c', 'w') as outfile:
             if argtype.endswith('Callback'):
                 print('// is callback: %s' % fname, file=outfile)
                 bad = True
-        if fret[0].upper() == fret[0]:
-            print('// returns struct: %s' % fname, file=outfile)
-            bad = True
         if bad:
             continue
         names.append(fname)
         print('static web49_interp_data_t web49_main_runtime_%s(web49_interp_t interp) {' % fname, file=outfile)
         print('  web49_interp_data_t ret;', file=outfile)
+        offset = 0
         if fret == 'void':
             print('  %s(' % fname, file=outfile)
         elif fret == 'bool':
@@ -43,16 +42,18 @@ with open('rlruntime.c', 'w') as outfile:
             print('  ret.i32_s = (int32_t) %s(' % fname, file=outfile);
         elif fret == 'unsigned int':
             print('  ret.i32_u = (uint32_t) %s(' % fname, file=outfile);
+        elif fret[0].upper() == fret[0]:
+            print(f'  *({fret} *) &interp.memory[interp.locals[0].i32_s] = {fname}(', file=outfile);
         else:
             print('  %s(' % fname, file=outfile)
         for argnum, arg in enumerate(fparams):
             argtype = arg['type']
             if argtype[-1] == '*':
-                print(f'    ({argtype}) &interp.memory[interp.locals[{argnum}].i32_s]', end='', file=outfile)
-            elif argtype[0].upper() == argtype[0]:
-                print(f'    *({argtype} *) &interp.memory[interp.locals[{argnum}].i32_s]', end='', file=outfile)
+                print(f'    ({argtype}) &interp.memory[interp.locals[{argnum+offset}].i32_s]', end='', file=outfile)
+            elif argtype[0].upper() == argtype[0] or argtype[0:2] == 'rl':
+                print(f'    *({argtype} *) &interp.memory[interp.locals[{argnum+offset}].i32_s]', end='', file=outfile)
             else:
-                print(f'    ({argtype}) interp.locals[{argnum}].i32_s', end='', file=outfile)
+                print(f'    ({argtype}) interp.locals[{argnum+offset}].i32_s', end='', file=outfile)
             if argnum + 1 != len(fparams):
                 print(',', file=outfile)
             else:
