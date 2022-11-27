@@ -567,7 +567,7 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
             // }
             web49_read_block_state_t state;
             state.ptrs = ptrs;
-            uint64_t **data = web49_malloc(sizeof(uint64_t *) * (128));
+            uint64_t **data = web49_malloc(sizeof(uint64_t *) * (1024));
             state.bufs = &data[1];
             state.interp = &interp;
             state.build.alloc = 16;
@@ -821,12 +821,12 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         TABLE_PUT1(WEB49_OPCODE_I64_EXTEND8_S),
         TABLE_PUT1(WEB49_OPCODE_I64_EXTEND16_S),
         TABLE_PUT1(WEB49_OPCODE_I64_EXTEND32_S),
+        TABLE_PUT2(WEB49_OPCODE_MEMORY_FILL),
+        TABLE_PUT2(WEB49_OPCODE_MEMORY_COPY),
 #undef TABLE_PUTV
 #undef TABLE_PUT1
 #undef TABLE_PUT2
         [WEB49_OPCODE_MEMORY_INIT] = &&DO_WEB49_OPCODE_MEMORY_INIT,
-        [WEB49_OPCODE_MEMORY_COPY] = &&DO_WEB49_OPCODE_MEMORY_COPY,
-        [WEB49_OPCODE_MEMORY_FILL] = &&DO_WEB49_OPCODE_MEMORY_FILL,
         [WEB49_OPCODE_DATA_DROP] = &&DO_WEB49_OPCODE_DATA_DROP,
         [WEB49_OPCODE_TABLE_INIT] = &&DO_WEB49_OPCODE_TABLE_INIT,
         [WEB49_OPCODE_ELEM_DROP] = &&DO_WEB49_OPCODE_ELEM_DROP,
@@ -890,37 +890,27 @@ exitv:
 #undef LOCAL1
 #undef NAME
     LABEL(WEB49_OPCODE_MEMORY_INIT) {
-        fprintf(stderr, "bulk memory? you wish!\n");
-        __builtin_trap();
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_MEMORY_COPY) {
-        fprintf(stderr, "bulk memory? you wish!\n");
-        __builtin_trap();
-        NEXT();
-    }
-    LABEL(WEB49_OPCODE_MEMORY_FILL) {
-        fprintf(stderr, "bulk memory? you wish!\n");
+        fprintf(stderr, "bulk memory init? you wish\n");
         __builtin_trap();
         NEXT();
     }
     LABEL(WEB49_OPCODE_DATA_DROP) {
-        fprintf(stderr, "bulk memory? you wish!\n");
+        fprintf(stderr, "data drop? you wish!\n");
         __builtin_trap();
         NEXT();
     }
     LABEL(WEB49_OPCODE_TABLE_INIT) {
-        fprintf(stderr, "bulk memory? you wish!\n");
+        fprintf(stderr, "table init? you wish!\n");
         __builtin_trap();
         NEXT();
     }
     LABEL(WEB49_OPCODE_ELEM_DROP) {
-        fprintf(stderr, "bulk memory? you wish!\n");
+        fprintf(stderr, "elem drop? you wish!\n");
         __builtin_trap();
         NEXT();
     }
     LABEL(WEB49_OPCODE_TABLE_COPY) {
-        fprintf(stderr, "bulk memory? you wish!\n");
+        fprintf(stderr, "table copy? you wish!\n");
         __builtin_trap();
         NEXT();
     }

@@ -10,7 +10,7 @@ HYPERFINE = hyperfine
 
 OPT ?= -O2
 
-PROG_SRCS := main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c main/miniwasm.c
+PROG_SRCS := main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c main/miniwasm.c main/raywasm.c main/runtime/rlruntime.c
 PROG_OBJS := $(PROG_SRCS:%.c=%.o)
 
 WEB49_SRCS := src/read_bin.c src/read_wat.c src/write_wat.c src/write_bin.c src/io.c src/tables.c src/interp/interp.c src/opt/tree.c src/opt/tee.c
@@ -34,6 +34,10 @@ test: $(TEST_TXT)
 bin/miniwasm$(EXE): main/miniwasm.o $(OBJS)
 	@mkdir -p bin
 	$(CC) $(OPT) main/miniwasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
+
+bin/raywasm$(EXE): main/raywasm.o main/runtime/rlruntime.c $(OBJS)
+	@mkdir -p bin
+	$(CC) $(OPT) main/raywasm.o main/runtime/rlruntime.c $(OBJS) -o $(@) -lm $(LDFLAGS) -lraylib -pthread -lGL -ldl
 
 bin/wat2wasm$(EXE): main/wat2wasm.o $(OBJS)
 	@mkdir -p bin

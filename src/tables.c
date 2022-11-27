@@ -778,10 +778,14 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
         .fail = true,
     },
     [WEB49_OPCODE_MEMORY_COPY] = (web49_table_stack_effect_t){
-        .fail = true,
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[2] = WEB49_TABLE_STACK_EFFECT_I32,
     },
     [WEB49_OPCODE_MEMORY_FILL] = (web49_table_stack_effect_t){
-        .fail = true,
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
+        .in[2] = WEB49_TABLE_STACK_EFFECT_I32,
     },
     [WEB49_OPCODE_DATA_DROP] = (web49_table_stack_effect_t){
         .fail = true,

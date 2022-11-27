@@ -9,6 +9,8 @@
 #include "../src/read_bin.h"
 #include "../src/read_wat.h"
 
+#include "runtime/rlruntime.h"
+
 web49_interp_data_t web49_main_import_wasi_fd_seek(web49_interp_t interp) {
     int whence = -1;
     switch (interp.locals[2].i32_u) {
@@ -172,6 +174,8 @@ web49_env_func_t web49_main_import_wasi(void *wasi, const char *func) {
 web49_env_func_t web49_main_import_func(void *state, const char *mod, const char *func) {
     if (!strcmp(mod, "wasi_snapshot_preview1")) {
         return web49_main_import_wasi(state, func);
+    } else if (!strcmp(mod, "raylib")) {
+        return web49_main_import_raylib(func);
     } else {
         return NULL;
     }

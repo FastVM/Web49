@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+emcc $* -I$(dirname $0)/include -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s WARN_ON_UNDEFINED_SYMBOLS=0

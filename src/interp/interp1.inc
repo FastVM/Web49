@@ -134,8 +134,8 @@ NAME(WEB49_OPCODE_I64_LOAD32_U) {
     NEXT();
 }
 NAME(WEB49_OPCODE_MEMORY_GROW) {
-    fprintf(stderr, "unimplemented: memory_grow\n");
-    __builtin_trap();
+    interp.extra->memsize += LOCAL0.i32_u * 65536;
+    interp.memory = web49_realloc(interp.memory, interp.extra->memsize);
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_EQZ) {
