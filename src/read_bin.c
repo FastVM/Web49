@@ -101,8 +101,8 @@ web49_lang_type_t web49_readbin_block_type(web49_io_input_t *in) {
 }
 
 web49_br_table_t web49_readbin_br_table(web49_io_input_t *in) {
-    uint64_t num = web49_readbin_uleb(in);
-    uint64_t *targets = web49_malloc(sizeof(uint64_t) * num);
+    uint32_t num = web49_readbin_uleb(in);
+    uint32_t *targets = web49_malloc(sizeof(uint32_t) * num);
     for (uint64_t i = 0; i < num; i++) {
         targets[i] = web49_readbin_uleb(in);
     }
@@ -279,7 +279,7 @@ web49_section_import_t web49_readbin_section_import(web49_io_input_t *in) {
 
 web49_section_function_t web49_readbin_section_function(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
-    uint64_t *entries = web49_malloc(sizeof(uint64_t) * num_entries);
+    uint32_t *entries = web49_malloc(sizeof(uint32_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
         entries[i] = web49_readbin_uleb(in);
     }
@@ -360,10 +360,10 @@ web49_section_element_t web49_readbin_section_element(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
     web49_section_element_entry_t *entries = web49_malloc(sizeof(web49_section_element_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
-        uint64_t index = web49_readbin_uleb(in);
+        uint32_t index = web49_readbin_uleb(in);
         web49_instr_t offset = web49_readbin_init_expr(in);
-        uint64_t num_elems = web49_readbin_uleb(in);
-        uint64_t *elems = web49_malloc(sizeof(uint64_t) * num_elems);
+        uint32_t num_elems = web49_readbin_uleb(in);
+        uint32_t *elems = web49_malloc(sizeof(uint32_t) * num_elems);
         for (uint64_t j = 0; j < num_elems; j++) {
             elems[j] = web49_readbin_uleb(in);
         }

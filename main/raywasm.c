@@ -31,10 +31,10 @@ web49_interp_data_t web49_main_import_wasi_args_get(web49_interp_t interp) {
     uint32_t buf = interp.locals[1].i32_u;
     uint32_t argc = 0;
     uint32_t head2 = buf;
-    for (size_t i = 0; interp.extra->args[i] != NULL; i++) {
+    for (size_t i = 0; interp.args[i] != NULL; i++) {
         *(uint32_t *)&interp.memory[argv + argc * 4] = head2;
-        size_t memlen = strlen(interp.extra->args[i]) + 1;
-        memcpy(&interp.memory[head2], interp.extra->args[i], memlen);
+        size_t memlen = strlen(interp.args[i]) + 1;
+        memcpy(&interp.memory[head2], interp.args[i], memlen);
         head2 += memlen;
         argc += 1;
     }
@@ -46,8 +46,8 @@ web49_interp_data_t web49_main_import_wasi_args_sizes_get(web49_interp_t interp)
     uint32_t buf_size = interp.locals[1].i32_u;
     uint32_t buf_len = 0;
     uint32_t i = 0;
-    while (interp.extra->args[i] != NULL) {
-        buf_len += strlen(interp.extra->args[i]) + 1;
+    while (interp.args[i] != NULL) {
+        buf_len += strlen(interp.args[i]) + 1;
         i += 1;
     }
     *(uint32_t *)&interp.memory[argc] = i;
@@ -197,15 +197,15 @@ int web49_file_main(const char *inarg, const char **args) {
     web49_opt_tee_module(&mod);
     web49_opt_tree_module(&mod);
     web49_interp_t interp = web49_interp_module(mod, args);
-    interp.extra->import_func = web49_main_import_func;
-    interp.extra->import_state = NULL;
+    interp.import_func = web49_main_import_func;
+    interp.import_state = NULL;
     for (size_t i = 0; i < mod.num_sections; i++) {
         web49_section_t section = mod.sections[i];
         if (section.header.id == WEB49_SECTION_ID_EXPORT) {
             for (size_t j = 0; j < section.export_section.num_entries; j++) {
                 web49_section_export_entry_t entry = section.export_section.entries[j];
                 if (!strcmp(entry.field_str, "_start")) {
-                    web49_interp_block_run(interp, &interp.extra->funcs[entry.index]);
+                    web49_interp_block_run(interp, &interp.funcs[entry.index]);
                 }
             }
         }

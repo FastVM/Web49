@@ -1,5 +1,5 @@
 NAME(WEB49_OPCODE_CALL_INDIRECT) {
-    web49_interp_block_t *block = interp.extra->table[LOCAL0.i32_u];
+    web49_interp_block_t *block = interp.table[LOCAL0.i32_u];
     web49_interp_block_run_comp(block, ptrs, interp);
     *returns++ = head;
     *stacks++ = interp.locals;
@@ -59,7 +59,7 @@ NAME(WEB49_OPCODE_SET_LOCAL) {
     NEXT();
 }
 NAME(WEB49_OPCODE_SET_GLOBAL) {
-    interp.extra->globals[head[1].data.i32_u] = LOCAL0;
+    interp.globals[head[1].data.i32_u] = LOCAL0;
     head += 2;
     NEXT();
 }
@@ -134,8 +134,8 @@ NAME(WEB49_OPCODE_I64_LOAD32_U) {
     NEXT();
 }
 NAME(WEB49_OPCODE_MEMORY_GROW) {
-    interp.extra->memsize += LOCAL0.i32_u * 65536;
-    interp.memory = web49_realloc(interp.memory, interp.extra->memsize);
+    interp.memsize += LOCAL0.i32_u * 65536;
+    interp.memory = web49_realloc(interp.memory, interp.memsize);
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_EQZ) {

@@ -59,9 +59,6 @@ typedef union web49_interp_data_t web49_interp_data_t;
 struct web49_interp_t;
 typedef struct web49_interp_t web49_interp_t;
 
-struct web49_interp_extra_t;
-typedef struct web49_interp_extra_t web49_interp_extra_t;
-
 union web49_interp_opcode_t;
 typedef union web49_interp_opcode_t web49_interp_opcode_t;
 
@@ -102,10 +99,19 @@ union web49_interp_data_t {
     double f64;
 };
 
+typedef web49_interp_data_t (*web49_env_func_t)(web49_interp_t interp);
+typedef web49_env_func_t (*web49_env_table_t)(void *state, const char *mod, const char *sym);
+
 struct web49_interp_t {
     web49_interp_data_t *restrict locals;
     uint8_t *restrict memory;
-    web49_interp_extra_t *restrict extra;
+    web49_interp_data_t *restrict globals;
+    web49_interp_block_t **table;
+    web49_interp_block_t *funcs;
+    const char **args;
+    void *import_state;
+    uint32_t memsize;
+    web49_env_table_t import_func;
 };
 
 union web49_interp_opcode_t {
@@ -140,26 +146,6 @@ struct web49_read_block_state_t {
     uint64_t nlinks;
 };
 
-typedef web49_interp_data_t (*web49_env_func_t)(web49_interp_t interp);
-typedef web49_env_func_t (*web49_env_table_t)(void *state, const char *mod, const char *sym);
-
-struct web49_interp_extra_t {
-    web49_env_table_t import_func;
-    void *import_state;
-    web49_interp_data_t *restrict globals;
-    web49_interp_block_t **table;
-    web49_interp_block_t *funcs;
-    const char **args;
-    uint64_t memsize;
-    web49_section_type_t type_section;
-    web49_section_import_t import_section;
-    web49_section_code_t code_section;
-    web49_section_function_t function_section;
-    web49_section_global_t global_section;
-    web49_section_data_t data_section;
-    web49_section_table_t table_section;
-    web49_section_element_t element_section;
-};
 uint64_t *web49_interp_link_box(void);
 void web49_interp_link_get(web49_read_block_state_t *state, uint64_t out, uint64_t *from);
 web49_interp_t web49_interp_module(web49_module_t mod, const char **args);

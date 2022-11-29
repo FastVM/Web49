@@ -142,12 +142,12 @@ NAME(WEB49_OPCODE_GET_LOCAL) {
     NEXT();
 }
 NAME(WEB49_OPCODE_GET_GLOBAL) {
-    interp.locals[head[0].data.i32_u] = interp.extra->globals[head[1].data.i32_u];
+    interp.locals[head[0].data.i32_u] = interp.globals[head[1].data.i32_u];
     head += 2;
     NEXT();
 }
 NAME(WEB49_OPCODE_MEMORY_SIZE) {
-    interp.locals[head[0].data.i32_u].i32_u = interp.extra->memsize / 65536;
+    interp.locals[head[0].data.i32_u].i32_u = interp.memsize / 65536;
     head += 1;
     NEXT();
 }

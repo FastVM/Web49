@@ -22,7 +22,7 @@ void web49_writebin_type_table(web49_writebin_buf_t *out, web49_type_table_t typ
     web49_writebin_type_memory(out, type.limits);
 }
 void web49_writebin_type_memory(web49_writebin_buf_t *out, web49_type_memory_t type) {
-    uint8_t flags = type.maximum != UINT64_MAX ? 1 : 0;
+    uint8_t flags = type.maximum != UINT32_MAX ? 1 : 0;
     web49_writebin_byte(out, flags);
     web49_writebin_uleb(out, type.initial);
     if (flags == 1) {

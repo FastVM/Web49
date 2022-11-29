@@ -337,7 +337,7 @@ void web49_readwat_state_import_entry(web49_readwat_state_t *out, web49_readwat_
         entry.kind = WEB49_EXTERNAL_KIND_MEMORY;
         if (expr.fun_args[2].fun_nargs == 1) {
             entry.memory_type.initial = web49_readwat_expr_to_u64(expr.fun_args[2].fun_args[0]);
-            entry.memory_type.maximum = UINT64_MAX;
+            entry.memory_type.maximum = UINT32_MAX;
         } else if (expr.fun_args[2].fun_nargs == 1) {
             entry.memory_type.initial = web49_readwat_expr_to_u64(expr.fun_args[2].fun_args[0]);
             entry.memory_type.maximum = web49_readwat_expr_to_u64(expr.fun_args[2].fun_args[1]);
@@ -708,7 +708,7 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
 
 void web49_readwat_state_table_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr) {
     web49_type_table_t entry;
-    entry.limits.maximum = UINT64_MAX;
+    entry.limits.maximum = UINT32_MAX;
     bool init = false;
     for (uint64_t i = 0; i < expr.fun_nargs; i++) {
         web49_readwat_expr_t arg = expr.fun_args[i];

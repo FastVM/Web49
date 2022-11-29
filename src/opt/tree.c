@@ -40,9 +40,11 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
         web49_instr_t cur = **head;
         *head += 1;
         if (cur.opcode == WEB49_OPCODE_END || cur.opcode == WEB49_OPCODE_ELSE) {
+            web49_free_instr(cur);
             break;
         }
         if (cur.opcode == WEB49_OPCODE_NOP) {
+            web49_free_instr(cur);
             continue;
         }
         if (ret.nargs + 4 >= nalloc) {
@@ -52,7 +54,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
         if (cur.opcode == WEB49_OPCODE_BLOCK || cur.opcode == WEB49_OPCODE_LOOP) {
             web49_instr_t body = web49_opt_tree_read_block(mod, head);
             cur.nargs = 1;
-            cur.args = web49_malloc(sizeof(web49_instr_t));
+            cur.args = web49_realloc(cur.args, sizeof(web49_instr_t));
             cur.args[0] = body;
             if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
                 ret.args[ret.nargs++] = cur;
@@ -72,13 +74,13 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
             web49_instr_t ifthen = web49_opt_tree_read_block(mod, head);
             if ((*head)[-1].opcode == WEB49_OPCODE_ELSE) {
                 cur.nargs = 3;
-                cur.args = web49_malloc(sizeof(web49_instr_t) * 3);
+                cur.args = web49_realloc(cur.args, sizeof(web49_instr_t) * 3);
                 cur.args[0] = ret.args[--ret.nargs];
                 cur.args[1] = ifthen;
                 cur.args[2] = web49_opt_tree_read_block(mod, head);
             } else {
                 cur.nargs = 2;
-                cur.args = web49_malloc(sizeof(web49_instr_t) * 2);
+                cur.args = web49_realloc(cur.args, sizeof(web49_instr_t) * 2);
                 cur.args[0] = ret.args[--ret.nargs];
                 cur.args[1] = ifthen;
             }
@@ -144,7 +146,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
             use_begin0 = !type_section.entries[cur.immediate.call_indirect.index].has_return_type;
         }
         cur.nargs = 0;
-        cur.args = web49_malloc(sizeof(web49_instr_t) * (nargs));
+        cur.args = web49_realloc(cur.args, sizeof(web49_instr_t) * (nargs));
         ret.nargs -= nargs;
         for (size_t i = 0; i < nargs; i++) {
             cur.args[cur.nargs++] = ret.args[ret.nargs + i];
@@ -168,6 +170,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
 void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t *entry) {
     web49_instr_t *head = entry->instrs;
     web49_instr_t instr = web49_opt_tree_read_block(mod, &head);
+    entry->instrs = web49_realloc(entry->instrs, sizeof(web49_instr_t) * 1);
     entry->num_instrs = 1;
     entry->instrs[0] = instr;
 }

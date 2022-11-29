@@ -1,0 +1,389 @@
+
+=================================================================
+==1254693==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 96 byte(s) in 1 object(s) allocated from:
+    #0 0x7f4272709e8f in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x55c6dca190ae in web49_opt_tree_read_block src/opt/tree.c:159
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #7 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #8 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #9 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #10 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #11 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #12 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #13 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #14 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #15 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #16 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #17 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 96 byte(s) in 1 object(s) allocated from:
+    #0 0x7f4272709e8f in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x55c6dca190ae in web49_opt_tree_read_block src/opt/tree.c:159
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #7 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #8 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #9 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #10 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #11 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #12 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #13 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #14 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #15 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #16 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #17 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #18 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #19 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #20 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #21 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #22 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #23 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 96 byte(s) in 1 object(s) allocated from:
+    #0 0x7f4272709e8f in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x55c6dca190ae in web49_opt_tree_read_block src/opt/tree.c:159
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #4 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #5 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #6 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #7 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #8 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 96 byte(s) in 1 object(s) allocated from:
+    #0 0x7f4272709e8f in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x55c6dca190ae in web49_opt_tree_read_block src/opt/tree.c:159
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #6 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #7 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #8 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #9 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #10 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #7 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #8 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #9 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #10 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 3 byte(s) in 3 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #4 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #5 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #6 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #7 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 2 byte(s) in 2 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #7 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #8 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #9 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #10 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #11 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #12 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 2 byte(s) in 2 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #7 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #8 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #9 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #10 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #11 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #12 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #13 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #14 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #15 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #16 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #17 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #18 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #19 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #20 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #21 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 1 byte(s) in 1 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #7 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #8 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #9 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #10 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #11 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #12 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 1 byte(s) in 1 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #6 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #7 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #8 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #9 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #10 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #11 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #12 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #13 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #14 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #15 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #16 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #17 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #18 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 1 byte(s) in 1 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #5 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #6 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #7 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #8 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 1 byte(s) in 1 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #7 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #8 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #9 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #10 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #11 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 1 byte(s) in 1 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #7 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #8 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #9 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #10 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #11 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 1 byte(s) in 1 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #7 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #8 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #9 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #10 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #11 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #12 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #13 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #14 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #15 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #16 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #17 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #18 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #19 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #20 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #21 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #22 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #23 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #24 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #25 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #26 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #27 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #28 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 1 byte(s) in 1 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #7 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #8 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #9 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #10 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #11 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #12 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #13 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #14 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #15 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #16 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #17 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #18 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #19 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #20 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #21 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #22 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #23 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 1 byte(s) in 1 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #6 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #7 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #8 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #9 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Direct leak of 1 byte(s) in 1 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #7 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #8 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #9 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #10 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #11 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Indirect leak of 147 byte(s) in 6 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #4 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #5 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #6 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #7 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #8 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Indirect leak of 147 byte(s) in 5 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #7 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #8 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #9 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #10 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #11 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #12 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #13 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #14 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #15 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #16 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #17 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Indirect leak of 146 byte(s) in 4 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #6 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #7 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #8 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #9 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #10 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Indirect leak of 146 byte(s) in 4 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #7 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #8 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #9 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #10 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #11 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #12 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #13 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #14 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #15 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #16 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #17 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #18 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #19 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #20 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #21 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #22 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #23 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Indirect leak of 96 byte(s) in 1 object(s) allocated from:
+    #0 0x7f4272709e8f in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x55c6dca190ae in web49_opt_tree_read_block src/opt/tree.c:159
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #4 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #5 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #6 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #7 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #8 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+Indirect leak of 1 byte(s) in 1 object(s) allocated from:
+    #0 0x7f427270a1f8 in __interceptor_realloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:164
+    #1 0x55c6dca18ed4 in web49_opt_tree_read_block src/opt/tree.c:149
+    #2 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #3 0x55c6dca17be1 in web49_opt_tree_read_block src/opt/tree.c:74
+    #4 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #5 0x55c6dca17634 in web49_opt_tree_read_block src/opt/tree.c:55
+    #6 0x55c6dca1976a in web49_opt_tree_code src/opt/tree.c:172
+    #7 0x55c6dca19b01 in web49_opt_tree_module src/opt/tree.c:183
+    #8 0x55c6dc9b8749 in web49_file_main main/miniwasm.c:195
+    #9 0x55c6dc9b8dba in main main/miniwasm.c:226
+    #10 0x7f427236ad09 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x23d09)
+
+SUMMARY: AddressSanitizer: 1131 byte(s) leaked in 42 allocation(s).

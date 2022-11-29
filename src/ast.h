@@ -381,28 +381,28 @@ struct web49_preamble_t {
 
 struct web49_section_header_t {
     web49_section_id_t id;
-    uint64_t size;
+    uint32_t size;
     bool size_known;
 };
 
 struct web49_br_table_t {
-    uint64_t num_targets;
-    uint64_t *targets;
-    uint64_t default_target;
+    uint32_t num_targets;
+    uint32_t *targets;
+    uint32_t default_target;
 };
 
 struct web49_call_indirect_t {
-    uint64_t index;
+    uint32_t index;
     uint8_t reserved;
 };
 
 struct web49_memory_immediate_t {
-    uint64_t align;
-    uint64_t offset;
+    uint32_t align;
+    uint32_t offset;
 };
 
 struct web49_type_function_t {
-    uint64_t data;
+    uint32_t data;
 };
 
 struct web49_type_global_t {
@@ -411,8 +411,8 @@ struct web49_type_global_t {
 };
 
 struct web49_type_memory_t {
-    uint64_t initial;
-    uint64_t maximum;
+    uint32_t initial;
+    uint32_t maximum;
 };
 
 struct web49_type_table_t {
@@ -452,15 +452,15 @@ struct web49_section_custom_t {
 
 struct web49_section_type_entry_t {
     web49_lang_type_t type;
-    uint64_t num_params;
+    uint32_t num_params;
     web49_lang_type_t *params;
-    uint64_t num_returns;
+    uint32_t num_returns;
     web49_lang_type_t return_type;
     bool has_return_type;
 };
 
 struct web49_section_type_t {
-    uint64_t num_entries;
+    uint32_t num_entries;
     web49_section_type_entry_t *entries;
 };
 
@@ -477,33 +477,33 @@ struct web49_section_import_entry_t {
 };
 
 struct web49_section_import_t {
-    uint64_t num_entries;
+    uint32_t num_entries;
     web49_section_import_entry_t *entries;
 };
 
 struct web49_section_function_t {
-    uint64_t num_entries;
-    uint64_t *entries;
+    uint32_t num_entries;
+    uint32_t *entries;
 };
 
 struct web49_section_export_entry_t {
     const char *field_str;
     web49_external_kind_t kind;
-    uint64_t index;
+    uint32_t index;
 };
 
 struct web49_section_export_t {
-    uint64_t num_entries;
+    uint32_t num_entries;
     web49_section_export_entry_t *entries;
 };
 
 struct web49_section_table_t {
-    uint64_t num_entries;
+    uint32_t num_entries;
     web49_type_table_t *entries;
 };
 
 struct web49_section_memory_t {
-    uint64_t num_entries;
+    uint32_t num_entries;
     web49_type_memory_t *entries;
 };
 
@@ -527,9 +527,9 @@ struct web49_instr_immediate_t {
 
 struct web49_instr_t {
     web49_instr_immediate_t immediate;
-    web49_instr_t *args;
-    uint32_t nargs;
     web49_opcode_t opcode;
+    uint32_t nargs;
+    web49_instr_t *args;
 };
 
 struct web49_section_global_entry_t {
@@ -538,51 +538,51 @@ struct web49_section_global_entry_t {
 };
 
 struct web49_section_global_t {
-    uint64_t num_entries;
+    uint32_t num_entries;
     web49_section_global_entry_t *entries;
 };
 
 struct web49_section_start_t {
-    uint64_t index;
+    uint32_t index;
 };
 
 struct web49_section_element_entry_t {
-    uint64_t index;
+    uint32_t index;
     web49_instr_t offset;
-    uint64_t num_elems;
-    uint64_t *elems;
+    uint32_t num_elems;
+    uint32_t *elems;
 };
 
 struct web49_section_element_t {
-    uint64_t num_entries;
+    uint32_t num_entries;
     web49_section_element_entry_t *entries;
 };
 
 struct web49_section_code_entry_local_t {
-    uint64_t count;
+    uint32_t count;
     web49_lang_type_t type;
 };
 
 struct web49_section_code_entry_t {
-    uint64_t num_locals;
+    uint32_t num_locals;
     web49_section_code_entry_local_t *locals;
-    uint64_t num_instrs;
+    uint32_t num_instrs;
     web49_instr_t *instrs;
 };
 
 struct web49_section_code_t {
-    uint64_t num_entries;
+    uint32_t num_entries;
     web49_section_code_entry_t *entries;
 };
 
 struct web49_section_data_entry_t {
     web49_instr_t offset;
-    uint64_t size;
+    uint32_t size;
     uint8_t *data;
 };
 
 struct web49_section_data_t {
-    uint64_t num_entries;
+    uint32_t num_entries;
     web49_section_data_entry_t *entries;
 };
 
@@ -606,12 +606,13 @@ struct web49_section_t {
 
 struct web49_module_t {
     web49_preamble_t preamble;
-    uint64_t num_sections;
+    uint32_t num_sections;
     web49_section_t *sections;
 };
 
 void web49_free_module(web49_module_t mod);
 void web49_free_instr(web49_instr_t instr);
+web49_section_t web49_module_get_section(web49_module_t mod, web49_section_id_t id);
 
 #define web49_preamble_init ((web49_preamble_t){{0x00, 0x61, 0x73, 0x6D}, {0x01, 0x00, 0x00, 0x00}})
 
