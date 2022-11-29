@@ -165,8 +165,6 @@ void web49_interp_link_get(web49_read_block_state_t *state, uint64_t out, uint64
 web49_interp_t web49_interp_module(web49_module_t mod, const char **args);
 web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *block);
 
-// opt.c
-
-web49_instr_t web49_interp_opt(web49_instr_t cur);
+void web49_free_interp(web49_interp_t interp);
 
 #endif

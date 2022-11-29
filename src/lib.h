@@ -15,10 +15,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define web49_bump(size) (malloc(size))
+#if 0
+#define web49_malloc(size) (printf("%s@%s+%zu\n", __FILE__, __LINE__, (size_t) (size)), malloc(size))
+#define web49_alloc0(size) (printf("%s@%s+%zu\n", __FILE__, __LINE__, (size_t) (size)), calloc(size, 1))
+#define web49_realloc(ptr, size) (printf("%s@%s+%zu\n", __FILE__, __LINE__, (size_t) (size)), realloc(ptr, size))
+#else
 #define web49_malloc(size) (malloc(size))
 #define web49_alloc0(size) (calloc(size, 1))
 #define web49_realloc(ptr, size) (realloc(ptr, size))
+#endif
 #define web49_free(ptr) (free((void *)ptr))
 
 #endif

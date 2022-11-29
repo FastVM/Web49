@@ -1,6 +1,6 @@
 #include "ast.h"
 
-static void web49_free_instr(web49_instr_t instr) {
+void web49_free_instr(web49_instr_t instr) {
     for (size_t i = 0; i < instr.nargs; i++) {
         web49_free_instr(instr.args[i]);
     }

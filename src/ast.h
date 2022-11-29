@@ -611,6 +611,7 @@ struct web49_module_t {
 };
 
 void web49_free_module(web49_module_t mod);
+void web49_free_instr(web49_instr_t instr);
 
 #define web49_preamble_init ((web49_preamble_t){{0x00, 0x61, 0x73, 0x6D}, {0x01, 0x00, 0x00, 0x00}})
 

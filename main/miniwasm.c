@@ -207,6 +207,7 @@ int web49_file_main(const char *inarg, const char **args) {
             }
         }
     }
+    web49_free_interp(interp);
     web49_free_module(mod);
     return 0;
 }

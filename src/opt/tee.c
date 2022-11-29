@@ -21,10 +21,12 @@ void web49_opt_tee_code(web49_module_t *mod, web49_section_code_entry_t *entry) 
                 .opcode = WEB49_OPCODE_GET_LOCAL,
                 .immediate = instr.immediate,
             };
+            web49_free_instr(instr);
         } else {
             next[len++] = instr;
         }
     }
+    web49_free(entry->instrs);
     entry->num_instrs = len;
     entry->instrs = next;
 }
