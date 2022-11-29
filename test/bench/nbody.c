@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 typedef struct {
-  double position[3], velocity[3], mass;
+    double position[3], velocity[3], mass;
 } body;
 
 #define SOLAR_MASS (4 * M_PI * M_PI)
@@ -45,76 +45,74 @@ static body solar_Bodies[] = {
      5.15138902046611451e-05 * SOLAR_MASS}};
 
 static void advance(body bodies[]) {
-
 #define INTERACTIONS_COUNT (BODIES_COUNT * (BODIES_COUNT - 1) / 2)
 
-  static double position_Deltas[3][INTERACTIONS_COUNT],
-      magnitudes[INTERACTIONS_COUNT];
+    static double position_Deltas[3][INTERACTIONS_COUNT],
+        magnitudes[INTERACTIONS_COUNT];
 
-  for (unsigned int i = 0, k = 0; i < BODIES_COUNT - 1; ++i)
-    for (unsigned int j = i + 1; j < BODIES_COUNT; ++j, ++k)
-      for (unsigned int m = 0; m < 3; ++m)
-        position_Deltas[m][k] = bodies[i].position[m] - bodies[j].position[m];
+    for (unsigned int i = 0, k = 0; i < BODIES_COUNT - 1; ++i)
+        for (unsigned int j = i + 1; j < BODIES_COUNT; ++j, ++k)
+            for (unsigned int m = 0; m < 3; ++m)
+                position_Deltas[m][k] = bodies[i].position[m] - bodies[j].position[m];
 
-  for (unsigned int i = 0; i < INTERACTIONS_COUNT; ++i) {
-    const double dx = position_Deltas[0][i];
-    const double dy = position_Deltas[1][i];
-    const double dz = position_Deltas[2][i];
-    const double distance_Squared = dx * dx + dy * dy + dz * dz;
-    double distance = sqrt(distance_Squared);
-    magnitudes[i] = 0.01 / (distance_Squared * distance);
-  }
-
-  for (unsigned int i = 0, k = 0; i < BODIES_COUNT - 1; ++i)
-    for (unsigned int j = i + 1; j < BODIES_COUNT; ++j, ++k) {
-      const double i_mass_magnitude = bodies[i].mass * magnitudes[k],
-                   j_mass_magnitude = bodies[j].mass * magnitudes[k];
-      for (unsigned int m = 0; m < 3; ++m) {
-        bodies[i].velocity[m] -= position_Deltas[m][k] * j_mass_magnitude;
-        bodies[j].velocity[m] += position_Deltas[m][k] * i_mass_magnitude;
-      }
+    for (unsigned int i = 0; i < INTERACTIONS_COUNT; ++i) {
+        const double dx = position_Deltas[0][i];
+        const double dy = position_Deltas[1][i];
+        const double dz = position_Deltas[2][i];
+        const double distance_Squared = dx * dx + dy * dy + dz * dz;
+        double distance = sqrt(distance_Squared);
+        magnitudes[i] = 0.01 / (distance_Squared * distance);
     }
 
-  for (unsigned int i = 0; i < BODIES_COUNT; ++i)
-    for (unsigned int m = 0; m < 3; ++m)
-      bodies[i].position[m] += 0.01 * bodies[i].velocity[m];
+    for (unsigned int i = 0, k = 0; i < BODIES_COUNT - 1; ++i)
+        for (unsigned int j = i + 1; j < BODIES_COUNT; ++j, ++k) {
+            const double i_mass_magnitude = bodies[i].mass * magnitudes[k],
+                         j_mass_magnitude = bodies[j].mass * magnitudes[k];
+            for (unsigned int m = 0; m < 3; ++m) {
+                bodies[i].velocity[m] -= position_Deltas[m][k] * j_mass_magnitude;
+                bodies[j].velocity[m] += position_Deltas[m][k] * i_mass_magnitude;
+            }
+        }
+
+    for (unsigned int i = 0; i < BODIES_COUNT; ++i)
+        for (unsigned int m = 0; m < 3; ++m)
+            bodies[i].position[m] += 0.01 * bodies[i].velocity[m];
 }
 
 static void offset_Momentum(body bodies[]) {
-  for (unsigned int i = 0; i < BODIES_COUNT; ++i)
-    for (unsigned int m = 0; m < 3; ++m)
-      bodies[0].velocity[m] -=
-          bodies[i].velocity[m] * bodies[i].mass / SOLAR_MASS;
+    for (unsigned int i = 0; i < BODIES_COUNT; ++i)
+        for (unsigned int m = 0; m < 3; ++m)
+            bodies[0].velocity[m] -=
+                bodies[i].velocity[m] * bodies[i].mass / SOLAR_MASS;
 }
 
 static void output_Energy(body bodies[]) {
-  double energy = 0;
-  for (unsigned int i = 0; i < BODIES_COUNT; ++i) {
+    double energy = 0;
+    for (unsigned int i = 0; i < BODIES_COUNT; ++i) {
+        energy += 0.5 * bodies[i].mass *
+                  (bodies[i].velocity[0] * bodies[i].velocity[0] +
+                   bodies[i].velocity[1] * bodies[i].velocity[1] +
+                   bodies[i].velocity[2] * bodies[i].velocity[2]);
 
-    energy += 0.5 * bodies[i].mass *
-              (bodies[i].velocity[0] * bodies[i].velocity[0] +
-               bodies[i].velocity[1] * bodies[i].velocity[1] +
-               bodies[i].velocity[2] * bodies[i].velocity[2]);
+        for (unsigned int j = i + 1; j < BODIES_COUNT; ++j) {
+            double position_Delta[3];
+            for (unsigned int m = 0; m < 3; ++m)
+                position_Delta[m] = bodies[i].position[m] - bodies[j].position[m];
 
-    for (unsigned int j = i + 1; j < BODIES_COUNT; ++j) {
-      double position_Delta[3];
-      for (unsigned int m = 0; m < 3; ++m)
-        position_Delta[m] = bodies[i].position[m] - bodies[j].position[m];
-
-      energy -= bodies[i].mass * bodies[j].mass /
-                sqrt(position_Delta[0] * position_Delta[0] +
-                     position_Delta[1] * position_Delta[1] +
-                     position_Delta[2] * position_Delta[2]);
+            energy -= bodies[i].mass * bodies[j].mass /
+                      sqrt(position_Delta[0] * position_Delta[0] +
+                           position_Delta[1] * position_Delta[1] +
+                           position_Delta[2] * position_Delta[2]);
+        }
     }
-  }
 
-  printf("%.9f\n", energy);
+    printf("%.9f\n", energy);
 }
 
 int main(int argc, char *argv[]) {
-  offset_Momentum(solar_Bodies);
-  output_Energy(solar_Bodies);
-  for (int n = atoi(argv[1]); n--; advance(solar_Bodies))
-    ;
-  output_Energy(solar_Bodies);
+    offset_Momentum(solar_Bodies);
+    output_Energy(solar_Bodies);
+    for (int n = atoi(argv[1]); n--; advance(solar_Bodies))
+        ;
+    output_Energy(solar_Bodies);
 }

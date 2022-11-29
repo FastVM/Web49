@@ -610,6 +610,8 @@ struct web49_module_t {
     web49_section_t *sections;
 };
 
+void web49_free_module(web49_module_t mod);
+
 #define web49_preamble_init ((web49_preamble_t){{0x00, 0x61, 0x73, 0x6D}, {0x01, 0x00, 0x00, 0x00}})
 
 #endif

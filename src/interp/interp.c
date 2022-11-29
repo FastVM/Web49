@@ -1,4 +1,5 @@
 #include "interp.h"
+
 #include "../tables.h"
 
 #define OPCODE(n) ({size_t x = (n); if (ptrs[x] == NULL) {__builtin_trap();} ptrs[x]; })
@@ -18,7 +19,7 @@ uint64_t web49_interp_count(web49_instr_t cur) {
 }
 
 uint64_t *web49_interp_link_box(void) {
-    return malloc(sizeof(uint64_t));
+    return web49_malloc(sizeof(uint64_t));
 }
 
 void web49_interp_link_get(web49_read_block_state_t *state, uint64_t out, uint64_t *from) {
@@ -239,7 +240,7 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
 }
 
 uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur, uint32_t local) {
-        // debug_print(stderr, cur, 0, SIZE_MAX);
+    // debug_print(stderr, cur, 0, SIZE_MAX);
     web49_interp_build_t *build = &state->build;
     void **ptrs = state->ptrs;
     if (build->ncode + 16 >= build->alloc) {
@@ -301,6 +302,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         }
         if (cur.nargs == 2) {
             *iff = build->ncode;
+            web49_free(end);
         } else {
             build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_BR);
             web49_interp_link_get(state, build->ncode++, end);
@@ -309,9 +311,9 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
             for (size_t i = 0; i < cur.args[2].nargs; i++) {
                 web49_interp_read_instr(state, cur.args[2].args[i], UINT32_MAX);
             }
+            *end = build->ncode;
         }
         state->depth = save;
-        *end = build->ncode;
         state->bufs--;
         if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
             uint32_t ret = state->depth + state->nlocals;
@@ -449,7 +451,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
                 }
                 break;
             default:
-                fprintf(stderr, "cannot compile %zu returns yet\n", (size_t) state->interp->extra->funcs[cur.immediate.varint32].nreturns);
+                fprintf(stderr, "cannot compile %zu returns yet\n", (size_t)state->interp->extra->funcs[cur.immediate.varint32].nreturns);
                 __builtin_trap();
         }
     }
@@ -605,6 +607,18 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
                 web49_interp_link_t link = state.links[i];
                 state.build.code[link.out].ptr = &state.build.code[*link.box];
             }
+            for (size_t i = 0; i < state.nlinks; i++) {
+                state.links[i].box[0] = 0;
+            }
+            for (size_t i = 0; i < state.nlinks; i++) {
+                state.links[i].box[0] += 1;
+            }
+            for (size_t i = 0; i < state.nlinks; i++) {
+                if (--state.links[i].box[0] == 0) {
+                    web49_free(state.links[i].box);
+                }
+            }
+            web49_free(state.links);
             block->code = state.build.code;
             web49_free(data);
         } else {

@@ -1,5 +1,6 @@
 
 #include "tables.h"
+
 #include "ast.h"
 
 const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {

@@ -122,14 +122,14 @@ web49_interp_data_t web49_main_import_wasi_fd_prestat_dir_name(web49_interp_t in
     } else {
         const char *name;
         switch (interp.locals[0].i32_u) {
-        case 3:
-            name = "/";
-            break;
-        case 4:
-            name = "./";
-            break;
-        default:
-            return (web49_interp_data_t){.i32_u = 9};
+            case 3:
+                name = "/";
+                break;
+            case 4:
+                name = "./";
+                break;
+            default:
+                return (web49_interp_data_t){.i32_u = 9};
         }
         size_t n = interp.locals[2].i32_u;
         if (strlen(name) < n) {
@@ -207,6 +207,7 @@ int web49_file_main(const char *inarg, const char **args) {
             }
         }
     }
+    web49_free_module(mod);
     return 0;
 }
 
