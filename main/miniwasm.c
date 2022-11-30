@@ -193,22 +193,19 @@ int web49_file_main(const char *inarg, const char **args) {
     }
     web49_opt_tee_module(&mod);
     web49_opt_tree_module(&mod);
+    uint32_t start = 0;
+    web49_section_export_t exports = web49_module_get_section(mod, WEB49_SECTION_ID_EXPORT).export_section;
+    for (size_t j = 0; j < exports.num_entries; j++) {
+        web49_section_export_entry_t entry = exports.entries[j];
+        if (!strcmp(entry.field_str, "_start")) {
+            start = entry.index;
+        }
+    }
     web49_interp_t interp = web49_interp_module(mod, args);
     interp.import_func = web49_main_import_func;
     interp.import_state = NULL;
-    for (size_t i = 0; i < mod.num_sections; i++) {
-        web49_section_t section = mod.sections[i];
-        if (section.header.id == WEB49_SECTION_ID_EXPORT) {
-            for (size_t j = 0; j < section.export_section.num_entries; j++) {
-                web49_section_export_entry_t entry = section.export_section.entries[j];
-                if (!strcmp(entry.field_str, "_start")) {
-                    web49_interp_block_run(interp, &interp.funcs[entry.index]);
-                }
-            }
-        }
-    }
+    web49_interp_block_run(interp, &interp.funcs[start]);
     web49_free_interp(interp);
-    web49_free_module(mod);
     return 0;
 }
 

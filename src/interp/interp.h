@@ -78,8 +78,8 @@ struct web49_interp_link_t;
 typedef struct web49_interp_link_t web49_interp_link_t;
 
 struct web49_interp_link_t {
-    uint64_t out;
-    uint64_t *box;
+    uint32_t *box;
+    uint32_t out;
 };
 
 struct web49_interp_build_t {
@@ -112,6 +112,9 @@ struct web49_interp_t {
     void *import_state;
     uint32_t memsize;
     web49_env_table_t import_func;
+    void *locals_base;
+    web49_interp_data_t **restrict stacks;
+    web49_interp_opcode_t **restrict returns;
 };
 
 union web49_interp_opcode_t {
@@ -128,26 +131,34 @@ struct web49_interp_block_t {
     uint16_t nparams;
     uint16_t nreturns;
     union {
-        web49_section_code_entry_t *code_entry;
-        web49_section_import_entry_t *import_entry;
+        struct {
+            uint32_t num_instrs;
+            web49_instr_t *instrs;
+        };
+        struct {
+            const char *module_str;
+            const char *field_str;
+        };
     };
     bool is_code;
 };
 
 struct web49_read_block_state_t {
     void *ptrs;
-    uint64_t **bufs;
     web49_interp_t *interp;
     web49_interp_build_t build;
     web49_interp_link_t *links;
+    uint32_t **bufs_base;
+    uint32_t bufs_alloc;
+    uint32_t bufs_head;
     uint32_t depth;
     uint32_t nlocals;
-    uint64_t alloc_links;
-    uint64_t nlinks;
+    uint32_t alloc_links;
+    uint32_t nlinks;
 };
 
-uint64_t *web49_interp_link_box(void);
-void web49_interp_link_get(web49_read_block_state_t *state, uint64_t out, uint64_t *from);
+uint32_t *web49_interp_link_box(void);
+void web49_interp_link_get(web49_read_block_state_t *state, uint32_t out, uint32_t *from);
 web49_interp_t web49_interp_module(web49_module_t mod, const char **args);
 web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *block);
 

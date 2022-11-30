@@ -152,7 +152,7 @@ web49_type_memory_t web49_readbin_type_memory(web49_io_input_t *in) {
     uint64_t flags = web49_readbin_uleb(in);
     return (web49_type_memory_t){
         .initial = web49_readbin_uleb(in),
-        .maximum = (flags == 1) ? web49_readbin_uleb(in) : UINT64_MAX,
+        .maximum = (flags == 1) ? web49_readbin_uleb(in) : UINT32_MAX,
     };
 }
 
