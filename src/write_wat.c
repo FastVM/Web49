@@ -96,7 +96,7 @@ void web49_wat_print_instr_depth(web49_io_output_t *out, web49_instr_t instr, ui
             break;
         case WEB49_IMMEDIATE_MEMORY_IMMEDIATE:
             if (instr.immediate.memory_immediate.offset != 0) {
-                web49_io_output_fprintf(out, " offset=%" PRIu64, instr.immediate.memory_immediate.offset);
+                web49_io_output_fprintf(out, " offset=%" PRIu32, instr.immediate.memory_immediate.offset);
             }
             size_t nat_size = web49_opcode_memsize[instr.opcode];
             size_t size = (size_t)1 << instr.immediate.memory_immediate.align;

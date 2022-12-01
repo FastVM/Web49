@@ -17,15 +17,6 @@ NAME(WEB49_OPCODE_IF) {
         NEXT();
     }
 }
-NAME(WEB49_OPCODE_BR_IF) {
-    if (LOCAL0.i32_u != 0) {
-        head = head[1].ptr;
-        NEXT();
-    } else {
-        head += 2;
-        NEXT();
-    }
-}
 NAME(WEB49_OPCODE_BR_TABLE) {
     uint32_t brvalue = LOCAL0.i32_u;
     uint32_t maxvalue = head[1].data.i32_u;
@@ -146,22 +137,6 @@ NAME(WEB49_OPCODE_I32_EQZ) {
 NAME(WEB49_OPCODE_I64_EQZ) {
     interp.locals[head[1].data.i32_u].i32_u = (uint32_t)(LOCAL0.i64_u == 0);
     head += 2;
-    NEXT();
-}
-NAME(WEB49_OPCODE_IF_I32_EQZ) {
-    if (LOCAL0.i32_u == 0) {
-        head = head[1].ptr;
-    } else {
-        head = head[2].ptr;
-    }
-    NEXT();
-}
-NAME(WEB49_OPCODE_IF_I64_EQZ) {
-    if (LOCAL0.i64_u == 0) {
-        head = head[1].ptr;
-    } else {
-        head = head[2].ptr;
-    }
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_CLZ) {

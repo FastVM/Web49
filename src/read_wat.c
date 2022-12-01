@@ -638,7 +638,7 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                                     goto redo;
                                 }
                                 if (!strncmp(arg.sym, "offset=", 7)) {
-                                    sscanf(arg.sym + 7, "%" SCNu64, &imm.memory_immediate.offset);
+                                    sscanf(arg.sym + 7, "%" SCNu32, &imm.memory_immediate.offset);
                                     i += 1;
                                     goto redo;
                                 }
@@ -866,7 +866,7 @@ web49_instr_t web49_readwat_instr(web49_readwat_expr_t code) {
                             goto redo;
                         }
                         if (!strncmp(arg.sym, "offset=", 7)) {
-                            sscanf(arg.sym + 7, "%" SCNu64, &imm.memory_immediate.offset);
+                            sscanf(arg.sym + 7, "%" SCNu32, &imm.memory_immediate.offset);
                             i += 1;
                             goto redo;
                         }

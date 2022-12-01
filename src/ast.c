@@ -74,7 +74,6 @@ void web49_free_module(web49_module_t mod) {
                 break;
             }
             case WEB49_SECTION_ID_START: {
-                web49_section_start_t cur = section.start_section;
                 break;
             }
             case WEB49_SECTION_ID_ELEMENT: {
