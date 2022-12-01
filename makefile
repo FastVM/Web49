@@ -37,7 +37,7 @@ bin/miniwasm$(EXE): main/miniwasm.o $(OBJS)
 
 bin/raywasm$(EXE): main/raywasm.o main/runtime/rlruntime.c $(OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) main/raywasm.o main/runtime/rlruntime.c $(OBJS) -o $(@) -lm $(LDFLAGS) -lraylib -pthread -lGL -ldl
+	$(CC) $(OPT) main/raywasm.o main/runtime/rlruntime.c $(OBJS) -o $(@) -lm -lraylib -pthread -lGL -ldl $(LDFLAGS)
 
 bin/wat2wasm$(EXE): main/wat2wasm.o $(OBJS)
 	@mkdir -p bin
