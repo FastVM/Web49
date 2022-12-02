@@ -35,6 +35,8 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
         .immediate = (web49_instr_immediate_t){
             .id = WEB49_IMMEDIATE_NONE,
         },
+        .nargs = 0,
+        .args = NULL,
     };
     while (true) {
         web49_instr_t cur = **head;
