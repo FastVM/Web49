@@ -103,14 +103,14 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
         bool binary_const = false;
         uint16_t add = 0;
         for (uint64_t i = 0; i < cond.nargs; i++) {
-            // if (cond.args[i].opcode == WEB49_OPCODE_I32_CONST || cond.args[i].opcode == WEB49_OPCODE_I64_CONST || cond.args[i].opcode == WEB49_OPCODE_F32_CONST || cond.args[i].opcode == WEB49_OPCODE_F64_CONST) {
-                // if (cond.nargs == 2 && ((swap_args && i == 0) || (!swap_args && i + 1 == cond.nargs))) {
-                    // state->depth += 1;
-                    // binary_const = true;
-                    // add += WEB49_OPCODE_WITH_CONST_LAST;
-                    // continue;
-                // }
-            // }
+            if (cond.args[i].opcode == WEB49_OPCODE_I32_CONST || cond.args[i].opcode == WEB49_OPCODE_I64_CONST || cond.args[i].opcode == WEB49_OPCODE_F32_CONST || cond.args[i].opcode == WEB49_OPCODE_F64_CONST) {
+                if (cond.nargs == 2 && i + 1 == cond.nargs) {
+                    state->depth += 1;
+                    binary_const = true;
+                    add += WEB49_OPCODE_WITH_CONST_LAST;
+                    continue;
+                }
+            }
             if (cond.args[i].opcode == WEB49_OPCODE_GET_LOCAL) {
                 for (uint64_t j = i + 1; j < cond.nargs; j++) {
                     if (cond.args[j].opcode == WEB49_OPCODE_BEGIN0 || cond.args[j].opcode == WEB49_OPCODE_TEE_LOCAL) {
@@ -738,7 +738,7 @@ exitv:
 #undef LOCAL1
 #undef NAME
     LABEL(WEB49_OPCODE_MEMORY_INIT) {
-        fprintf(stderr, "bulk memory init? you wish\n");
+        fprintf(stderr, "memory init? you wish\n");
         __builtin_trap();
         NEXT();
     }
