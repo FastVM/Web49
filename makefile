@@ -18,16 +18,11 @@ WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
 
 OBJS := $(WEB49_OBJS)
 
-TEST_SRCS := test/fib35.c
-TEST_TXT := $(TEST_SRCS:test/%.c=test/out.%.txt)
-
 default: all
 
 all: bins
 
 bins: bin/wasm2wat$(EXE) bin/wat2wasm$(EXE) bin/wasm2wasm$(EXE) bin/miniwasm$(EXE)
-
-test: $(TEST_TXT)
 
 # bin
 
@@ -58,10 +53,14 @@ format: .dummy
 	find . -name '*.h' | xargs -I FILENAME clang-format -style=file -i FILENAME
 	find . -name '*.inc' | xargs -I FILENAME clang-format -style=file -i FILENAME
 
+clean: .dummy
+	find . -name '*.o' | xargs rm
+	find bin -type f | xargs rm
+
 # intermediate files
 
 $(PROG_OBJS) $(WEB49_OBJS): $(@:%.o=%.c)
-	$(CC) -c $(OPT) $(@:%.o=%.c) -o $(@) $(CFLAGS) -D_CRT_SECURE_NO_WARNINGS
+	$(CC) -c $(OPT) $(@:%.o=%.c) -o $(@) $(CFLAGS)
 
 # dummy
 
