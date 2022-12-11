@@ -1,0 +1,4 @@
+#include "../../dynasm/proto.h"
+#include "../../dynasm/x86_64.h"
+
+|.arch x86_64
