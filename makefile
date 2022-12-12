@@ -12,9 +12,9 @@ WEB49_SRCS := src/read_bin.c src/read_wat.c src/write_wat.c src/write_bin.c src/
 WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
 
 DASC_SRCS := src/jit/jit.dasc
-DASC_OBJS := $(DASC_TMPS:%.dasc=%.o)
+DASC_OBJS := $(DASC_SRCS:%.dasc=%.o)
 
-OBJS := $(WEB49_OBJS) $(DASC_OBJS)
+OBJS := $(WEB49_OBJS)
 
 default: all
 
@@ -28,9 +28,9 @@ bin/minilua: dynasm/minilua.c
 	@mkdir -p bin
 	$(CC) dynasm/minilua.c -o $(@) -lm $(LDFLAGS)
 
-bin/jit49$(EXE): main/jit49.o $(OBJS)
+bin/jit49$(EXE): main/jit49.o $(OBJS) $(DASC_OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) main/miniwasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
+	$(CC) $(OPT) main/jit49.o $(OBJS) $(DASC_OBJS) -o $(@) -lm $(LDFLAGS)
 
 bin/miniwasm$(EXE): main/miniwasm.o $(OBJS)
 	@mkdir -p bin
@@ -66,9 +66,9 @@ clean: .dummy
 
 # intermediate files
 
-$(DASC_OBJS): dynasm/dynasm.lua $(@:%.o=%.dasc)
-	$(LUA) dynasm/dynasm.lua -o $(@) $(@:%.tmp.c=%.dasc)
-	$(CC) -c $(OPT) $(@:%.o=%.dasc) -o $(@) $(CFLAGS)
+$(DASC_OBJS): $(LUA) dynasm/dynasm.lua $(@:%.o=%.dasc)
+	$(LUA) dynasm/dynasm.lua -o $(@:%.o=%.tmp.c) $(@:%.o=%.dasc)
+	$(CC) -c $(OPT) $(@:%.o=%.tmp.c) -o $(@) $(CFLAGS)
 
 $(PROG_OBJS) $(WEB49_OBJS): $(@:%.o=%.c)
 	$(CC) -c $(OPT) $(@:%.o=%.c) -o $(@) $(CFLAGS)

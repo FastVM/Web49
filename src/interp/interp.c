@@ -191,7 +191,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     }
     if (cur.opcode == WEB49_OPCODE_BR_IF) {
         uint32_t *next = web49_interp_link_box();
-        web49_interp_read_instr_branch(state, cur.args[0], state->bufs_base[state->bufs_head-cur.immediate.varuint32], next);
+        web49_interp_read_instr_branch(state, cur.args[0], state->bufs_base[state->bufs_head - cur.immediate.varuint32], next);
         *next = build->ncode;
         return UINT32_MAX;
     }
@@ -349,7 +349,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     }
     if (cur.opcode == WEB49_OPCODE_BR) {
         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_BR);
-        web49_interp_link_get(state, build->ncode++, state->bufs_base[state->bufs_head-(ptrdiff_t)cur.immediate.varuint32]);
+        web49_interp_link_get(state, build->ncode++, state->bufs_base[state->bufs_head - (ptrdiff_t)cur.immediate.varuint32]);
         return UINT32_MAX;
     }
     if (cur.opcode == WEB49_OPCODE_RETURN) {
@@ -407,9 +407,9 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         case WEB49_IMMEDIATE_BR_TABLE:
             build->code[build->ncode++].data.i32_u = cur.immediate.br_table.num_targets;
             for (uint64_t i = 0; i < cur.immediate.br_table.num_targets; i++) {
-                web49_interp_link_get(state, build->ncode++, state->bufs_base[state->bufs_head-cur.immediate.br_table.targets[i]]);
+                web49_interp_link_get(state, build->ncode++, state->bufs_base[state->bufs_head - cur.immediate.br_table.targets[i]]);
             }
-            web49_interp_link_get(state, build->ncode++, state->bufs_base[state->bufs_head-cur.immediate.br_table.default_target]);
+            web49_interp_link_get(state, build->ncode++, state->bufs_base[state->bufs_head - cur.immediate.br_table.default_target]);
             break;
         case WEB49_IMMEDIATE_CALL_INDIRECT:
             break;

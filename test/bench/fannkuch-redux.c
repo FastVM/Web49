@@ -21,7 +21,9 @@ int main(int argc, char **argv) {
 
     int maximum_Flip_Count = 0, checksum = 0;
 
-#pragma omp parallel for reduction(max : maximum_Flip_Count) reduction(+ : checksum)
+#pragma omp parallel for reduction(max                               \
+                                   : maximum_Flip_Count) reduction(+ \
+                                                                   : checksum)
     for (int initial_Permutation_Index_For_Block = 0;
          initial_Permutation_Index_For_Block < factorial_Lookup_Table[n];
          initial_Permutation_Index_For_Block += block_Size) {
