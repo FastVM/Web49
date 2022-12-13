@@ -5,13 +5,13 @@ LUA ?= bin/minilua
 
 OPT ?= -O2
 
-PROG_SRCS := main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c main/miniwasm.c main/raywasm.c main/jit49.c main/runtime/rlruntime.c
+PROG_SRCS := main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c main/miniwasm.c main/raywasm.c main/runtime/rlruntime.c
 PROG_OBJS := $(PROG_SRCS:%.c=%.o)
 
-WEB49_SRCS := src/read_bin.c src/read_wat.c src/write_wat.c src/write_bin.c src/io.c src/tables.c src/interp/interp.c src/opt/tree.c src/opt/tee.c src/ast.c
+WEB49_SRCS := src/read_bin.c src/read_wat.c src/write_wat.c src/write_bin.c src/io.c src/tables.c src/interp/interp.c src/interp/pure.c src/opt/tree.c src/opt/tee.c src/ast.c
 WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
 
-DASC_SRCS := src/jit/jit.dasc
+DASC_SRCS := src/interp/jit.dasc
 DASC_OBJS := $(DASC_SRCS:%.dasc=%.o)
 
 OBJS := $(WEB49_OBJS)
@@ -20,7 +20,7 @@ default: all
 
 all: bins
 
-bins: bin/wasm2wat$(EXE) bin/wat2wasm$(EXE) bin/wasm2wasm$(EXE) bin/miniwasm$(EXE) bin/jit49$(EXE)
+bins: bin/wasm2wat$(EXE) bin/wat2wasm$(EXE) bin/wasm2wasm$(EXE) bin/miniwasm$(EXE)
 
 # bin
 
@@ -28,13 +28,9 @@ bin/minilua: dynasm/minilua.c
 	@mkdir -p bin
 	$(CC) dynasm/minilua.c -o $(@) -lm $(LDFLAGS)
 
-bin/jit49$(EXE): main/jit49.o $(OBJS) $(DASC_OBJS)
+bin/miniwasm$(EXE): main/miniwasm.o $(OBJS) $(DASC_OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) main/jit49.o $(OBJS) $(DASC_OBJS) -o $(@) -lm $(LDFLAGS)
-
-bin/miniwasm$(EXE): main/miniwasm.o $(OBJS)
-	@mkdir -p bin
-	$(CC) $(OPT) main/miniwasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
+	$(CC) $(OPT) main/miniwasm.o $(OBJS) $(DASC_OBJS) -o $(@) -lm $(LDFLAGS)
 
 bin/raywasm$(EXE): main/raywasm.o main/runtime/rlruntime.c $(OBJS)
 	@mkdir -p bin
