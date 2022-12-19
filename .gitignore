@@ -14,3 +14,4 @@ bin/*
 *.wat
 .vscode/*
 *.gcda
+*.core
