@@ -108,6 +108,7 @@ struct web49_interp_t {
     const char **args;
     void *import_state;
     uint32_t memsize;
+    uint32_t nglobals;
     web49_env_table_t import_func;
     void *locals_base;
     web49_interp_data_t **restrict stacks;
@@ -159,6 +160,8 @@ void web49_interp_link_get(web49_read_block_state_t *state, uint32_t out, uint32
 web49_interp_t web49_interp_module(web49_module_t mod, const char **args);
 web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *block);
 web49_interp_data_t web49_interp_block_jit(web49_interp_t interp, web49_interp_block_t *block);
+
+void web49_jit_compile(web49_interp_t interp, web49_interp_block_t *block);
 
 void web49_free_interp(web49_interp_t interp);
 

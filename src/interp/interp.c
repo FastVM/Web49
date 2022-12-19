@@ -28,6 +28,7 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
         .table = NULL,
         .funcs = web49_malloc(sizeof(web49_interp_block_t) * num_funcs),
         .globals = web49_alloc0(sizeof(web49_interp_data_t) * (global_section.num_entries)),
+        .nglobals = global_section.num_entries,
         .args = args,
         .locals_base = locals,
         .memsize = memsize,

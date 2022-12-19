@@ -23,24 +23,801 @@ static void* link_and_encode(dasm_State** d) {
 
 |.arch x86_64
 
+void web49_jit_compile_instr(web49_interp_t interp, dasm_State **Dst, web49_instr_t instr) {
+    for (size_t i = 0; i < instr.nargs; i++) {
+        web49_jit_compile_instr(interp, Dst, instr.args[i]);
+    }
+    if (instr.opcode == WEB49_OPCODE_NOP) {
+        return;
+    }
+    switch (instr.opcode) {
+    case WEB49_OPCODE_UNREACHABLE: {
+        printf("unknown opcode: %s\n", "unreachable");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_NOP: {
+        printf("unknown opcode: %s\n", "nop");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_BLOCK: {
+        printf("unknown opcode: %s\n", "block");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_LOOP: {
+        printf("unknown opcode: %s\n", "loop");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_IF: {
+        printf("unknown opcode: %s\n", "if");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_ELSE: {
+        printf("unknown opcode: %s\n", "else");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_END: {
+        printf("unknown opcode: %s\n", "end");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_BR: {
+        printf("unknown opcode: %s\n", "br");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_BR_IF: {
+        printf("unknown opcode: %s\n", "br_if");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_BR_TABLE: {
+        printf("unknown opcode: %s\n", "br_table");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_RETURN: {
+        printf("unknown opcode: %s\n", "return");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_CALL: {
+        switch (interp.funcs[instr.immediate.varint32].nreturns) {
+        case 0:
+            | int 3
+            | mov rax, interp.funcs[instr.immediate.varint32].code
+            | call rax
+            break;
+        case 1:
+            break;
+        default:
+            fprintf(stderr, "cannot compile %zu returns yet\n", (size_t)interp.funcs[instr.immediate.varint32].nreturns);
+            __builtin_trap();
+        }
+        break;
+    }
+    case WEB49_OPCODE_CALL_INDIRECT: {
+        printf("unknown opcode: %s\n", "call_indirect");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_DROP: {
+        printf("unknown opcode: %s\n", "drop");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_SELECT: {
+        printf("unknown opcode: %s\n", "select");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_GET_LOCAL: {
+        | mov rax, [rbp - instr.immediate.varuint32]
+        | push rax
+        break;
+    }
+    case WEB49_OPCODE_SET_LOCAL: {
+        | pop rax
+        | mov [rbp - instr.immediate.varuint32], rax
+        break;
+    }
+    case WEB49_OPCODE_TEE_LOCAL: {
+        printf("unknown opcode: %s\n", "tee_local");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_GET_GLOBAL: {
+        | mov64 rax, (size_t) &interp.globals[instr.immediate.varuint32]
+        | mov rax, [rax]
+        | push rax
+        break;
+    }
+    case WEB49_OPCODE_SET_GLOBAL: {
+        | pop rax
+        | mov64 rcx, (size_t) &interp.globals[instr.immediate.varuint32]
+        | mov [rcx], rax
+        break;
+    }
+    case WEB49_OPCODE_I32_LOAD: {
+        | mov rax, [rdi + instr.immediate.memory_immediate.offset]
+        | push rax
+        break;
+    }
+    case WEB49_OPCODE_I64_LOAD: {
+        printf("unknown opcode: %s\n", "i64_load");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_LOAD: {
+        printf("unknown opcode: %s\n", "f32_load");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_LOAD: {
+        printf("unknown opcode: %s\n", "f64_load");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_LOAD8_S: {
+        printf("unknown opcode: %s\n", "i32_load8_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_LOAD8_U: {
+        printf("unknown opcode: %s\n", "i32_load8_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_LOAD16_S: {
+        printf("unknown opcode: %s\n", "i32_load16_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_LOAD16_U: {
+        printf("unknown opcode: %s\n", "i32_load16_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_LOAD8_S: {
+        printf("unknown opcode: %s\n", "i64_load8_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_LOAD8_U: {
+        printf("unknown opcode: %s\n", "i64_load8_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_LOAD16_S: {
+        printf("unknown opcode: %s\n", "i64_load16_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_LOAD16_U: {
+        printf("unknown opcode: %s\n", "i64_load16_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_LOAD32_S: {
+        printf("unknown opcode: %s\n", "i64_load32_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_LOAD32_U: {
+        printf("unknown opcode: %s\n", "i64_load32_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_STORE: {
+        printf("unknown opcode: %s\n", "i32_store");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_STORE: {
+        printf("unknown opcode: %s\n", "i64_store");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_STORE: {
+        printf("unknown opcode: %s\n", "f32_store");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_STORE: {
+        printf("unknown opcode: %s\n", "f64_store");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_STORE8: {
+        printf("unknown opcode: %s\n", "i32_store8");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_STORE16: {
+        printf("unknown opcode: %s\n", "i32_store16");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_STORE8: {
+        printf("unknown opcode: %s\n", "i64_store8");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_STORE16: {
+        printf("unknown opcode: %s\n", "i64_store16");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_STORE32: {
+        printf("unknown opcode: %s\n", "i64_store32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_MEMORY_SIZE: {
+        printf("unknown opcode: %s\n", "memory_size");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_MEMORY_GROW: {
+        printf("unknown opcode: %s\n", "memory_grow");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_CONST: {
+        | push instr.immediate.varuint32
+        break;
+    }
+    case WEB49_OPCODE_I64_CONST: {
+        printf("unknown opcode: %s\n", "i64_const");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_CONST: {
+        printf("unknown opcode: %s\n", "f32_const");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_CONST: {
+        printf("unknown opcode: %s\n", "f64_const");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_EQZ: {
+        | pop rax
+        | cmp eax, 0
+        | mov eax, 0
+        | setz al
+        | push rax
+        break;
+    }
+    case WEB49_OPCODE_I32_EQ: {
+        printf("unknown opcode: %s\n", "i32_eq");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_NE: {
+        printf("unknown opcode: %s\n", "i32_ne");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_LT_S: {
+        printf("unknown opcode: %s\n", "i32_lt_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_LT_U: {
+        | pop rax
+        | pop rcx
+        | cmp eax, ecx
+        | mov eax, 0
+        | setb al
+        | push rax
+        break;
+    }
+    case WEB49_OPCODE_I32_GT_S: {
+        printf("unknown opcode: %s\n", "i32_gt_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_GT_U: {
+        printf("unknown opcode: %s\n", "i32_gt_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_LE_S: {
+        printf("unknown opcode: %s\n", "i32_le_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_LE_U: {
+        printf("unknown opcode: %s\n", "i32_le_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_GE_S: {
+        printf("unknown opcode: %s\n", "i32_ge_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_GE_U: {
+        printf("unknown opcode: %s\n", "i32_ge_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_EQZ: {
+        printf("unknown opcode: %s\n", "i64_eqz");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_EQ: {
+        printf("unknown opcode: %s\n", "i64_eq");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_NE: {
+        printf("unknown opcode: %s\n", "i64_ne");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_LT_S: {
+        printf("unknown opcode: %s\n", "i64_lt_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_LT_U: {
+        printf("unknown opcode: %s\n", "i64_lt_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_GT_S: {
+        printf("unknown opcode: %s\n", "i64_gt_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_GT_U: {
+        printf("unknown opcode: %s\n", "i64_gt_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_LE_S: {
+        printf("unknown opcode: %s\n", "i64_le_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_LE_U: {
+        printf("unknown opcode: %s\n", "i64_le_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_GE_S: {
+        printf("unknown opcode: %s\n", "i64_ge_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_GE_U: {
+        printf("unknown opcode: %s\n", "i64_ge_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_EQ: {
+        printf("unknown opcode: %s\n", "f32_eq");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_NE: {
+        printf("unknown opcode: %s\n", "f32_ne");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_LT: {
+        printf("unknown opcode: %s\n", "f32_lt");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_GT: {
+        printf("unknown opcode: %s\n", "f32_gt");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_LE: {
+        printf("unknown opcode: %s\n", "f32_le");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_GE: {
+        printf("unknown opcode: %s\n", "f32_ge");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_EQ: {
+        printf("unknown opcode: %s\n", "f64_eq");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_NE: {
+        printf("unknown opcode: %s\n", "f64_ne");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_LT: {
+        printf("unknown opcode: %s\n", "f64_lt");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_GT: {
+        printf("unknown opcode: %s\n", "f64_gt");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_LE: {
+        printf("unknown opcode: %s\n", "f64_le");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_GE: {
+        printf("unknown opcode: %s\n", "f64_ge");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_CLZ: {
+        printf("unknown opcode: %s\n", "i32_clz");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_CTZ: {
+        printf("unknown opcode: %s\n", "i32_ctz");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_POPCNT: {
+        printf("unknown opcode: %s\n", "i32_popcnt");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_ADD: {
+        | pop rax
+        | pop rcx
+        | add eax, ecx
+        | push rax
+        break;
+    }
+    case WEB49_OPCODE_I32_SUB: {
+        | pop rax
+        | pop rcx
+        | sub eax, ecx
+        | push rax
+        break;
+    }
+    case WEB49_OPCODE_I32_MUL: {
+        printf("unknown opcode: %s\n", "i32_mul");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_DIV_S: {
+        printf("unknown opcode: %s\n", "i32_div_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_DIV_U: {
+        printf("unknown opcode: %s\n", "i32_div_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_REM_S: {
+        printf("unknown opcode: %s\n", "i32_rem_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_REM_U: {
+        printf("unknown opcode: %s\n", "i32_rem_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_AND: {
+        | pop rax
+        | pop rcx
+        | and eax, ecx
+        | push rax
+        break;
+    }
+    case WEB49_OPCODE_I32_OR: {
+        printf("unknown opcode: %s\n", "i32_or");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_XOR: {
+        printf("unknown opcode: %s\n", "i32_xor");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_SHL: {
+        printf("unknown opcode: %s\n", "i32_shl");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_SHR_S: {
+        printf("unknown opcode: %s\n", "i32_shr_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_SHR_U: {
+        printf("unknown opcode: %s\n", "i32_shr_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_ROTL: {
+        printf("unknown opcode: %s\n", "i32_rotl");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_ROTR: {
+        printf("unknown opcode: %s\n", "i32_rotr");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_CLZ: {
+        printf("unknown opcode: %s\n", "i64_clz");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_CTZ: {
+        printf("unknown opcode: %s\n", "i64_ctz");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_POPCNT: {
+        printf("unknown opcode: %s\n", "i64_popcnt");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_ADD: {
+        printf("unknown opcode: %s\n", "i64_add");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_SUB: {
+        printf("unknown opcode: %s\n", "i64_sub");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_MUL: {
+        printf("unknown opcode: %s\n", "i64_mul");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_DIV_S: {
+        printf("unknown opcode: %s\n", "i64_div_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_DIV_U: {
+        printf("unknown opcode: %s\n", "i64_div_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_REM_S: {
+        printf("unknown opcode: %s\n", "i64_rem_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_REM_U: {
+        printf("unknown opcode: %s\n", "i64_rem_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_AND: {
+        printf("unknown opcode: %s\n", "i64_and");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_OR: {
+        printf("unknown opcode: %s\n", "i64_or");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_XOR: {
+        printf("unknown opcode: %s\n", "i64_xor");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_SHL: {
+        printf("unknown opcode: %s\n", "i64_shl");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_SHR_S: {
+        printf("unknown opcode: %s\n", "i64_shr_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_SHR_U: {
+        printf("unknown opcode: %s\n", "i64_shr_u");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_ROTL: {
+        printf("unknown opcode: %s\n", "i64_rotl");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_ROTR: {
+        printf("unknown opcode: %s\n", "i64_rotr");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_ABS: {
+        printf("unknown opcode: %s\n", "f32_abs");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_NEG: {
+        printf("unknown opcode: %s\n", "f32_neg");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_CEIL: {
+        printf("unknown opcode: %s\n", "f32_ceil");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_FLOOR: {
+        printf("unknown opcode: %s\n", "f32_floor");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_TRUNC: {
+        printf("unknown opcode: %s\n", "f32_trunc");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_NEAREST: {
+        printf("unknown opcode: %s\n", "f32_nearest");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_SQRT: {
+        printf("unknown opcode: %s\n", "f32_sqrt");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_ADD: {
+        printf("unknown opcode: %s\n", "f32_add");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_SUB: {
+        printf("unknown opcode: %s\n", "f32_sub");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_MUL: {
+        printf("unknown opcode: %s\n", "f32_mul");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_DIV: {
+        printf("unknown opcode: %s\n", "f32_div");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_MIN: {
+        printf("unknown opcode: %s\n", "f32_min");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_MAX: {
+        printf("unknown opcode: %s\n", "f32_max");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_COPYSIGN: {
+        printf("unknown opcode: %s\n", "f32_copysign");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_ABS: {
+        printf("unknown opcode: %s\n", "f64_abs");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_NEG: {
+        printf("unknown opcode: %s\n", "f64_neg");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_CEIL: {
+        printf("unknown opcode: %s\n", "f64_ceil");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_FLOOR: {
+        printf("unknown opcode: %s\n", "f64_floor");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_TRUNC: {
+        printf("unknown opcode: %s\n", "f64_trunc");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_NEAREST: {
+        printf("unknown opcode: %s\n", "f64_nearest");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_SQRT: {
+        printf("unknown opcode: %s\n", "f64_sqrt");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_ADD: {
+        printf("unknown opcode: %s\n", "f64_add");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_SUB: {
+        printf("unknown opcode: %s\n", "f64_sub");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_MUL: {
+        printf("unknown opcode: %s\n", "f64_mul");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_DIV: {
+        printf("unknown opcode: %s\n", "f64_div");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_MIN: {
+        printf("unknown opcode: %s\n", "f64_min");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_MAX: {
+        printf("unknown opcode: %s\n", "f64_max");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_COPYSIGN: {
+        printf("unknown opcode: %s\n", "f64_copysign");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_WRAP_I64: {
+        printf("unknown opcode: %s\n", "i32_wrap_i64");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_TRUNC_S_F32: {
+        printf("unknown opcode: %s\n", "i32_trunc_s_f32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_TRUNC_U_F32: {
+        printf("unknown opcode: %s\n", "i32_trunc_u_f32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_TRUNC_S_F64: {
+        printf("unknown opcode: %s\n", "i32_trunc_s_f64");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_TRUNC_U_F64: {
+        printf("unknown opcode: %s\n", "i32_trunc_u_f64");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_EXTEND_S_I32: {
+        printf("unknown opcode: %s\n", "i64_extend_s_i32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_EXTEND_U_I32: {
+        printf("unknown opcode: %s\n", "i64_extend_u_i32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_TRUNC_S_F32: {
+        printf("unknown opcode: %s\n", "i64_trunc_s_f32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_TRUNC_U_F32: {
+        printf("unknown opcode: %s\n", "i64_trunc_u_f32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_TRUNC_S_F64: {
+        printf("unknown opcode: %s\n", "i64_trunc_s_f64");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_TRUNC_U_F64: {
+        printf("unknown opcode: %s\n", "i64_trunc_u_f64");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_CONVERT_S_I32: {
+        printf("unknown opcode: %s\n", "code_f32_convert_s_i32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_CONVERT_U_I32: {
+        printf("unknown opcode: %s\n", "code_f32_convert_u_i32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_CONVERT_S_I64: {
+        printf("unknown opcode: %s\n", "code_f32_convert_s_i64");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_CONVERT_U_I64: {
+        printf("unknown opcode: %s\n", "code_f32_convert_u_i64");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_DEMOTE_F64: {
+        printf("unknown opcode: %s\n", "f32_demote_f64");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_CONVERT_S_I32: {
+        printf("unknown opcode: %s\n", "code_f64_convert_s_i32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_CONVERT_U_I32: {
+        printf("unknown opcode: %s\n", "code_f64_convert_u_i32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_CONVERT_S_I64: {
+        printf("unknown opcode: %s\n", "code_f64_convert_s_i64");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_CONVERT_U_I64: {
+        printf("unknown opcode: %s\n", "code_f64_convert_u_i64");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_PROMOTE_F32: {
+        printf("unknown opcode: %s\n", "f64_promote_f32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_REINTERPRET_F32: {
+        printf("unknown opcode: %s\n", "code_i32_reinterpret_f32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_REINTERPRET_F64: {
+        printf("unknown opcode: %s\n", "code_i64_reinterpret_f64");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F32_REINTERPRET_I32: {
+        printf("unknown opcode: %s\n", "code_f32_reinterpret_i32");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_F64_REINTERPRET_I64: {
+        printf("unknown opcode: %s\n", "code_f64_reinterpret_i64");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_EXTEND8_S: {
+        printf("unknown opcode: %s\n", "i32_extend8_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I32_EXTEND16_S: {
+        printf("unknown opcode: %s\n", "i32_extend16_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_EXTEND8_S: {
+        printf("unknown opcode: %s\n", "i64_extend8_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_EXTEND16_S: {
+        printf("unknown opcode: %s\n", "i64_extend16_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_I64_EXTEND32_S: {
+        printf("unknown opcode: %s\n", "i64_extend32_s");
+        __builtin_trap();
+    }
+    case WEB49_OPCODE_BEGIN0: {
+        break;
+    }
+    default: {
+        printf("unhandled: %s\n", (web49_opcode_to_name(instr.opcode)));
+        __builtin_trap();
+    }
+    }
+}
+
 void web49_jit_compile(web49_interp_t interp, web49_interp_block_t *block) {
-    dasm_State *d;
-    |.section code
-    dasm_init(&d, DASM_MAXSECTION);
-    dasm_State **Dst = &d;
-    |.globals lbl_
-    void* labels[lbl__MAX];
-    dasm_setupglobal(&d, labels, lbl__MAX);
-    |.actionlist bf_actions
-    dasm_setup(&d, bf_actions);
-    dasm_growpc(&d, 8);
-    |.code
-    |->main:
-    | mov rax, 1
-    | ret 
-    link_and_encode(&d);
-    dasm_free(&d);
-    block->code = labels[lbl_main];
+    if (block->is_code) {
+        dasm_State *d;
+        |.section code
+        dasm_init(&d, DASM_MAXSECTION);
+        dasm_State **Dst = &d;
+        |.globals lbl_
+        void* labels[lbl__MAX];
+        dasm_setupglobal(&d, labels, lbl__MAX);
+        |.actionlist bf_actions
+        dasm_setup(&d, bf_actions);
+        dasm_growpc(&d, 8);
+        |.code
+        |->main:
+        | push rbp
+        | mov rbp, rsp
+        | mov rax, 0
+        for (size_t i = 0; i < block->nlocals; i++) {
+            | push rax 
+        }
+        for (uint32_t i = 0; i < block->num_instrs; i++) {
+            web49_jit_compile_instr(interp, Dst, block->instrs[i]);
+        }
+        | mov rsp, rbp
+        | pop rbp
+        | ret 
+        link_and_encode(&d);
+        dasm_free(&d);
+        block->code = labels[lbl_main];
+    } else {
+        printf("cannot import yet\n");
+        __builtin_trap();
+    }
 }
 
 web49_interp_data_t web49_interp_block_jit(web49_interp_t interp, web49_interp_block_t *block) {
