@@ -1,13 +1,4 @@
 
-EXE = 
-EXE_RUN = 
-
-EMCC ?= emcc
-EMCC_CFLAGS = 
-EMCC_OPT = -O2
-INTERP = wasmer
-HYPERFINE = hyperfine
-
 OPT ?= -O2
 
 PROG_SRCS := main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c main/miniwasm.c main/raywasm.c main/runtime/rlruntime.c
@@ -32,7 +23,7 @@ bin/miniwasm$(EXE): main/miniwasm.o $(OBJS)
 
 bin/raywasm$(EXE): main/raywasm.o main/runtime/rlruntime.c $(OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) main/raywasm.o main/runtime/rlruntime.c $(OBJS) -o $(@) -lm -lraylib -pthread -lGL -ldl $(LDFLAGS)
+	$(CC) $(OPT) main/raywasm.o main/runtime/rlruntime.c -I/usr/local/include $(OBJS) -o $(@) -lm -llibraylib.a -pthread -lGL -ldl $(LDFLAGS)
 
 bin/wat2wasm$(EXE): main/wat2wasm.o $(OBJS)
 	@mkdir -p bin
