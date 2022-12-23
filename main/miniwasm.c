@@ -1,3 +1,5 @@
+#include <fcntl.h>
+#include <stdint.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
@@ -13,16 +15,23 @@ web49_interp_data_t web49_main_import_wasi_fd_seek(web49_interp_t interp) {
     int whence = -1;
     switch (interp.locals[2].i32_u) {
         case 0:
-            whence = SEEK_SET;
-            break;
-        case 1:
             whence = SEEK_CUR;
             break;
-        case 2:
+        case 1:
             whence = SEEK_END;
             break;
+        case 2:
+            whence = SEEK_SET;
+            break;
+        default:
+            fprintf(stderr, "bad wasi whence: %"PRIu32"\n", interp.locals[2].i32_u);
+            __builtin_trap();
     }
-    *(uint32_t *)&interp.memory[interp.locals[3].i32_u] = lseek(interp.locals[0].i32_u, interp.locals[1].i32_u, whence);
+    if (interp.locals[0].i32_u <= 2 && whence == SEEK_SET) {
+        *(int64_t *)&interp.memory[interp.locals[3].i32_u] = interp.locals[1].i64_s;
+    } else {
+        *(int64_t *)&interp.memory[interp.locals[3].i32_u] = (int64_t) lseek(interp.locals[0].i32_u, interp.locals[1].i64_s, whence);
+    }
     return (web49_interp_data_t){.i32_u = 0};
 }
 web49_interp_data_t web49_main_import_wasi_args_get(web49_interp_t interp) {
@@ -82,21 +91,64 @@ web49_interp_data_t web49_main_import_wasi_fd_close(web49_interp_t interp) {
 web49_interp_data_t web49_main_import_wasi_fd_fdstat_get(web49_interp_t interp) {
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t fdstat = interp.locals[1].i32_u;
+
     struct stat fd_stat;
     fstat(fd, &fd_stat);
     int mode = fd_stat.st_mode;
-    uint16_t fs_filetype = (S_ISBLK(mode) ? 1 : 0) | (S_ISCHR(mode) ? 2 : 0) | (S_ISDIR(mode) ? 3 : 0) | (S_ISREG(mode) ? 4 : 0) | (S_ISLNK(mode) ? 7 : 0);
-    uint16_t fs_flags = 0;
+    uint8_t fs_filetype = (S_ISBLK(mode) ? 1 : 0) |
+                          (S_ISCHR(mode) ? 2 : 0) |
+                          (S_ISDIR(mode) ? 3 : 0) |
+                          (S_ISREG(mode) ? 4 : 0) |
+                          (S_ISLNK(mode) ? 7 : 0);
+
+    int fl = fcntl(fd, F_GETFL);
+    uint16_t fs_flags = ((fl & O_APPEND) ? 1 : 0) |
+                        ((fl & O_DSYNC) ? 2 : 0) |
+                        ((fl & O_NONBLOCK) ? 4 : 0) |
+                        ((fl & O_SYNC) ? 16 : 0);
     uint64_t fs_rights_base = UINT64_MAX;
     uint64_t fs_rights_inheriting = UINT64_MAX;
     if (fd <= 2) {
         fs_rights_base &= ~(4 | 32);
     }
-    *(uint16_t *)&interp.memory[fdstat + 0] = fs_filetype;
+    *(uint8_t *)&interp.memory[fdstat + 0] = fs_filetype;
+    *(uint8_t *)&interp.memory[fdstat + 1] = 0;
     *(uint16_t *)&interp.memory[fdstat + 2] = fs_flags;
     *(uint32_t *)&interp.memory[fdstat + 4] = 0;
     *(uint64_t *)&interp.memory[fdstat + 8] = fs_rights_base;
     *(uint64_t *)&interp.memory[fdstat + 16] = fs_rights_inheriting;
+    return (web49_interp_data_t){.i32_u = 0};
+}
+web49_interp_data_t web49_main_import_wasi_fd_prestat_get(web49_interp_t interp) {
+    uint32_t fd = interp.locals[0].i32_u;
+    uint32_t buf = interp.locals[1].i32_u;
+    uint32_t *ptr = (uint32_t *)&interp.memory[buf];
+    ptr[0] = 0;
+    if (fd == 3) {
+        ptr[1] = 2;
+    } else if (fd == 4) {
+        ptr[1] = 3;
+    } else {
+        return (web49_interp_data_t){.i32_u = 8};
+    }
+    return (web49_interp_data_t){.i32_u = 0};
+}
+web49_interp_data_t web49_main_import_wasi_fd_read(web49_interp_t interp) {
+    uint32_t fd = interp.locals[0].i32_u;
+    uint32_t iovs = interp.locals[1].i32_u;
+    uint32_t iovs_len = interp.locals[2].i32_u;
+    uint32_t nread = interp.locals[3].i32_u;
+    *(uint32_t *)&interp.memory[nread] = 0;
+    for (size_t i = 0; i < iovs_len; i++) {
+        uint32_t ptr = *(uint32_t *)&interp.memory[iovs + i * 8 + 0];
+        uint32_t len = *(uint32_t *)&interp.memory[iovs + i * 8 + 4];
+        *(uint32_t *)&interp.memory[nread] += (uint32_t)read(fd, &interp.memory[ptr], len);
+        // printf("%"PRIu32"\n", len);
+        // for (uint32_t j = 0; i < len; j++) {
+            // printf(" %"PRIu8, interp.memory[ptr+j]);
+        // }
+        // printf("\n");
+    }
     return (web49_interp_data_t){.i32_u = 0};
 }
 web49_interp_data_t web49_main_import_wasi_fd_write(web49_interp_t interp) {
@@ -116,30 +168,23 @@ web49_interp_data_t web49_main_import_wasi_proc_exit(web49_interp_t interp) {
     exit((int)interp.locals[0].i32_u);
 }
 web49_interp_data_t web49_main_import_wasi_fd_prestat_dir_name(web49_interp_t interp) {
-    // char *path = &interp.memory[interp.locals[1].i32_u];
-    if (interp.locals[0].i32_u <= 2) {
-        return (web49_interp_data_t){.i32_u = 0};
-    } else {
-        const char *name;
-        switch (interp.locals[0].i32_u) {
-            case 3:
-                name = "/";
-                break;
-            case 4:
-                name = "./";
-                break;
-            default:
-                return (web49_interp_data_t){.i32_u = 9};
-        }
-        size_t n = interp.locals[2].i32_u;
-        if (strlen(name) < n) {
-            n = strlen(name);
-        }
-        memcpy(&interp.memory[interp.locals[1].i32_u], name, n);
-        return (web49_interp_data_t){.i32_u = 0};
+    const char *name;
+    switch (interp.locals[0].i32_u) {
+        case 3:
+            name = "/";
+            break;
+        case 4:
+            name = "./";
+            break;
+        default:
+            return (web49_interp_data_t){.i32_u = 9};
     }
-}
-web49_interp_data_t web49_main_import_wasi_fd_prestat_get(web49_interp_t interp) {
+    size_t n = interp.locals[2].i32_u;
+    uint32_t max_len = strlen(name);
+    if (n > max_len) {
+        n = max_len;
+    }
+    memcpy(&interp.memory[interp.locals[1].i32_u], name, n);
     return (web49_interp_data_t){.i32_u = 0};
 }
 
@@ -155,11 +200,13 @@ web49_env_func_t web49_main_import_wasi(void *wasi, const char *func) {
     } else if (!strcmp(func, "fd_close")) {
         return &web49_main_import_wasi_fd_close;
     } else if (!strcmp(func, "fd_prestat_get")) {
-        return &web49_main_import_wasi_fd_prestat_dir_name;
-    } else if (!strcmp(func, "fd_prestat_dir_name")) {
         return &web49_main_import_wasi_fd_prestat_get;
+    } else if (!strcmp(func, "fd_prestat_dir_name")) {
+        return &web49_main_import_wasi_fd_prestat_dir_name;
     } else if (!strcmp(func, "fd_fdstat_get")) {
         return &web49_main_import_wasi_fd_fdstat_get;
+    } else if (!strcmp(func, "fd_read")) {
+        return &web49_main_import_wasi_fd_read;
     } else if (!strcmp(func, "fd_write")) {
         return &web49_main_import_wasi_fd_write;
     } else if (!strcmp(func, "proc_exit")) {
@@ -170,6 +217,7 @@ web49_env_func_t web49_main_import_wasi(void *wasi, const char *func) {
 }
 
 web49_env_func_t web49_main_import_func(void *state, const char *mod, const char *func) {
+    // fprintf(stderr, "FFI GET %s.%s\n", mod, func);
     if (!strcmp(mod, "wasi_snapshot_preview1")) {
         return web49_main_import_wasi(state, func);
     } else {

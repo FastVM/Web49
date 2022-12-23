@@ -21,13 +21,22 @@ NAME(WEB49_OPCODE_BR_TABLE) {
     uint32_t brvalue = LOCAL0.i32_u;
     uint32_t maxvalue = head[1].data.i32_u;
     head += 2;
-    if (brvalue < maxvalue) {
-        head = head[brvalue].ptr;
-        NEXT();
-    } else {
-        head = head[maxvalue].ptr;
-        NEXT();
+    if (brvalue >= maxvalue) {
+        brvalue = maxvalue;
     }
+    head = head[brvalue].ptr;
+    NEXT();
+}
+NAME(WEB49_OPCODE_BR_TABLE_VALUE) {
+    uint32_t brvalue = LOCAL0.i32_u;
+    uint32_t maxvalue = head[1].data.i32_u;
+    br_value = interp.locals[head[2].data.i32_u];
+    head += 3;
+    if (brvalue >= maxvalue) {
+        brvalue = maxvalue;
+    }
+    head = head[brvalue].ptr;
+    NEXT();
 }
 NAME(WEB49_OPCODE_RETURN) {
     web49_interp_data_t ret = LOCAL0;

@@ -126,6 +126,7 @@ NAME(WEB49_OPCODE_CALL) {
     } else if (block->nlocals <= 1024) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE1024;
     } else {
+        printf("too many locals: %zu\n", (size_t) block->nlocals);
         __builtin_trap();
     }
     head[0].ptr = block->code;
@@ -133,6 +134,11 @@ NAME(WEB49_OPCODE_CALL) {
     NEXT();
 }
 NAME(WEB49_OPCODE_BR) {
+    head = head[0].ptr;
+    NEXT();
+}
+NAME(WEB49_OPCODE_BR_VALUE) {
+    br_value = interp.locals[head[1].data.i32_u];
     head = head[0].ptr;
     NEXT();
 }
