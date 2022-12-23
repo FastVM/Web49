@@ -27,17 +27,6 @@ NAME(WEB49_OPCODE_BR_TABLE) {
     head = head[brvalue].ptr;
     NEXT();
 }
-NAME(WEB49_OPCODE_BR_TABLE_VALUE) {
-    uint32_t brvalue = LOCAL0.i32_u;
-    uint32_t maxvalue = head[1].data.i32_u;
-    br_value = interp.locals[head[2].data.i32_u];
-    head += 3;
-    if (brvalue >= maxvalue) {
-        brvalue = maxvalue;
-    }
-    head = head[brvalue].ptr;
-    NEXT();
-}
 NAME(WEB49_OPCODE_RETURN) {
     web49_interp_data_t ret = LOCAL0;
     head = *--returns;

@@ -137,12 +137,12 @@ web49_interp_data_t web49_main_import_wasi_fd_prestat_get(web49_interp_t interp)
 }
 web49_interp_data_t web49_main_import_wasi_path_open(web49_interp_t interp) {
     uint32_t wdirfd = interp.locals[0].i32_u;
-    uint32_t dirflags = interp.locals[1].i32_u;
+    // uint32_t dirflags = interp.locals[1].i32_u;
     uint32_t path = interp.locals[2].i32_u;
     uint32_t path_len = interp.locals[3].i32_u;
     uint32_t oflags = interp.locals[4].i32_u;
     uint32_t fs_rights_base = interp.locals[5].i32_u;
-    uint32_t fs_rights_inherit = interp.locals[6].i32_u;
+    // uint32_t fs_rights_inherit = interp.locals[6].i32_u;
     uint32_t fs_flags = interp.locals[7].i32_u;
     uint32_t pfd = interp.locals[8].i32_u;
     char host_path[512];
@@ -176,7 +176,7 @@ web49_interp_data_t web49_main_import_wasi_path_open(web49_interp_t interp) {
         break;
     default:
         fprintf(stderr, "unknown dirfd: %i\n", wdirfd);
-        break;
+        __builtin_trap();
     }
     int hostfd = openat(dirfd, host_path, flags, 0644);
     if (hostfd < 0) {

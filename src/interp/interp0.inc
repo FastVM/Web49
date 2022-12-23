@@ -133,12 +133,17 @@ NAME(WEB49_OPCODE_CALL) {
     head = block->code;
     NEXT();
 }
-NAME(WEB49_OPCODE_BR) {
-    head = head[0].ptr;
+NAME(WEB49_OPCODE_LOAD_REG) {
+    interp.locals[head[0].data.i32_u] = reg;
+    head += 1;
     NEXT();
 }
-NAME(WEB49_OPCODE_BR_VALUE) {
-    br_value = interp.locals[head[1].data.i32_u];
+NAME(WEB49_OPCODE_STORE_REG) {
+    reg = interp.locals[head[0].data.i32_u];
+    head += 1;
+    NEXT();
+}
+NAME(WEB49_OPCODE_BR) {
     head = head[0].ptr;
     NEXT();
 }

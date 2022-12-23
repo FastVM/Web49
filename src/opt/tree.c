@@ -159,7 +159,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
         } else if (effect.out[0] == WEB49_TABLE_STACK_EFFECT_RET_INDIRECT) {
             use_begin0 = !type_section.entries[cur.immediate.call_indirect.index].has_return_type;
         }
-        if (cur.opcode == WEB49_OPCODE_BR) {
+        if (cur.opcode == WEB49_OPCODE_BR || cur.opcode == WEB49_OPCODE_BR_IF) {
             web49_opt_list_t *head = &list;
             for (size_t i = 0; i < cur.immediate.varuint32; i++) {
                 head = head->last;

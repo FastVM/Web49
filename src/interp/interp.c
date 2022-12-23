@@ -166,6 +166,8 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
             uint32_t ret = state->depth + state->nlocals;
             state->depth += 1;
+            build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_LOAD_REG);
+            build->code[build->ncode++].data.i32_u = ret;
             return ret;
         } else {
             return UINT32_MAX;
@@ -189,10 +191,28 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
             return UINT32_MAX;
         }
     }
+    if (cur.opcode == WEB49_OPCODE_BR) {
+        if (cur.nargs > 0) {
+            uint32_t save = state->depth;
+            uint32_t from = web49_interp_read_instr(state, cur.args[0], UINT32_MAX);
+            state->depth = save;
+            build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_STORE_REG);
+            build->code[build->ncode++].data.i32_u = from;
+        }
+        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_BR);
+        web49_interp_link_get(state, build->ncode++, state->bufs_base[state->bufs_head-(ptrdiff_t)cur.immediate.varuint32]);
+        return UINT32_MAX;
+    }
     if (cur.opcode == WEB49_OPCODE_BR_IF) {
         if (cur.nargs > 1) {
-            fprintf(stderr, "br_if/%zu\n", (size_t) cur.nargs);
-            __builtin_trap();
+            // uint32_t save = state->depth;
+            uint32_t from = web49_interp_read_instr(state, cur.args[0], UINT32_MAX);
+            // state->depth = save;
+            build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_STORE_REG);
+            build->code[build->ncode++].data.i32_u = from;
+            uint32_t *next = web49_interp_link_box();
+            web49_interp_read_instr_branch(state, cur.args[1], state->bufs_base[state->bufs_head-cur.immediate.varuint32], next);
+            *next = build->ncode;
         } else {
             uint32_t *next = web49_interp_link_box();
             web49_interp_read_instr_branch(state, cur.args[0], state->bufs_base[state->bufs_head-cur.immediate.varuint32], next);
@@ -233,6 +253,8 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
             uint32_t ret = state->depth + state->nlocals;
             state->depth += 1;
+            build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_LOAD_REG);
+            build->code[build->ncode++].data.i32_u = ret;
             return ret;
         } else {
             return UINT32_MAX;
@@ -351,15 +373,6 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
                 fprintf(stderr, "cannot compile %zu returns yet\n", (size_t)state->interp->funcs[cur.immediate.varint32].nreturns);
                 __builtin_trap();
         }
-    }
-    if (cur.opcode == WEB49_OPCODE_BR) {
-        if (cur.nargs > 0) {
-            fprintf(stderr, "br/%zu\n", (size_t) cur.nargs);
-            __builtin_trap();
-        }
-        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_BR);
-        web49_interp_link_get(state, build->ncode++, state->bufs_base[state->bufs_head-(ptrdiff_t)cur.immediate.varuint32]);
-        return UINT32_MAX;
     }
     if (cur.opcode == WEB49_OPCODE_RETURN) {
         if (cur.nargs == 0 || binary_const) {
@@ -699,6 +712,8 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
         TABLE_PUT1(WEB49_OPCODE_I64_EXTEND32_S),
         TABLE_PUT2(WEB49_OPCODE_MEMORY_FILL),
         TABLE_PUT2(WEB49_OPCODE_MEMORY_COPY),
+        TABLE_PUT0(WEB49_OPCODE_LOAD_REG),
+        TABLE_PUT0(WEB49_OPCODE_STORE_REG),
 #undef TABLE_PUTV
 #undef TABLE_PUT1
 #undef TABLE_PUT2
@@ -721,7 +736,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
     *returns++ = r0;
     *stacks++ = s0;
     web49_interp_opcode_t *restrict head = block->code;
-    web49_interp_data_t br_value;
+    web49_interp_data_t reg;
     NEXT();
 exitv:
     return s0[0];
