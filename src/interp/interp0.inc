@@ -95,9 +95,6 @@ NAME(WEB49_OPCODE_CALL_DONE1024) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL) {
-#if defined(WEB49_SELF_HOST)
-    printf("9: %p\n", head[0].ptr);
-#endif
     web49_interp_block_t *block = head[0].ptr;
     web49_interp_block_run_comp(block, ptrs, interp);
     *returns++ = head;
@@ -133,10 +130,7 @@ NAME(WEB49_OPCODE_CALL) {
         __builtin_trap();
     }
     head[0].ptr = block->code;
-#if defined(WEB49_SELF_HOST)
-    printf("1: %p\n", head[0].ptr);
-#endif
-    head = head[0].ptr;
+    head = block->code;
     NEXT();
 }
 NAME(WEB49_OPCODE_BR) {

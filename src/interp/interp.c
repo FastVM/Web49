@@ -141,7 +141,7 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
 uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur, uint32_t local) {
     web49_interp_build_t *build = &state->build;
     void **ptrs = state->ptrs;
-    uint32_t off = 64;
+    uint32_t off = 16;
     if (cur.immediate.id == WEB49_IMMEDIATE_BR_TABLE) {
         off += cur.immediate.br_table.num_targets;
     }
@@ -149,7 +149,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         build->alloc = (build->ncode + off) * 4;
         build->code = web49_realloc(build->code, sizeof(web49_interp_opcode_t) * build->alloc);
     }
-    if (state->bufs_head + 2 < state->bufs_alloc) {
+    if (state->bufs_head + 2 >= state->bufs_alloc) {
         state->bufs_alloc = (state->bufs_head + 2) * 2;
         state->bufs_base = web49_realloc(state->bufs_base, sizeof(uint32_t *) * (state->bufs_alloc));
     }
@@ -193,10 +193,11 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         if (cur.nargs > 1) {
             fprintf(stderr, "br_if/%zu\n", (size_t) cur.nargs);
             __builtin_trap();
+        } else {
+            uint32_t *next = web49_interp_link_box();
+            web49_interp_read_instr_branch(state, cur.args[0], state->bufs_base[state->bufs_head-cur.immediate.varuint32], next);
+            *next = build->ncode;
         }
-        uint32_t *next = web49_interp_link_box();
-        web49_interp_read_instr_branch(state, cur.args[0], state->bufs_base[state->bufs_head-cur.immediate.varuint32], next);
-        *next = build->ncode;
         return UINT32_MAX;
     }
     if (cur.opcode == WEB49_OPCODE_IF) {
@@ -457,7 +458,7 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
         if (block->is_code) {
             web49_read_block_state_t state;
             state.ptrs = ptrs;
-            state.bufs_alloc = 3;
+            state.bufs_alloc = 4;
             state.bufs_base = web49_malloc(sizeof(uint32_t *) * (state.bufs_alloc));
             state.bufs_head = 0;
             state.interp = &interp;
@@ -801,11 +802,7 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
     }
     uint64_t cur_func = 0;
     web49_interp_data_t *locals = web49_alloc0(sizeof(web49_interp_data_t) * (1 << 16));
-#if defined(WEB49_SELF_HOST)
-    uint64_t memsize = 65536 * memory_section.entries[0].maximum;
-#else
     uint64_t memsize = 65536 * memory_section.entries[0].initial;
-#endif
     web49_interp_t interp = (web49_interp_t){
         .locals = locals,
         .memory = web49_alloc0(memsize),
