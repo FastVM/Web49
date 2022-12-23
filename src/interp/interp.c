@@ -141,7 +141,7 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
 uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur, uint32_t local) {
     web49_interp_build_t *build = &state->build;
     void **ptrs = state->ptrs;
-    uint32_t off = 16;
+    uint32_t off = 64;
     if (cur.immediate.id == WEB49_IMMEDIATE_BR_TABLE) {
         off += cur.immediate.br_table.num_targets;
     }
@@ -191,7 +191,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     }
     if (cur.opcode == WEB49_OPCODE_BR_IF) {
         if (cur.nargs > 1) {
-            printf("br_if/%zu\n", (size_t) cur.nargs);
+            fprintf(stderr, "br_if/%zu\n", (size_t) cur.nargs);
             __builtin_trap();
         }
         uint32_t *next = web49_interp_link_box();
@@ -353,7 +353,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     }
     if (cur.opcode == WEB49_OPCODE_BR) {
         if (cur.nargs > 0) {
-            printf("br/%zu\n", (size_t) cur.nargs);
+            fprintf(stderr, "br/%zu\n", (size_t) cur.nargs);
             __builtin_trap();
         }
         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_BR);
@@ -800,8 +800,12 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
         }
     }
     uint64_t cur_func = 0;
-    web49_interp_data_t *locals = web49_alloc0(sizeof(web49_interp_data_t) * (1 << 12));
+    web49_interp_data_t *locals = web49_alloc0(sizeof(web49_interp_data_t) * (1 << 16));
+#if defined(WEB49_SELF_HOST)
+    uint64_t memsize = 65536 * memory_section.entries[0].maximum;
+#else
     uint64_t memsize = 65536 * memory_section.entries[0].initial;
+#endif
     web49_interp_t interp = (web49_interp_t){
         .locals = locals,
         .memory = web49_alloc0(memsize),
@@ -811,8 +815,8 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
         .args = args,
         .locals_base = locals,
         .memsize = memsize,
-        .stacks = web49_malloc(sizeof(web49_interp_data_t *) * (1 << 10)),
-        .returns = web49_malloc(sizeof(web49_opcode_t *) * (1 << 10)),
+        .stacks = web49_malloc(sizeof(web49_interp_data_t *) * (1 << 12)),
+        .returns = web49_malloc(sizeof(web49_opcode_t *) * (1 << 12)),
     };
     for (size_t j = 0; j < table_section.num_entries; j++) {
         web49_type_table_t entry = table_section.entries[j];

@@ -136,6 +136,7 @@ NAME(WEB49_OPCODE_I64_LOAD32_U) {
 NAME(WEB49_OPCODE_MEMORY_GROW) {
     interp.memsize += LOCAL0.i32_u * 65536;
     interp.memory = web49_realloc(interp.memory, interp.memsize);
+    head += 2;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_EQZ) {

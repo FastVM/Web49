@@ -11,6 +11,9 @@
 #include "../src/read_bin.h"
 #include "../src/read_wat.h"
 
+int web49_global_root = 3;
+int web49_global_cwd = 4;
+
 web49_interp_data_t web49_main_import_wasi_fd_seek(web49_interp_t interp) {
     int whence = -1;
     switch (interp.locals[2].i32_u) {
@@ -122,15 +125,64 @@ web49_interp_data_t web49_main_import_wasi_fd_fdstat_get(web49_interp_t interp) 
 web49_interp_data_t web49_main_import_wasi_fd_prestat_get(web49_interp_t interp) {
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t buf = interp.locals[1].i32_u;
-    uint32_t *ptr = (uint32_t *)&interp.memory[buf];
-    ptr[0] = 0;
+    *(uint8_t *)&interp.memory[buf] = 0;
     if (fd == 3) {
-        ptr[1] = 2;
+        *(uint32_t *)&interp.memory[buf+4] = 1;
     } else if (fd == 4) {
-        ptr[1] = 3;
+        *(uint32_t *)&interp.memory[buf+4] = 2;
     } else {
         return (web49_interp_data_t){.i32_u = 8};
     }
+    return (web49_interp_data_t){.i32_u = 0};
+}
+web49_interp_data_t web49_main_import_wasi_path_open(web49_interp_t interp) {
+    uint32_t wdirfd = interp.locals[0].i32_u;
+    uint32_t dirflags = interp.locals[1].i32_u;
+    uint32_t path = interp.locals[2].i32_u;
+    uint32_t path_len = interp.locals[3].i32_u;
+    uint32_t oflags = interp.locals[4].i32_u;
+    uint32_t fs_rights_base = interp.locals[5].i32_u;
+    uint32_t fs_rights_inherit = interp.locals[6].i32_u;
+    uint32_t fs_flags = interp.locals[7].i32_u;
+    uint32_t pfd = interp.locals[8].i32_u;
+    char host_path[512];
+    memcpy(host_path, &interp.memory[path], path_len);
+    host_path[path_len] = '\0';
+    if (!strcmp(host_path, "/")) {
+        *(int32_t *) &interp.memory[path] = (int32_t) web49_global_root;
+        return (web49_interp_data_t){.i32_u = 0};
+    } else if (!strcmp(host_path, "./")) {
+        *(int32_t *) &interp.memory[path] = (int32_t) web49_global_cwd;
+        return (web49_interp_data_t){.i32_u = 0};
+    }
+    int flags = ((oflags & 1)             ? O_CREAT     : 0) |
+                ((oflags & 4)              ? O_EXCL      : 0) |
+                ((oflags & 8)             ? O_TRUNC     : 0) |
+                ((fs_flags & 1)     ? O_APPEND    : 0);
+    if ((fs_rights_base & 2) && (fs_rights_base & 32)) {
+        flags |= O_RDWR;
+    } else if (fs_rights_base & 32) {
+        flags |= O_WRONLY;
+    } else if (fs_rights_base & 2) {
+        flags |= O_RDONLY;
+    }
+    int dirfd;
+    switch (wdirfd) {
+    case 3:
+        dirfd = web49_global_root;
+        break;
+    case 4:
+        dirfd = web49_global_cwd;
+        break;
+    default:
+        fprintf(stderr, "unknown dirfd: %i\n", wdirfd);
+        break;
+    }
+    int hostfd = openat(dirfd, host_path, flags, 0644);
+    if (hostfd < 0) {
+        return (web49_interp_data_t){.i32_u = 44};
+    }
+    *(int32_t *) &interp.memory[pfd] = hostfd;
     return (web49_interp_data_t){.i32_u = 0};
 }
 web49_interp_data_t web49_main_import_wasi_fd_read(web49_interp_t interp) {
@@ -205,6 +257,8 @@ web49_env_func_t web49_main_import_wasi(void *wasi, const char *func) {
         return &web49_main_import_wasi_fd_prestat_dir_name;
     } else if (!strcmp(func, "fd_fdstat_get")) {
         return &web49_main_import_wasi_fd_fdstat_get;
+    } else if (!strcmp(func, "path_open")) {
+        return &web49_main_import_wasi_path_open;
     } else if (!strcmp(func, "fd_read")) {
         return &web49_main_import_wasi_fd_read;
     } else if (!strcmp(func, "fd_write")) {
@@ -268,5 +322,10 @@ int main(int argc, const char **argv) {
             break;
         }
     }
-    return web49_file_main(inarg, args);
+    web49_global_root = open("/", O_DIRECTORY);
+    web49_global_cwd = open("./", O_DIRECTORY);
+    int res = web49_file_main(inarg, args);
+    close(web49_global_root);
+    close(web49_global_cwd);
+    return res;
 }

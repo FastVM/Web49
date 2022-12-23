@@ -9,29 +9,29 @@ web49_io_input_t web49_io_input_open(const char *filename) {
     }
     size_t len = 0;
     uint8_t *str = NULL;
-    if (fseek(file, 0, SEEK_SET) >= 0) {
-        fseek(file, 0, SEEK_END);
-        len = (size_t)ftell(file);
-        fseek(file, 0, SEEK_SET);
-        str = web49_malloc(sizeof(uint8_t) * len);
-        if (fread(str, 1, len, file) != len) {
-            fprintf(stderr, "cannot read file: %s\n", filename);
-            exit(1);
-        }
-        // printf("stream.szie = %zu bytes\n", len);
-    } else {
-        size_t alloc = 128;
+    // if (fseek(file, 0, SEEK_SET) >= 0) {
+    //     fseek(file, 0, SEEK_END);
+    //     len = (size_t)ftell(file);
+    //     fseek(file, 0, SEEK_SET);
+    //     str = web49_malloc(sizeof(uint8_t) * len);
+    //     if (fread(str, 1, len, file) != len) {
+    //         fprintf(stderr, "cannot read file: %s\n", filename);
+    //         exit(1);
+    //     }
+    //     // printf("stream.szie = %zu bytes\n", len);
+    // } else {
+        size_t alloc = 512;
         str = web49_malloc(sizeof(uint8_t) * alloc);
         while (!feof(file)) {
-            if (len + 2 >= alloc) {
-                alloc = (len + 2) * 2;
+            if (len + 256 >= alloc) {
+                alloc = (len + 256) * 2;
                 str = web49_realloc(str, sizeof(uint8_t) * alloc);
             }
-            str[len++] = fgetc(file);
+            len += fread(&str[len], 1, 128, file);
         }
         // printf("infile.size = %zu bytes\n", len);
         str[len] = 0;
-    }
+    // }
     fclose(file);
     return (web49_io_input_t){
         .byte_index = 0,
