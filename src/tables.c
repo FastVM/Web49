@@ -1154,6 +1154,7 @@ web49_opcode_t web49_bytes_to_opcode(uint8_t *bytes) {
         }
         case 0xFF: web49_error("unknown opcode: staring with byte 0xFF\n");
     }
+    __builtin_trap();
 }
 
 uint8_t web49_opcode_skip(web49_opcode_t opcode) {

@@ -166,6 +166,13 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
             }
             nargs += head->nreturns;
         }
+        if (cur.opcode == WEB49_OPCODE_BR_TABLE) {
+            web49_opt_list_t *head = &list;
+            for (size_t i = 0; i < cur.immediate.br_table.default_target; i++) {
+                head = head->last;
+            }
+            nargs += head->nreturns;
+        }
         cur.nargs = 0;
         cur.args = web49_realloc(cur.args, sizeof(web49_instr_t) * (nargs));
         ret.nargs -= nargs;
