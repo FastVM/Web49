@@ -755,6 +755,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
     *returns++ = r0;
     *stacks++ = s0;
     web49_interp_opcode_t *restrict head = block->code;
+    web49_interp_data_t *restrict locals = interp.locals;
     web49_interp_data_t reg;
     NEXT();
 exitv:
@@ -762,20 +763,20 @@ exitv:
 #define NAME(x) LABEL(x)
 #include "interp0.inc"
 #undef NAME
-#define LOCAL0 interp.locals[head[0].data.i32_u]
+#define LOCAL0 locals[head[0].data.i32_u]
 #define NAME(x) LABEL(x##_R)
 #include "interp1.inc"
 #undef LOCAL0
 #undef NAME
-#define LOCAL0 interp.locals[head[0].data.i32_u]
+#define LOCAL0 locals[head[0].data.i32_u]
 #define LOCAL1 head[1].data
 #define NAME(x) LABEL(x##_C)
 #include "interp2.inc"
 #undef LOCAL0
 #undef LOCAL1
 #undef NAME
-#define LOCAL0 interp.locals[head[0].data.i32_u]
-#define LOCAL1 interp.locals[head[1].data.i32_u]
+#define LOCAL0 locals[head[0].data.i32_u]
+#define LOCAL1 locals[head[1].data.i32_u]
 #define NAME(x) LABEL(x##_R)
 #include "interp2.inc"
 #undef LOCAL0
@@ -807,11 +808,12 @@ exitv:
         NEXT();
     }
     LABEL(WEB49_OPCODE_FFI_CALL) {
+        interp.locals = locals;
         web49_env_func_t func = head[0].ptr;
         web49_interp_data_t data = func(interp);
         head = *--returns;
-        interp.locals = *--stacks;
-        interp.locals[head[2].data.i32_u] = data;
+        locals = *--stacks;
+        locals[head[2].data.i32_u] = data;
         head += 4;
         NEXT();
     }
