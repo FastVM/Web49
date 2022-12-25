@@ -31,33 +31,50 @@ if len(engines) == 0:
 
 if len(args.test) == 0: 
     tests = {
-        'nop': {
+        'fibf': {
             'runs': 1,
+            'args': ['35'],
+            'memory': 256,
+        },
+        'nop': {
+            'runs': 100,
             'args': [],
+            'memory': 256,
         },
         'binary-trees': {
             'runs': 1,
             'args': ['16'],
+            'memory': 2**12,
         },
         'fannkuch-redux': {
             'runs': 1,
             'args': ['10'],
+            'memory': 256,
         },
         'mandelbrot-simd': {
             'runs': 1,
             'args': ['2000'],
+            'memory': 256,
         },
         'mandelbrot': {
             'runs': 1,
             'args': ['2000'],
+            'memory': 256,
         },
         'nbody': {
             'runs': 1,
             'args': ['10000000'],
+            'memory': 256,
         },
         'fib': {
             'runs': 1,
             'args': ['40'],
+            'memory': 256,
+        },
+        'trap': {
+            'runs': 10,
+            'args': [],
+            'memory': 256,
         },
     }
 else:
@@ -81,7 +98,7 @@ for i in range(1, runs+1):
     print('RUN: #' + str(i))
     for test in tests.keys():
         print('  TEST: ' + test)
-        build = subprocess.call([emcc, '-Xlinker', '--initial-memory=268435456', '-O3', test + '.c', '-o', test + '.wasm'])
+        build = subprocess.call([emcc, '-Xlinker', f'--initial-memory={tests[test]["memory"] * (2 ** 16)}', '-O3', test + '.c', '-o', test + '.wasm'])
         if test not in testdata:
             testdata[test] = {}
         data = testdata[test]
