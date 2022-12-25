@@ -87,13 +87,7 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
         build->alloc = (build->ncode + 16) * 4;
         build->code = web49_realloc(build->code, sizeof(web49_interp_opcode_t) * build->alloc);
     }
-    if (!web49_interp_cmp_to_ifcmp(cond.opcode, &op, &swap_br)) {
-        uint32_t cpos = web49_interp_read_instr(state, cond, UINT32_MAX);
-        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_IF);
-        build->code[build->ncode++].data.i32_u = cpos;
-        web49_interp_link_get(state, build->ncode++, ift);
-        web49_interp_link_get(state, build->ncode++, iff);
-    } else {
+    if (web49_interp_cmp_to_ifcmp(cond.opcode, &op, &swap_br)) {
         if (swap_br) {
             uint32_t *tt = ift;
             ift = iff;
@@ -103,6 +97,7 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
         bool binary_const = false;
         uint16_t add = 0;
         for (uint64_t i = 0; i < cond.nargs; i++) {
+#if !defined(WEB49_NO_OPT)
             if (cond.args[i].opcode == WEB49_OPCODE_I32_CONST || cond.args[i].opcode == WEB49_OPCODE_I64_CONST || cond.args[i].opcode == WEB49_OPCODE_F32_CONST || cond.args[i].opcode == WEB49_OPCODE_F64_CONST) {
                 if (cond.nargs == 2 && i + 1 == cond.nargs) {
                     state->depth += 1;
@@ -113,7 +108,7 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
             }
             if (cond.args[i].opcode == WEB49_OPCODE_GET_LOCAL) {
                 for (uint64_t j = i + 1; j < cond.nargs; j++) {
-                    if (cond.args[j].opcode == WEB49_OPCODE_BEGIN0 || cond.args[j].opcode == WEB49_OPCODE_TEE_LOCAL) {
+                    if (cond.args[j].opcode == WEB49_OPCODE_BEGIN0) {
                         goto next;
                     }
                 }
@@ -122,6 +117,7 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
                 continue;
             }
         next:;
+#endif
             args[i] = web49_interp_read_instr(state, cond.args[i], UINT32_MAX);
         }
         build->code[build->ncode++].opcode = OPCODE(op + add);
@@ -132,6 +128,12 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
             }
             build->code[build->ncode++].data.i32_u = args[i];
         }
+        web49_interp_link_get(state, build->ncode++, ift);
+        web49_interp_link_get(state, build->ncode++, iff);
+    } else {
+        uint32_t cpos = web49_interp_read_instr(state, cond, UINT32_MAX);
+        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_IF);
+        build->code[build->ncode++].data.i32_u = cpos;
         web49_interp_link_get(state, build->ncode++, ift);
         web49_interp_link_get(state, build->ncode++, iff);
     }
@@ -300,6 +302,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     uint16_t add = 0;
     uint32_t args[16];
     for (uint64_t i = 0; i < cur.nargs; i++) {
+#if !defined(WEB49_NO_OPT)
         if (cur.opcode != WEB49_OPCODE_CALL && cur.opcode != WEB49_OPCODE_CALL_INDIRECT && cur.opcode != WEB49_OPCODE_BR_IF) {
             if (cur.args[i].opcode == WEB49_OPCODE_I32_CONST || cur.args[i].opcode == WEB49_OPCODE_I64_CONST || cur.args[i].opcode == WEB49_OPCODE_F32_CONST || cur.args[i].opcode == WEB49_OPCODE_F64_CONST) {
                 if (cur.nargs == 2 && i + 1 == cur.nargs) {
@@ -321,6 +324,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
             }
         next:;
         }
+#endif
         args[i] = web49_interp_read_instr(state, cur.args[i], UINT32_MAX);
     }
     if (cur.opcode == WEB49_OPCODE_RETURN && state->depth == 0) {
@@ -465,6 +469,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
 }
 
 #if defined(WEB49_PRINT_INSTR)
+// #define DPRINT(name) for (size_t p=0; p<depth; p++) { fprintf(stderr, "| "); } fprintf(stderr, name "\n")
 #define DPRINT(name) fprintf(stderr, name "\n")
 #else
 #define DPRINT(name)
@@ -757,6 +762,9 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
     web49_interp_opcode_t *restrict head = block->code;
     web49_interp_data_t *restrict locals = interp.locals;
     web49_interp_data_t reg;
+#if defined(WEB49_PRINT_INSTR)
+    size_t depth = 1;
+#endif
     NEXT();
 exitv:
     return s0[0];

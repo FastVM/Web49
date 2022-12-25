@@ -28,6 +28,9 @@ NAME(WEB49_OPCODE_BR_TABLE) {
     NEXT();
 }
 NAME(WEB49_OPCODE_RETURN) {
+#if defined(WEB49_PRINT_INSTR)
+    depth -= 1;
+#endif
     web49_interp_data_t ret = LOCAL0;
     head = *--returns;
     locals = *--stacks;
@@ -53,72 +56,72 @@ NAME(WEB49_OPCODE_SET_GLOBAL) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_LOAD) {
-    locals[head[1].data.i32_u].i32_u = *(uint32_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].i32_u = WEB49_INTERP_READ(uint32_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD) {
-    locals[head[1].data.i32_u].i64_u = *(uint64_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].i64_u = WEB49_INTERP_READ(uint64_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F32_LOAD) {
-    locals[head[1].data.i32_u].f32 = *(float *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].f32 = WEB49_INTERP_READ(float, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_LOAD) {
-    locals[head[1].data.i32_u].f64 = *(double *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].f64 = WEB49_INTERP_READ(double, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_LOAD8_S) {
-    locals[head[1].data.i32_u].i32_s = (int32_t) * (int8_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].i32_s = (int32_t) WEB49_INTERP_READ(int8_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_LOAD8_U) {
-    locals[head[1].data.i32_u].i32_u = (uint32_t) * (uint8_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].i32_u = (uint32_t) WEB49_INTERP_READ(uint8_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_LOAD16_S) {
-    locals[head[1].data.i32_u].i32_s = (int32_t) * (int16_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].i32_s = (int32_t) WEB49_INTERP_READ(int16_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_LOAD16_U) {
-    locals[head[1].data.i32_u].i32_u = (uint32_t) * (uint16_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].i32_u = (uint32_t) WEB49_INTERP_READ(uint16_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD8_S) {
-    locals[head[1].data.i32_u].i64_s = (int64_t) * (int8_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].i64_s = (int64_t) WEB49_INTERP_READ(int8_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD8_U) {
-    locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint8_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].i64_u = (uint64_t) WEB49_INTERP_READ(uint8_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD16_S) {
-    locals[head[1].data.i32_u].i64_s = (int64_t) * (int16_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].i64_s = (int64_t) WEB49_INTERP_READ(int16_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD16_U) {
-    locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint16_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].i64_u = (uint64_t) WEB49_INTERP_READ(uint16_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD32_S) {
-    locals[head[1].data.i32_u].i64_s = (int64_t) * (int32_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].i64_s = (int64_t) WEB49_INTERP_READ(int32_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_LOAD32_U) {
-    locals[head[1].data.i32_u].i64_u = (uint64_t) * (uint32_t *)&interp.memory[LOCAL0.i32_u + head[2].data.i32_u];
+    locals[head[1].data.i32_u].i64_u = (uint64_t) WEB49_INTERP_READ(uint32_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
     head += 3;
     NEXT();
 }

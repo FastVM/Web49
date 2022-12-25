@@ -31,9 +31,9 @@ web49_interp_data_t web49_main_import_wasi_fd_seek(web49_interp_t interp) {
             __builtin_trap();
     }
     if (interp.locals[0].i32_u <= 2 && whence == SEEK_SET) {
-        *(int64_t *)&interp.memory[interp.locals[3].i32_u] = interp.locals[1].i64_s;
+        WEB49_INTERP_WRITE(int64_t, interp, interp.locals[3].i32_u, interp.locals[1].i64_s);
     } else {
-        *(int64_t *)&interp.memory[interp.locals[3].i32_u] = (int64_t) lseek(interp.locals[0].i32_u, interp.locals[1].i64_s, whence);
+        WEB49_INTERP_WRITE(int64_t, interp, interp.locals[3].i32_u, (int64_t) lseek(interp.locals[0].i32_u, interp.locals[1].i64_s, whence));
     }
     return (web49_interp_data_t){.i32_u = 0};
 }
@@ -43,13 +43,13 @@ web49_interp_data_t web49_main_import_wasi_args_get(web49_interp_t interp) {
     uint32_t argc = 0;
     uint32_t head2 = buf;
     for (size_t i = 0; interp.args[i] != NULL; i++) {
-        *(uint32_t *)&interp.memory[argv + argc * 4] = head2;
+        WEB49_INTERP_WRITE(uint32_t, interp, argv + argc * 4, head2);
         size_t memlen = strlen(interp.args[i]) + 1;
-        memcpy(&interp.memory[head2], interp.args[i], memlen);
+        memcpy(WEB49_INTERP_ADDR(void *, interp, head2, memlen), interp.args[i], memlen);
         head2 += memlen;
         argc += 1;
     }
-    *(uint32_t *)&interp.memory[argv + argc * 4] = 0;
+    WEB49_INTERP_WRITE(uint32_t, interp, argv + argc * 4, 0);
     return (web49_interp_data_t){.i32_u = 0};
 }
 web49_interp_data_t web49_main_import_wasi_args_sizes_get(web49_interp_t interp) {
@@ -61,8 +61,8 @@ web49_interp_data_t web49_main_import_wasi_args_sizes_get(web49_interp_t interp)
         buf_len += strlen(interp.args[i]) + 1;
         i += 1;
     }
-    *(uint32_t *)&interp.memory[argc] = i;
-    *(uint32_t *)&interp.memory[buf_size] = buf_len;
+    WEB49_INTERP_WRITE(uint32_t, interp, argc, i);
+    WEB49_INTERP_WRITE(uint32_t, interp, buf_size, buf_len);
     return (web49_interp_data_t){.i32_u = 0};
 }
 web49_interp_data_t web49_main_import_wasi_clock_time_get(web49_interp_t interp) {
@@ -83,7 +83,7 @@ web49_interp_data_t web49_main_import_wasi_clock_time_get(web49_interp_t interp)
     }
     struct timespec ts;
     clock_gettime(clock_id, &ts);
-    *(uint64_t *)&interp.memory[time] = (uint64_t)ts.tv_sec * 1000000000 + (uint64_t)ts.tv_nsec;
+    WEB49_INTERP_WRITE(uint64_t, interp, time, (uint64_t)ts.tv_sec * 1000000000 + (uint64_t)ts.tv_nsec);
     return (web49_interp_data_t){.i32_u = 0};
 }
 web49_interp_data_t web49_main_import_wasi_fd_close(web49_interp_t interp) {
@@ -114,22 +114,22 @@ web49_interp_data_t web49_main_import_wasi_fd_fdstat_get(web49_interp_t interp) 
     if (fd <= 2) {
         fs_rights_base &= ~(4 | 32);
     }
-    *(uint8_t *)&interp.memory[fdstat + 0] = fs_filetype;
-    *(uint8_t *)&interp.memory[fdstat + 1] = 0;
-    *(uint16_t *)&interp.memory[fdstat + 2] = fs_flags;
-    *(uint32_t *)&interp.memory[fdstat + 4] = 0;
-    *(uint64_t *)&interp.memory[fdstat + 8] = fs_rights_base;
-    *(uint64_t *)&interp.memory[fdstat + 16] = fs_rights_inheriting;
+    WEB49_INTERP_WRITE(uint8_t, interp, fdstat + 0, fs_filetype);
+    WEB49_INTERP_WRITE(uint8_t, interp, fdstat + 1, 0);
+    WEB49_INTERP_WRITE(uint16_t, interp, fdstat + 2, fs_flags);
+    WEB49_INTERP_WRITE(uint32_t, interp, fdstat + 4, 0);
+    WEB49_INTERP_WRITE(uint64_t, interp, fdstat + 8, fs_rights_base);
+    WEB49_INTERP_WRITE(uint64_t, interp, fdstat + 16, fs_rights_inheriting);
     return (web49_interp_data_t){.i32_u = 0};
 }
 web49_interp_data_t web49_main_import_wasi_fd_prestat_get(web49_interp_t interp) {
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t buf = interp.locals[1].i32_u;
-    *(uint8_t *)&interp.memory[buf] = 0;
+    WEB49_INTERP_WRITE(uint8_t, interp, buf, 0);
     if (fd == 3) {
-        *(uint32_t *)&interp.memory[buf+4] = 1;
+        WEB49_INTERP_WRITE(uint32_t, interp, buf+4, 1);
     } else if (fd == 4) {
-        *(uint32_t *)&interp.memory[buf+4] = 2;
+        WEB49_INTERP_WRITE(uint32_t, interp, buf+4, 2);
     } else {
         return (web49_interp_data_t){.i32_u = 8};
     }
@@ -146,13 +146,13 @@ web49_interp_data_t web49_main_import_wasi_path_open(web49_interp_t interp) {
     uint32_t fs_flags = interp.locals[7].i32_u;
     uint32_t pfd = interp.locals[8].i32_u;
     char host_path[512];
-    memcpy(host_path, &interp.memory[path], path_len);
+    memcpy(host_path, WEB49_INTERP_ADDR(void *, interp, path, path_len), path_len);
     host_path[path_len] = '\0';
     if (!strcmp(host_path, "/")) {
-        *(int32_t *) &interp.memory[path] = (int32_t) web49_global_root;
+        WEB49_INTERP_WRITE(int32_t, interp, path, web49_global_root);
         return (web49_interp_data_t){.i32_u = 0};
     } else if (!strcmp(host_path, "./")) {
-        *(int32_t *) &interp.memory[path] = (int32_t) web49_global_cwd;
+        WEB49_INTERP_WRITE(int32_t, interp, path, web49_global_cwd);
         return (web49_interp_data_t){.i32_u = 0};
     }
     int flags = ((oflags & 1)             ? O_CREAT     : 0) |
@@ -182,38 +182,33 @@ web49_interp_data_t web49_main_import_wasi_path_open(web49_interp_t interp) {
     if (hostfd < 0) {
         return (web49_interp_data_t){.i32_u = 44};
     }
-    *(int32_t *) &interp.memory[pfd] = hostfd;
+    WEB49_INTERP_WRITE(uint32_t, interp, pfd, hostfd);
     return (web49_interp_data_t){.i32_u = 0};
 }
 web49_interp_data_t web49_main_import_wasi_fd_read(web49_interp_t interp) {
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t iovs = interp.locals[1].i32_u;
     uint32_t iovs_len = interp.locals[2].i32_u;
-    uint32_t nread = interp.locals[3].i32_u;
-    *(uint32_t *)&interp.memory[nread] = 0;
+    uint32_t nread = 0;
     for (size_t i = 0; i < iovs_len; i++) {
-        uint32_t ptr = *(uint32_t *)&interp.memory[iovs + i * 8 + 0];
-        uint32_t len = *(uint32_t *)&interp.memory[iovs + i * 8 + 4];
-        *(uint32_t *)&interp.memory[nread] += (uint32_t)read(fd, &interp.memory[ptr], len);
-        // printf("%"PRIu32"\n", len);
-        // for (uint32_t j = 0; i < len; j++) {
-            // printf(" %"PRIu8, interp.memory[ptr+j]);
-        // }
-        // printf("\n");
+        uint32_t ptr = WEB49_INTERP_READ(uint32_t, interp, iovs + i * 8 + 0);
+        uint32_t len = WEB49_INTERP_READ(uint32_t, interp, iovs + i * 8 + 4);
+        nread += (uint32_t)read(fd, WEB49_INTERP_ADDR(void *, interp, ptr, len), len);
     }
+    WEB49_INTERP_WRITE(uint32_t, interp, interp.locals[3].i32_u, nread);
     return (web49_interp_data_t){.i32_u = 0};
 }
 web49_interp_data_t web49_main_import_wasi_fd_write(web49_interp_t interp) {
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t iovs = interp.locals[1].i32_u;
     uint32_t iovs_len = interp.locals[2].i32_u;
-    uint32_t nwritten = interp.locals[3].i32_u;
-    *(uint32_t *)&interp.memory[nwritten] = 0;
+    uint32_t nwritten = 0;
     for (size_t i = 0; i < iovs_len; i++) {
-        uint32_t ptr = *(uint32_t *)&interp.memory[iovs + i * 8];
-        uint32_t len = *(uint32_t *)&interp.memory[iovs + i * 8 + 4];
-        *(uint32_t *)&interp.memory[nwritten] += (uint32_t)write(fd, &interp.memory[ptr], len);
+        uint32_t ptr = WEB49_INTERP_READ(uint32_t, interp, iovs + i * 8 + 0);
+        uint32_t len = WEB49_INTERP_READ(uint32_t, interp, iovs + i * 8 + 4);
+       nwritten += (uint32_t)write(fd, WEB49_INTERP_ADDR(void *, interp, ptr, len), len);
     }
+    WEB49_INTERP_WRITE(uint32_t, interp, interp.locals[3].i32_u, nwritten);
     return (web49_interp_data_t){.i32_u = 0};
 }
 web49_interp_data_t web49_main_import_wasi_proc_exit(web49_interp_t interp) {
@@ -236,7 +231,7 @@ web49_interp_data_t web49_main_import_wasi_fd_prestat_dir_name(web49_interp_t in
     if (n > max_len) {
         n = max_len;
     }
-    memcpy(&interp.memory[interp.locals[1].i32_u], name, n);
+    memcpy(WEB49_INTERP_ADDR(void *, interp, interp.locals[1].i32_u, n), name, n);
     return (web49_interp_data_t){.i32_u = 0};
 }
 

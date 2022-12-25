@@ -6,6 +6,8 @@ import subprocess
 import time
 import argparse
 
+cur = os.path.dirname(os.path.realpath(__file__))
+
 os.chdir('test/bench')
 
 parser = argparse.ArgumentParser(
@@ -16,25 +18,19 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--runs', '-r', type=int, help='number of benchmark runs', default=1)
 parser.add_argument('--engine', '-e', type=str, action='append', default=[])
 parser.add_argument('--test', '-t', type=str, action='append', default=[])
+parser.add_argument('--compiler', '-c', type=str, default='emcc')
 
 args = parser.parse_args()
 
 runs = args.runs
 engines = args.engine
+emcc = args.compiler
 
 if len(engines) == 0:
-    engines = ['wasm3', 'miniwasm', 'wasmtime', 'wasmer']
+    engines = ['wasm3', os.path.join(cur, 'bin/miniwasm')]
 
 if len(args.test) == 0: 
     tests = {
-        'fibf': {
-            'runs': 1,
-            'args': ['35'],
-        },
-        'coremark': {
-            'runs': 1,
-            'args': ['3000'],
-        },
         'nop': {
             'runs': 1,
             'args': [],
@@ -46,10 +42,6 @@ if len(args.test) == 0:
         'fannkuch-redux': {
             'runs': 1,
             'args': ['10'],
-        },
-        'fasta': {
-            'runs': 1,
-            'args': ['5000000'],
         },
         'mandelbrot-simd': {
             'runs': 1,
@@ -89,7 +81,7 @@ for i in range(1, runs+1):
     print('RUN: #' + str(i))
     for test in tests.keys():
         print('  TEST: ' + test)
-        build = subprocess.call(['emcc', '-sPURE_WASI=1', '-sWASM=1', '-O3', test + '.c', '-o', test + '.wasm'])
+        build = subprocess.call([emcc, '-O3', test + '.c', '-o', test + '.wasm'])
         if test not in testdata:
             testdata[test] = {}
         data = testdata[test]
