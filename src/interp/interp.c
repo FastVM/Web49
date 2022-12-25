@@ -130,6 +130,14 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
         }
         web49_interp_link_get(state, build->ncode++, ift);
         web49_interp_link_get(state, build->ncode++, iff);
+    } else if (cond.opcode == WEB49_OPCODE_I32_EQZ) {
+        web49_interp_read_instr_branch(state, cond.args[0], iff, ift);
+    } else if (cond.opcode == WEB49_OPCODE_GET_LOCAL) {
+        uint32_t cpos = web49_interp_read_instr(state, cond, UINT32_MAX);
+        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_IF);
+        build->code[build->ncode++].data.i32_u = cond.immediate.varint32;
+        web49_interp_link_get(state, build->ncode++, ift);
+        web49_interp_link_get(state, build->ncode++, iff);
     } else {
         uint32_t cpos = web49_interp_read_instr(state, cond, UINT32_MAX);
         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_IF);
