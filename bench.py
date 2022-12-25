@@ -81,7 +81,7 @@ for i in range(1, runs+1):
     print('RUN: #' + str(i))
     for test in tests.keys():
         print('  TEST: ' + test)
-        build = subprocess.call([emcc, '-O3', test + '.c', '-o', test + '.wasm'])
+        build = subprocess.call([emcc, '-Xlinker', '--initial-memory=268435456', '-O3', test + '.c', '-o', test + '.wasm'])
         if test not in testdata:
             testdata[test] = {}
         data = testdata[test]
