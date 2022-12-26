@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
 
-emcc -O2 $* $(dirname $0)/raylib/src/utils.c -I$(dirname $0)/raylib/include -DWEB49_EMRAYLIB=1 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s WARN_ON_UNDEFINED_SYMBOLS=0
+emcc -O3 $* $(dirname $0)/raylib/src/utils.c -I$(dirname $0)/raylib/include -s WARN_ON_UNDEFINED_SYMBOLS=0

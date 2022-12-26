@@ -1,6 +1,18 @@
 import json
 import os
 
+def toext(t):
+    if t == 'int' or t == 'bool':
+        return 'i32_s'
+    if t == 'unsigned int' or t == 'unsigned char':
+        return 'i32_u'
+    if t == 'float':
+        return 'f32'
+    if t == 'double':
+        return 'f64'
+    if t == 'unsigned long long':
+        return 'i64_u'
+
 os.chdir('src/api')
 
 with open('raylib.json') as f:
@@ -36,24 +48,26 @@ with open('raylib.c', 'w') as outfile:
         offset = 0
         if fret == 'void':
             print('  %s(' % fname, file=outfile)
+        elif fret == 'float':
+            print('  ret.f32 = (float) %s(' % fname, file=outfile)
         elif fret == 'bool':
-            print('  ret.i32_s = (int32_t) %s(' % fname, file=outfile);
+            print('  ret.i32_s = (int32_t) %s(' % fname, file=outfile)
         elif fret == 'int':
-            print('  ret.i32_s = (int32_t) %s(' % fname, file=outfile);
+            print('  ret.i32_s = (int32_t) %s(' % fname, file=outfile)
         elif fret == 'unsigned int':
-            print('  ret.i32_u = (uint32_t) %s(' % fname, file=outfile);
+            print('  ret.i32_u = (uint32_t) %s(' % fname, file=outfile)
         elif fret[0].upper() == fret[0]:
-            print(f'  *({fret} *) &interp.memory[interp.locals[0].i32_s] = {fname}(', file=outfile);
+            print(f'  *({fret} *) &interp.memory[interp.locals[0].i32_u] = {fname}(', file=outfile)
         else:
             print('  %s(' % fname, file=outfile)
         for argnum, arg in enumerate(fparams):
             argtype = arg['type']
             if argtype[-1] == '*':
-                print(f'    ({argtype}) &interp.memory[interp.locals[{argnum+offset}].i32_s]', end='', file=outfile)
+                print(f'    ({argtype}) &interp.memory[interp.locals[{argnum+offset}].i32_u]', end='', file=outfile)
             elif argtype[0].upper() == argtype[0] or argtype[0:2] == 'rl':
-                print(f'    *({argtype} *) &interp.memory[interp.locals[{argnum+offset}].i32_s]', end='', file=outfile)
+                print(f'    *({argtype} *) &interp.memory[interp.locals[{argnum+offset}].i32_u]', end='', file=outfile)
             else:
-                print(f'    ({argtype}) interp.locals[{argnum+offset}].i32_s', end='', file=outfile)
+                print(f'    ({argtype}) interp.locals[{argnum+offset}].{toext(argtype)}', end='', file=outfile)
             if argnum + 1 != len(fparams):
                 print(',', file=outfile)
             else:
