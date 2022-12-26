@@ -16,3 +16,4 @@ bin/*
 *.gcda
 *.core
 err.txt
+src/api/raylib.c

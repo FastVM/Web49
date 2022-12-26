@@ -1,4 +1,3 @@
-
 #include "../src/ast.h"
 #include "../src/interp/interp.h"
 #include "../src/opt/tee.h"
@@ -10,6 +9,8 @@
 web49_env_func_t web49_main_import_func(void *state, const char *mod, const char *func) {
     if (!strcmp(mod, "wasi_snapshot_preview1")) {
         return web49_api_import_wasi(state, func);
+    } else if (!strcmp(mod, "raylib")) {
+        return web49_api_import_raylib(func);
     } else {
         return NULL;
     }
@@ -29,8 +30,6 @@ int web49_file_main(const char *inarg, const char **args) {
             mod = web49_readwat_module(&infile);
         }
     }
-    web49_opt_tee_module(&mod);
-    web49_opt_tree_module(&mod);
     uint32_t start = 0;
     web49_section_export_t exports = web49_module_get_section(mod, WEB49_SECTION_ID_EXPORT).export_section;
     for (size_t j = 0; j < exports.num_entries; j++) {
@@ -39,6 +38,8 @@ int web49_file_main(const char *inarg, const char **args) {
             start = entry.index;
         }
     }
+    web49_opt_tee_module(&mod);
+    web49_opt_tree_module(&mod);
     web49_interp_t interp = web49_interp_module(mod, args);
     interp.import_func = web49_main_import_func;
     interp.import_state = NULL;
