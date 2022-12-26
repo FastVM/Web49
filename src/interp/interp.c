@@ -75,8 +75,6 @@ static bool web49_interp_cmp_to_ifcmp(web49_opcode_t opcode, web49_opcode_t *op_
     }
 }
 
-uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur, uint32_t local);
-
 static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web49_instr_t cond, uint32_t *ift, uint32_t *iff) {
     web49_interp_build_t *build = &state->build;
     void **ptrs = state->ptrs;

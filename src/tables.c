@@ -1138,19 +1138,19 @@ web49_opcode_t web49_bytes_to_opcode(uint8_t *bytes) {
         case 0xFA: web49_error("unknown opcode: staring with byte 0xFA\n");
         case 0xFB: switch (bytes[1]) {
         default:
-            web49_error("unknown gc/ref-strings sequence: 0xFB 0x%"PRIu8"x", bytes[1]);
+            web49_error("unknown gc/ref-strings sequence: 0xFB 0x%"PRIu8"\n", bytes[1]);
         }
         case 0xFC: switch (bytes[1]) {
         default:
-            web49_error("unknown opcode sequence: 0xFC 0x%"PRIu8"x", bytes[1]);
+            web49_error("unknown opcode sequence: 0xFC 0x%"PRIu8"\n", bytes[1]);
         }
         case 0xFD: switch (bytes[1]) {
         default:
-            web49_error("unknown simd sequence: 0xFD 0x%"PRIu8"x", bytes[1]);
+            web49_error("unknown simd sequence: 0xFD 0x%"PRIu8"\n", bytes[1]);
         }
         case 0xFE: switch (bytes[1]) {
         default:
-            web49_error("unknown threads sequence: 0xFE 0x%"PRIu8"x", bytes[1]);
+            web49_error("unknown threads sequence: 0xFE 0x%"PRIu8"\n", bytes[1]);
         }
         case 0xFF: web49_error("unknown opcode: staring with byte 0xFF\n");
     }

@@ -19,12 +19,14 @@ parser.add_argument('--runs', '-r', type=int, help='number of benchmark runs', d
 parser.add_argument('--engine', '-e', type=str, action='append', default=[])
 parser.add_argument('--test', '-t', type=str, action='append', default=[])
 parser.add_argument('--compiler', '-c', type=str, default='emcc')
+parser.add_argument('--opt', '-O', type=str, default='3')
 
 args = parser.parse_args()
 
 runs = args.runs
 engines = args.engine
 emcc = args.compiler
+optlevel = args.opt
 
 if len(engines) == 0:
     engines = ['wasm3', os.path.join(cur, 'bin/miniwasm')]
@@ -98,7 +100,7 @@ for i in range(1, runs+1):
     print('RUN: #' + str(i))
     for test in tests.keys():
         print('  TEST: ' + test)
-        build = subprocess.call([emcc, '-Xlinker', f'--initial-memory={tests[test]["memory"] * (2 ** 16)}', '-O3', test + '.c', '-o', test + '.wasm'])
+        build = subprocess.call([*emcc.split(' '), '-Xlinker', f'--initial-memory={tests[test]["memory"] * (2 ** 16)}', f"-O{optlevel}", test + '.c', '-o', test + '.wasm'])
         if test not in testdata:
             testdata[test] = {}
         data = testdata[test]
