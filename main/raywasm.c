@@ -9,8 +9,12 @@
 web49_env_func_t web49_main_import_func(void *state, const char *mod, const char *func) {
     if (!strcmp(mod, "wasi_snapshot_preview1")) {
         return web49_api_import_wasi(state, func);
-    } else if (!strcmp(mod, "raylib")) {
-        return web49_api_import_raylib(func);
+    } else if (!strcmp(mod, "env")) {
+        web49_env_func_t ret = web49_api_import_raylib(func);
+        if (ret == NULL) {
+            __builtin_trap();
+        }
+        return ret;
     } else {
         return NULL;
     }

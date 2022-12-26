@@ -17,3 +17,5 @@ bin/*
 *.core
 err.txt
 src/api/raylib.c
+raylib/examples
+*.tmp

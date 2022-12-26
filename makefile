@@ -10,6 +10,17 @@ WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
 
 OBJS := $(WEB49_OBJS)
 
+RAYLIB_SRCS := src/api/raylib.c raylib/src/raudio.c raylib/src/rcore.c raylib/src/rmodels.c raylib/src/rshapes.c raylib/src/rtext.c raylib/src/rtextures.c raylib/src/utils.c
+RAYLIB_OBJS := $(RAYLIB_SRCS:%.c=%.o)
+
+LDFLAGS_FreeBSD = -lGL
+LDFLAGS_Linux = -lGL
+LDFLAGS_Darwin = -framework OpenGL
+
+UNAME_S != uname -s
+
+LDFLAGS := $(LDFLAGS_$(UNAME_S)) $(LDFLAGS)
+
 default: all
 
 all: bins
@@ -18,12 +29,12 @@ bins: bin/wasm2wat$(EXE) bin/wat2wasm$(EXE) bin/wasm2wasm$(EXE) bin/miniwasm$(EX
 
 # raylib
 
-src/api/raylib.c: src/api/raylib.py
+src/api/raylib.c: src/api/raylib.py src/api/raylib.json
 	$(PYTHON) src/api/raylib.py
 
-bin/raywasm$(EXE): main/raywasm.o src/api/raylib.c $(OBJS)
+bin/raywasm$(EXE): main/raywasm.o $(OBJS) $(RAYLIB_OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) main/raywasm.o src/api/raylib.c -I/usr/local/include -L/usr/local/lib $(OBJS) -o $(@) -lm -lraylib -pthread -ldl $(LDFLAGS)
+	$(CC) $(OPT) main/raywasm.o $(RAYLIB_OBJS) -L/usr/local/lib $(OBJS) -o $(@) -lm -lglfw -pthread -ldl $(LDFLAGS)
 
 # bin
 
@@ -55,6 +66,9 @@ clean: .dummy
 	find bin -type f | xargs rm
 
 # intermediate files
+
+$(RAYLIB_OBJS): $(@:%.o=%.c)
+	$(CC) -c $(OPT) $(@:%.o=%.c) -o $(@) -w -DPLATFORM_DESKTOP -Iraylib/include -I/usr/local/include $(CFLAGS)
 
 $(PROG_OBJS) $(WEB49_OBJS): $(@:%.o=%.c)
 	$(CC) -c $(OPT) $(@:%.o=%.c) -o $(@) $(CFLAGS)
