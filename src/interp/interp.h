@@ -10,43 +10,12 @@ enum web49_interp_instr_enum_t {
     WEB49_OPCODE_LOAD_REG,
     WEB49_OPCODE_STORE_REG,
     WEB49_OPCODE_FFI_CALL,
-    WEB49_OPCODE_IF_I32_EQZ,
     WEB49_OPCODE_IF_I32_EQ,
     WEB49_OPCODE_IF_I32_NE,
     WEB49_OPCODE_IF_I32_LT_S,
     WEB49_OPCODE_IF_I32_LT_U,
     WEB49_OPCODE_IF_I32_GT_S,
     WEB49_OPCODE_IF_I32_GT_U,
-    WEB49_OPCODE_IF_I32_LE_S,
-    WEB49_OPCODE_IF_I32_LE_U,
-    WEB49_OPCODE_IF_I32_GE_S,
-    WEB49_OPCODE_IF_I32_GE_U,
-    WEB49_OPCODE_IF_I64_EQZ,
-    WEB49_OPCODE_IF_I64_EQ,
-    WEB49_OPCODE_IF_I64_NE,
-    WEB49_OPCODE_IF_I64_LT_S,
-    WEB49_OPCODE_IF_I64_LT_U,
-    WEB49_OPCODE_IF_I64_GT_S,
-    WEB49_OPCODE_IF_I64_GT_U,
-    WEB49_OPCODE_IF_I64_LE_S,
-    WEB49_OPCODE_IF_I64_LE_U,
-    WEB49_OPCODE_IF_I64_GE_S,
-    WEB49_OPCODE_IF_I64_GE_U,
-    WEB49_OPCODE_IF_F32_EQ,
-    WEB49_OPCODE_IF_F32_NE,
-    WEB49_OPCODE_IF_F32_LT,
-    WEB49_OPCODE_IF_F32_GT,
-    WEB49_OPCODE_IF_F32_LE,
-    WEB49_OPCODE_IF_F32_GE,
-    WEB49_OPCODE_IF_F64_EQ,
-    WEB49_OPCODE_IF_F64_NE,
-    WEB49_OPCODE_IF_F64_LT,
-    WEB49_OPCODE_IF_F64_GT,
-    WEB49_OPCODE_IF_F64_LE,
-    WEB49_OPCODE_IF_F64_GE,
-    WEB49_OPCODE_IF_I32_AND,
-    WEB49_OPCODE_IF_I32_OR,
-    WEB49_OPCODE_IF_I32_XOR,
     WEB49_OPCODE_WITH_CONST_LAST,
     WEB49_OPCODE_WITH_TMP = WEB49_OPCODE_WITH_CONST_LAST * 2,
     WEB49_MAX_OPCODE_INTERP_NUM,
@@ -163,7 +132,11 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
 
 void web49_free_interp(web49_interp_t interp);
 
+#if defined(WEB49_NO_BOUNDS)
+#define WEB49_INTERP_BOUNDS(low, add) (__builtin_unreachable())
+#else
 #define WEB49_INTERP_BOUNDS(low, add) ({ fprintf(stderr, "memmory access 0x%zx of size 0x%zx out of bounds\n", (size_t) (low), (size_t) (add)); exit(1); })
+#endif
 #define WEB49_INTERP_ADDR(ptrtype, interp, dest, size) ({uint32_t xptr_ = (dest); web49_interp_t sub_ = (interp); if (sub_.memsize < xptr_ + size) { WEB49_INTERP_BOUNDS(xptr_, size); }; (ptrtype) &sub_.memory[xptr_]; })
 #define WEB49_INTERP_READ(elemtype, interp, dest) (*WEB49_INTERP_ADDR(elemtype *, interp, dest, sizeof(elemtype)))
 #define WEB49_INTERP_WRITE(elemtype, interp, dest, src) (*WEB49_INTERP_ADDR(elemtype *, interp, dest, sizeof(elemtype)) = (src))

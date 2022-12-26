@@ -31,14 +31,14 @@ if len(engines) == 0:
 
 if len(args.test) == 0: 
     tests = {
-        'fibf': {
-            'runs': 1,
-            'args': ['35'],
-            'memory': 256,
-        },
         'nop': {
             'runs': 100,
             'args': [],
+            'memory': 256,
+        },
+        'fibf': {
+            'runs': 1,
+            'args': ['35'],
             'memory': 256,
         },
         'binary-trees': {
