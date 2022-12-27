@@ -35,14 +35,13 @@ jobs:
             test/bench/coremark.png
   freebsd-web49:
     runs-on: macos-12
-    name: A job to run test in FreeBSD
     steps:
       - uses: actions/checkout@v3
-      - name: Test in FreeBSD
-        id: test
+      - name: run in freebsd
+        id: freebsd
         uses: vmactions/freebsd-vm@v0
         with:
-          usesh: true
+          usesh: false
           prepare: |
             pkg install -y glfw gcc
           run: |
