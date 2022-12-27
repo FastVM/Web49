@@ -13,13 +13,11 @@ OBJS := $(WEB49_OBJS)
 RAYLIB_SRCS := src/api/raylib.c raylib/src/raudio.c raylib/src/rcore.c raylib/src/rmodels.c raylib/src/rshapes.c raylib/src/rtext.c raylib/src/rtextures.c raylib/src/utils.c
 RAYLIB_OBJS := $(RAYLIB_SRCS:%.c=%.o)
 
-LDFLAGS_FreeBSD = -lGL
-LDFLAGS_Linux = -lGL -lglfw
-LDFLAGS_Darwin = -framework OpenGL -lglfw
+LDFLAGS_GL_FreeBSD = -lGL
+LDFLAGS_GL_Linux = -lGL -lglfw
+LDFLAGS_GL_Darwin = -framework OpenGL -lglfw
 
 UNAME_S != uname -s
-
-LDFLAGS := $(LDFLAGS_$(UNAME_S)) $(LDFLAGS)
 
 default: all
 
@@ -34,7 +32,7 @@ src/api/raylib.c: src/api/raylib.py src/api/raylib.json
 
 bin/raywasm$(EXE): main/raywasm.o $(OBJS) $(RAYLIB_OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) main/raywasm.o $(RAYLIB_OBJS) -L/usr/local/lib $(OBJS) -o $(@) -lm -pthread -ldl $(LDFLAGS)
+	$(CC) $(OPT) main/raywasm.o $(RAYLIB_OBJS) -L/usr/local/lib $(OBJS) -o $(@) -lm -pthread -ldl $(LDFLAGS_GL_$(UNAME_S)) $(LDFLAGS)
 
 # bin
 
