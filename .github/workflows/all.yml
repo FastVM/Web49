@@ -16,8 +16,6 @@ jobs:
       - run: make CC=gcc-11 OPT='-Ofast -fomit-frame-pointer -flto' all
       - run: sudo cp bin/miniwasm /usr/bin/miniwasm
       - run: pushd ./; git clone https://github.com/wasm3/wasm3 && cd wasm3 && cmake . && sudo make -Bj install; popd
-      - run: curl https://get.wasmer.io -sSfL | sh && sudo cp ~/.wasmer/bin/wasmer /usr/bin/wasmer
-      - run: curl https://wasmtime.dev/install.sh -sSf | bash && sudo cp ~/.wasmtime/bin/wasmtime /usr/bin/wasmtime
       - run: sudo apt install -y python3 python3-pip
       - run: pip3 install matplotlib
       - run: python3 bench.py
@@ -41,11 +39,12 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - run: make CC=cc OPT='-O3 -fomit-frame-pointer' all
+      - run: make CC=cc OPT='-O3 -fomit-frame-pointer' all bin/raywasm
       - uses: actions/upload-artifact@v3
         with:
           name: web49-linux-release
           path:  |
+            bin/raywasm
             bin/wasm2wat
             bin/wat2wasm
             bin/wasm2wasm
@@ -56,11 +55,12 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - run: make CC=cc OPT='-g3' CFLAGS='-Wall -Wextra -Werror -Wno-unused-parameter'
+      - run: make CC=cc OPT='-g3' CFLAGS='-Wall -Wextra -Werror -Wno-unused-parameter' all bin/raywasm
       - uses: actions/upload-artifact@v3
         with:
           name: web49-linux-debug
           path:  |
+            bin/raywasm
             bin/wasm2wat
             bin/wat2wasm
             bin/wasm2wasm
@@ -71,11 +71,12 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - run: make CC=cc OPT='-O3 -fomit-frame-pointer'
+      - run: make CC=cc OPT='-O3 -fomit-frame-pointer' all bin/raywasm
       - uses: actions/upload-artifact@v3
         with:
           name: web49-mac-release
           path: |
+            bin/raywasm
             bin/wasm2wat
             bin/wat2wasm
             bin/wasm2wasm
