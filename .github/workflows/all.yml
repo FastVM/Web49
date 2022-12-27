@@ -73,7 +73,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - run: make CC=cc OPT='-O3 -fomit-frame-pointer' all bin/raywasm
+      - run: make CC=clang UNAME_S=Macos OPT='-O3 -fomit-frame-pointer' all bin/raywasm
       - uses: actions/upload-artifact@v3
         with:
           name: web49-mac-release

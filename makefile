@@ -17,7 +17,9 @@ LDFLAGS_GL_FreeBSD = -lGL
 LDFLAGS_GL_Linux = -lGL -lglfw
 LDFLAGS_GL_Darwin = -framework OpenGL -lglfw
 
-UNAME_S != uname -s
+UNAME_S_CMD != uname -s
+
+UNAME_S ?= $(UNAME_S_CMD)
 
 default: all
 
