@@ -14,8 +14,8 @@ RAYLIB_SRCS := src/api/raylib.c raylib/src/raudio.c raylib/src/rcore.c raylib/sr
 RAYLIB_OBJS := $(RAYLIB_SRCS:%.c=%.o)
 
 LDFLAGS_FreeBSD = -lGL
-LDFLAGS_Linux = -lGL
-LDFLAGS_Darwin = -framework OpenGL
+LDFLAGS_Linux = -lGL -lglfw3
+LDFLAGS_Darwin = -framework OpenGL -lglfw
 
 UNAME_S != uname -s
 
@@ -34,7 +34,7 @@ src/api/raylib.c: src/api/raylib.py src/api/raylib.json
 
 bin/raywasm$(EXE): main/raywasm.o $(OBJS) $(RAYLIB_OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) main/raywasm.o $(RAYLIB_OBJS) -L/usr/local/lib $(OBJS) -o $(@) -lm -lglfw -pthread -ldl $(LDFLAGS)
+	$(CC) $(OPT) main/raywasm.o $(RAYLIB_OBJS) -L/usr/local/lib $(OBJS) -o $(@) -lm -pthread -ldl $(LDFLAGS)
 
 # bin
 
