@@ -14,7 +14,7 @@ RAYLIB_SRCS := src/api/raylib.c raylib/src/raudio.c raylib/src/rcore.c raylib/sr
 RAYLIB_OBJS := $(RAYLIB_SRCS:%.c=%.o)
 
 LDFLAGS_FreeBSD = -lGL
-LDFLAGS_Linux = -lGL -lglfw3
+LDFLAGS_Linux = -lGL -lglfw
 LDFLAGS_Darwin = -framework OpenGL -lglfw
 
 UNAME_S != uname -s
