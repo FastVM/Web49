@@ -18,7 +18,14 @@ web49_env_func_t web49_main_import_func(void *state, const char *mod, const char
 web49_interp_data_t web49_main_expr_to_data(web49_readwat_expr_t expr) {
     web49_interp_data_t ret;
     if (!strcmp(expr.fun_fun, "i32.const")) {
-        ret.i32_s = (int32_t) web49_readwat_expr_to_i64(expr.fun_args[0]);
+        if (expr.fun_args[0].sym[0] == '0' && expr.fun_args[0].sym[1] == 'x') {
+            ret.i32_u = (uint32_t) web49_readwat_expr_to_i64(expr.fun_args[0]);
+        } else {
+            ret.i32_s = (int32_t) web49_readwat_expr_to_i64(expr.fun_args[0]);
+        }
+    }
+    if (!strcmp(expr.fun_fun, "i64.const")) {
+        ret.i64_s = (int64_t) web49_readwat_expr_to_i64(expr.fun_args[0]);
     }
     return ret;
 }
@@ -68,11 +75,11 @@ int web49_file_main(const char *inarg, const char **args) {
                         if (!strcmp(entry.field_str, str)) {
                             web49_interp_data_t data = web49_interp_block_run(interp, &interp.funcs[j]);
                             if (!strcmp(wants.fun_fun, "i32.const")) {
-                                int32_t expected = (int32_t) web49_readwat_expr_to_i64(wants.fun_args[0]);
-                                if (data.i32_s == expected) {
-                                    fprintf(stderr, "wasm spec test: PASS!\n");
+                                uint32_t expected = (uint32_t) web49_readwat_expr_to_i64(wants.fun_args[0]);
+                                if (data.i32_u == expected) {
+                                    fprintf(stderr, "wasm spec test: invoke %s pass: 0x%08"PRIx32" == 0x%08"PRIx32"\n", entry.field_str, data.i32_u, expected);
                                 } else {
-                                    fprintf(stderr, "wasm spec test: failed because (actual return value) 0x%"PRIx32" != 0x%"PRIx32" (expected return value)\n", data.i32_u, expected);
+                                    fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%"PRIx32" != 0x%"PRIx32" (expected return value)\n", entry.field_str, data.i32_u, expected);
                                     return 1;
                                 }
                             } else {

@@ -194,6 +194,30 @@ int64_t web49_readwat_expr_to_i64(web49_readwat_expr_t expr) {
         pos = true;
         str += 1;
     }
+    if (*str == '0' && *(str + 1) == 'x') {
+        str += 2;
+        __int128 x = 0;
+        while (*str != '\0') {
+            if (*str != '_') {
+                x *= 16;
+                if ('0' <= *str && *str <= '9') {
+                    x += *str - '0';
+                } else if ('a' <= *str && *str <= 'f') {
+                    x += *str - 'a' + 10;
+                } else if ('A' <= *str && *str <= 'F') {
+                    x += *str - 'A' + 10;
+                } else {
+                    fprintf(stderr, "invalid hex digit: `%c`\n", *str);
+                    __builtin_trap();
+                }
+            }
+            str += 1;
+        }
+        if (!pos) {
+            x *= -1;
+        }
+        return (int64_t)x;
+    }
     __int128 x = 0;
     while (*str != '\0') {
         x *= 10;

@@ -279,7 +279,7 @@ NAME(WEB49_OPCODE_I32_DIV_U) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_REM_S) {
-    locals[head[2].data.i32_u].i32_s = LOCAL0.i32_s % LOCAL1.i32_s;
+    locals[head[2].data.i32_u].i32_u = (int32_t) ((int64_t) LOCAL0.i32_s % (int64_t) LOCAL1.i32_s);
     head += 3;
     NEXT();
 }
@@ -354,6 +354,7 @@ NAME(WEB49_OPCODE_I64_DIV_U) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_REM_S) {
+    locals[head[2].data.i32_u].i32_u = (int64_t) ((__int128_t) LOCAL0.i32_s % (__int128_t) LOCAL1.i32_s);
     locals[head[2].data.i32_u].i64_s = LOCAL0.i64_s % LOCAL1.i64_s;
     head += 3;
     NEXT();

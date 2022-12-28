@@ -145,7 +145,7 @@ NAME(WEB49_OPCODE_I64_EQZ) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_CLZ) {
-    locals[head[1].data.i32_u].i32_u = __builtin_clz(LOCAL0.i32_u);
+    locals[head[1].data.i32_u].i32_u = LOCAL0.i32_s == 0 ? 32 : __builtin_clz(LOCAL0.i32_s);
     head += 2;
     NEXT();
 }
@@ -160,7 +160,7 @@ NAME(WEB49_OPCODE_I32_POPCNT) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_CLZ) {
-    locals[head[1].data.i32_u].i64_u = __builtin_clz(LOCAL0.i64_u);
+    locals[head[1].data.i32_u].i64_u = LOCAL0.i64_s == 0 ? 64 : __builtin_clz(LOCAL0.i64_s);
     head += 2;
     NEXT();
 }
