@@ -20,8 +20,8 @@ typedef struct web49_readwat_state_t web49_readwat_state_t;
 struct web49_readwat_expr_t;
 typedef struct web49_readwat_expr_t web49_readwat_expr_t;
 
-web49_instr_t web49_readwat_instr(web49_readwat_expr_t code);
-uint64_t web49_readwat_expr_to_u64(web49_readwat_expr_t expr);
+web49_instr_t web49_readwat_instr(web49_readwat_state_t *out, web49_readwat_expr_t code);
+uint64_t web49_readwat_expr_to_u64(web49_readwat_table_t *table, web49_readwat_expr_t expr);
 int64_t web49_readwat_expr_to_i64(web49_readwat_expr_t expr);
 web49_readwat_expr_t web49_readwat_expr(web49_io_input_t *in);
 void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
@@ -46,9 +46,8 @@ struct web49_readwat_state_t {
 
     web49_readwat_table_t func_table;
     web49_readwat_table_t type_table;
-    web49_readwat_table_t import_table;
-    web49_readwat_table_t export_table;
-    web49_readwat_table_t data_table;
+    web49_readwat_table_t local_table;
+    web49_readwat_table_t branch_table;
     web49_readwat_table_t global_table;
 
     uint64_t alloc_type;
@@ -94,5 +93,6 @@ struct web49_readwat_expr_t {
 
 const char *web49_readwat_name(web49_io_input_t *in);
 web49_module_t web49_readwat_module(web49_io_input_t *in);
+web49_module_t web49_readwat_to_module(web49_readwat_expr_t expr);
 
 #endif

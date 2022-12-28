@@ -12,6 +12,7 @@ bin/*
 .DS_Store
 *.wasm
 *.wat
+*.wast
 .vscode/*
 *.gcda
 *.core

@@ -23,6 +23,8 @@ int web49_file_main(const char *inarg, const char **args) {
     } else {
         const char *v = strrchr(inarg, '.');
         if (!strcmp(v, ".wast")) {
+            web49_readwat_expr_t expr = web49_readwat_expr(&infile);
+            web49_module_t mod = web49_readwat_to_module(expr);
             fprintf(stderr, "miniwasm cannot handle \"wasm spec test\" files yet!\n");
             return 1;
         } else {
