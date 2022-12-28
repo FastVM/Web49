@@ -164,7 +164,12 @@ uint64_t web49_readwat_expr_to_u64(web49_readwat_table_t *table, web49_readwat_e
         __builtin_trap();
     }
     if (str[0] == '$') {
-        return web49_readwat_table_get(table, &str[1]);
+        uint64_t ret = web49_readwat_table_get(table, &str[1]);
+        if (ret == UINT64_MAX) {
+            fprintf(stderr, "bad module: do not know what %s is\n", str);
+            __builtin_trap();
+        }
+        return ret;
     }
     uint64_t x = 0;
     for (const char *arg = str; *arg != '\0'; arg += 1) {
@@ -406,7 +411,9 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
             if (code.tag != WEB49_READWAT_EXPR_TAG_FUN) {
                 continue;
             }
-            if (!strcmp(code.fun_fun, "type")) {
+            if (!strcmp(code.fun_fun, "export")) {
+                continue;
+            } else if (!strcmp(code.fun_fun, "type")) {
                 entry = web49_readwat_expr_to_u64(&out->type_table, code.fun_args[0]);
                 break;
             } else {
@@ -416,57 +423,61 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                 uint64_t alloc_params = 0;
                 uint64_t num_returns = 0;
                 web49_lang_type_t return_type = 0;
-                web49_readwat_expr_t paramres = expr.fun_args[i++];
-                if (!strcmp(paramres.fun_fun, "param")) {
-                    for (uint64_t k = 0; k < paramres.fun_nargs; k++) {
-                        if (num_params + 2 >= alloc_params) {
-                            alloc_params = (num_params + 2) * 2;
-                            params = web49_realloc(params, sizeof(web49_lang_type_t) * alloc_params);
+                while (true) {
+                    web49_readwat_expr_t paramres = expr.fun_args[i++];
+                    if (!strcmp(paramres.fun_fun, "param")) {
+                        for (uint64_t k = 0; k < paramres.fun_nargs; k++) {
+                            if (num_params + 2 >= alloc_params) {
+                                alloc_params = (num_params + 2) * 2;
+                                params = web49_realloc(params, sizeof(web49_lang_type_t) * alloc_params);
+                            }
+                            web49_readwat_expr_t name = paramres.fun_args[k];
+                            if (name.tag != WEB49_READWAT_EXPR_TAG_SYM) {
+                                fprintf(stderr, "expected param to be `i32` or `i64` or `f32` or `f64`\n");
+                                exit(1);
+                            }
+                            if (!strcmp(name.sym, "i32")) {
+                                params[num_params++] = WEB49_TYPE_I32;
+                            } else if (!strcmp(name.sym, "i64")) {
+                                params[num_params++] = WEB49_TYPE_I64;
+                            } else if (!strcmp(name.sym, "f32")) {
+                                params[num_params++] = WEB49_TYPE_F32;
+                            } else if (!strcmp(name.sym, "f64")) {
+                                params[num_params++] = WEB49_TYPE_F64;
+                            } else if (name.sym[0] == '$') {
+                                web49_readwat_table_set(&out->local_table, &name.sym[1], num_params);
+                            } else {
+                                fprintf(stderr, "expected param to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.sym);
+                                exit(1);
+                            }
                         }
-                        web49_readwat_expr_t name = paramres.fun_args[k];
-                        if (name.tag != WEB49_READWAT_EXPR_TAG_SYM) {
-                            fprintf(stderr, "expected param to be `i32` or `i64` or `f32` or `f64`\n");
-                            exit(1);
+                    } else if (!strcmp(paramres.fun_fun, "result")) {
+                        for (uint64_t k = 0; k < paramres.fun_nargs; k++) {
+                            if (num_returns != 0) {
+                                fprintf(stderr, "expected you not to use multi-results :(\n");
+                                exit(1);
+                            }
+                            web49_readwat_expr_t name = paramres.fun_args[k];
+                            if (name.tag != WEB49_READWAT_EXPR_TAG_SYM) {
+                                fprintf(stderr, "expected result to be `i32` or `i64` or `f32` or `f64`\n");
+                                exit(1);
+                            }
+                            if (!strcmp(name.sym, "i32")) {
+                                return_type = WEB49_TYPE_I32;
+                            } else if (!strcmp(name.sym, "i64")) {
+                                return_type = WEB49_TYPE_I64;
+                            } else if (!strcmp(name.sym, "f32")) {
+                                return_type = WEB49_TYPE_F32;
+                            } else if (!strcmp(name.sym, "f64")) {
+                                return_type = WEB49_TYPE_F64;
+                            } else {
+                                fprintf(stderr, "expected result to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.sym);
+                                exit(1);
+                            }
+                            num_returns += 1;
                         }
-                        if (!strcmp(name.sym, "i32")) {
-                            params[num_params++] = WEB49_TYPE_I32;
-                        } else if (!strcmp(name.sym, "i64")) {
-                            params[num_params++] = WEB49_TYPE_I64;
-                        } else if (!strcmp(name.sym, "f32")) {
-                            params[num_params++] = WEB49_TYPE_F32;
-                        } else if (!strcmp(name.sym, "f64")) {
-                            params[num_params++] = WEB49_TYPE_F64;
-                        } else {
-                            fprintf(stderr, "expected param to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.sym);
-                            exit(1);
-                        }
-                    }
-                    paramres = expr.fun_args[i++];
-                }
-                if (!strcmp(paramres.fun_fun, "result")) {
-                    for (uint64_t k = 0; k < paramres.fun_nargs; k++) {
-                        if (num_returns != 0) {
-                            fprintf(stderr, "expected you not to use multi-results :(\n");
-                            exit(1);
-                        }
-                        web49_readwat_expr_t name = paramres.fun_args[k];
-                        if (name.tag != WEB49_READWAT_EXPR_TAG_SYM) {
-                            fprintf(stderr, "expected result to be `i32` or `i64` or `f32` or `f64`\n");
-                            exit(1);
-                        }
-                        if (!strcmp(name.sym, "i32")) {
-                            return_type = WEB49_TYPE_I32;
-                        } else if (!strcmp(name.sym, "i64")) {
-                            return_type = WEB49_TYPE_I64;
-                        } else if (!strcmp(name.sym, "f32")) {
-                            return_type = WEB49_TYPE_F32;
-                        } else if (!strcmp(name.sym, "f64")) {
-                            return_type = WEB49_TYPE_F64;
-                        } else {
-                            fprintf(stderr, "expected result to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.sym);
-                            exit(1);
-                        }
-                        num_returns += 1;
+                    } else {
+                        break;
                     }
                 }
                 if (out->stype.num_entries + 1 >= out->alloc_type) {
