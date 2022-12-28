@@ -695,7 +695,7 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                 web49_section_export_entry_t entry;
                 entry.field_str = web49_readwat_sym_to_str(code.fun_args[0]);
                 entry.kind = WEB49_EXTERNAL_KIND_FUNCTION;
-                entry.index = out->num_func_imports + out->sfunction.num_entries;
+                entry.index = out->num_func_imports + out->scode.num_entries;
                 if (out->sexport.num_entries + 2 >= out->alloc_export) {
                     out->alloc_export = (out->sexport.num_entries + 2) * 2;
                     out->sexport.entries = web49_realloc(out->sexport.entries, sizeof(web49_section_export_entry_t) * out->alloc_export);

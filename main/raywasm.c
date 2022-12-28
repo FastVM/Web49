@@ -45,6 +45,7 @@ int web49_file_main(const char *inarg, const char **args) {
     web49_opt_tee_module(&mod);
     web49_opt_tree_module(&mod);
     web49_interp_t interp = web49_interp_module(mod, args);
+    web49_free_module(mod);
     interp.import_func = web49_main_import_func;
     interp.import_state = NULL;
     web49_interp_block_run(interp, &interp.funcs[start]);

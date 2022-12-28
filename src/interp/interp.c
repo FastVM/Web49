@@ -851,7 +851,10 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
     }
     uint64_t cur_func = 0;
     web49_interp_data_t *locals = web49_alloc0(sizeof(web49_interp_data_t) * (1 << 16));
-    uint64_t memsize = 65536 * memory_section.entries[0].initial;
+    uint64_t memsize = 65536;
+    if (memory_section.entries != 0) {
+        memsize = 65536 * memory_section.entries[0].initial;
+    }
     web49_interp_t interp = (web49_interp_t){
         .locals = locals,
         .memory = web49_alloc0(memsize),
@@ -921,7 +924,6 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
             interp.table[i + entry.offset.immediate.varint32] = &interp.funcs[entry.elems[i]];
         }
     }
-    web49_free_module(mod);
     return interp;
 }
 
