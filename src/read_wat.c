@@ -447,7 +447,7 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                 uint64_t alloc_params = 0;
                 uint64_t num_returns = 0;
                 web49_lang_type_t return_type = 0;
-                while (true) {
+                while (i < expr.fun_nargs) {
                     web49_readwat_expr_t paramres = expr.fun_args[i++];
                     if (!strcmp(paramres.fun_fun, "param")) {
                         for (uint64_t k = 0; k < paramres.fun_nargs; k++) {
@@ -964,11 +964,14 @@ web49_instr_t web49_readwat_instr(web49_readwat_state_t *out, web49_readwat_expr
                 }
             }
             uint64_t nargs = 0;
-            web49_instr_t *args = web49_malloc(sizeof(web49_instr_t) * expr.fun_nargs);
+            web49_instr_t *args = web49_malloc(sizeof(web49_instr_t) * (expr.fun_nargs + 1));
             for (uint64_t i = 0; i < expr.fun_nargs; i++) {
                 if (expr.fun_args[i].tag == WEB49_READWAT_EXPR_TAG_FUN && web49_name_to_opcode(expr.fun_args[i].fun_fun) != WEB49_MAX_OPCODE_NUM) {
                     args[nargs++] = web49_readwat_instr(out, expr.fun_args[i]);
                 }
+            }
+            if (opcode == WEB49_OPCODE_IF) {
+                    args[nargs++] = (web49_instr_t) {.opcode = WEB49_OPCODE_END};
             }
             return (web49_instr_t){
                 .opcode = opcode,

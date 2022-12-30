@@ -47,7 +47,7 @@ int web49_file_main(const char *inarg, const char **args) {
             while (true) {
                 web49_readwat_expr_t todo = web49_readwat_expr(&infile);
                 if (todo.start == todo.end) {
-                    break;
+                    return 0;
                 }
                 if (todo.tag == WEB49_READWAT_EXPR_TAG_SYM) {
                     if (todo.sym[0] == '\0') {
@@ -133,8 +133,6 @@ int web49_file_main(const char *inarg, const char **args) {
                 }
             }
             __builtin_trap();
-            // fprintf(stderr, "miniwasm cannot handle \"wasm spec test\" files yet!\n");
-            // return 1;
         } else {
             mod = web49_readwat_module(&infile);
         }
