@@ -25,7 +25,7 @@ web49_interp_data_t web49_main_expr_to_data(web49_readwat_expr_t expr) {
         }
     }
     if (!strcmp(expr.fun_fun, "i64.const")) {
-        ret.i64_s = (int64_t) web49_readwat_expr_to_i64(expr.fun_args[0]);
+        ret.i64_s = web49_readwat_expr_to_i64(expr.fun_args[0]);
     }
     return ret;
 }
@@ -39,6 +39,7 @@ int web49_file_main(const char *inarg, const char **args) {
         const char *v = strrchr(inarg, '.');
         if (!strcmp(v, ".wast")) {
             web49_readwat_expr_t expr = web49_readwat_expr(&infile);
+        new_module:;
             mod = web49_readwat_to_module(expr);
             web49_opt_tee_module(&mod);
             web49_opt_tree_module(&mod);
@@ -57,6 +58,9 @@ int web49_file_main(const char *inarg, const char **args) {
                 } else if (todo.tag == WEB49_READWAT_EXPR_TAG_STR) {
                     fprintf(stderr, "wasm spec test: dont know how to handle: \"%.*s\"\n", (int) todo.len_str, todo.str);
                     return 1;
+                } else if (!strcmp(todo.fun_fun, "module")) {
+                    expr = todo;
+                    goto new_module;
                 } else if (!strcmp(todo.fun_fun, "assert_return")) {
                     web49_readwat_expr_t invoke = todo.fun_args[0];
                     web49_readwat_expr_t wants = todo.fun_args[1];
@@ -82,8 +86,35 @@ int web49_file_main(const char *inarg, const char **args) {
                                     fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%"PRIx32" != 0x%"PRIx32" (expected return value)\n", entry.field_str, data.i32_u, expected);
                                     return 1;
                                 }
+                            } else if (!strcmp(wants.fun_fun, "i64.const")) {
+                                int64_t expected = web49_readwat_expr_to_i64(wants.fun_args[0]);
+                                if (data.i64_s == expected) {
+                                    fprintf(stderr, "wasm spec test: invoke %s pass: 0x%016"PRIx64" == 0x%016"PRIx64"\n", entry.field_str, data.i64_u, expected);
+                                } else {
+                                    fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%016"PRIx64" != 0x%016"PRIx64" (expected return value)\n", entry.field_str, data.i64_u, expected);
+                                    return 1;
+                                }
+                            } else if (!strcmp(wants.fun_fun, "f32.const")) {
+                                float expected;
+                                sscanf(wants.fun_args[0].sym, "%f", &expected);
+                                if (data.f32 == expected || (isnan(expected) && isnan(data.f32))) {
+                                    fprintf(stderr, "wasm spec test: invoke %s pass: %f == %f\n", entry.field_str, data.f32, expected);
+                                } else {
+                                    fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %f != %f (expected return value)\n", entry.field_str, data.f32, expected);
+                                    return 1;
+                                }
+                            } else if (!strcmp(wants.fun_fun, "f64.const")) {
+                                double expected;
+                                sscanf(wants.fun_args[0].sym, "%lf", &expected);
+                                if (data.f32 == expected || (isnan(expected) && isnan(data.f64))) {
+                                    fprintf(stderr, "wasm spec test: invoke %s pass: %lf == %lf\n", entry.field_str, data.f64, expected);
+                                } else {
+                                    fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %lf != %lf (expected return value)\n", entry.field_str, data.f64, expected);
+                                    return 1;
+                                }
                             } else {
                                 fprintf(stderr, "wasm spec test: type %s not impelemented\n", wants.fun_fun);
+                                return 1;
                             }
                             goto test_found;
                         }

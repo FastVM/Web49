@@ -197,11 +197,11 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
 
 void web49_opt_untree(size_t num, web49_instr_t *head, size_t *len, web49_instr_t **out, size_t *alloc) {
     for (size_t i = 0; i < num; i++) {
-        if (*len + 1 >= *alloc) {
-            *alloc = (*len + 1) * 2;
+        web49_opt_untree(head[i].nargs, head[i].args, len, out, alloc);
+        if (*len + 2 >= *alloc) {
+            *alloc = (*len + 2) * 2;
             *out = web49_realloc(*out, sizeof(web49_instr_t) * *alloc);
         }
-        web49_opt_untree(head[i].nargs, head[i].args, len, out, alloc);
         (*out)[(*len)++] = head[i];
     }
 }
