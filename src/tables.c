@@ -875,6 +875,298 @@ const web49_immediate_id_t web49_opcode_immediate[WEB49_MAX_OPCODE_NUM] = {
     [WEB49_OPCODE_DATA_DROP] = WEB49_IMMEDIATE_DATA_INDEX,
 };
 
+bool web49_opcode_is_multibyte(uint8_t first_byte) {
+    return first_byte == 0xFB || first_byte == 0xFC || first_byte == 0xFD || first_byte == 0xFE;
+}
+
+#define web49_error(...)          \
+    fprintf(stderr, __VA_ARGS__); \
+    __builtin_trap()
+
+web49_opcode_t web49_bytes_to_opcode(uint8_t *bytes) {
+    switch (bytes[0]) {
+        case 0x00: return WEB49_OPCODE_UNREACHABLE;
+        case 0x01: return WEB49_OPCODE_NOP;
+        case 0x02: return WEB49_OPCODE_BLOCK;
+        case 0x03: return WEB49_OPCODE_LOOP;
+        case 0x04: return WEB49_OPCODE_IF;
+        case 0x05: return WEB49_OPCODE_ELSE;
+        case 0x06: web49_error("unknown opcode: staring with byte 0x6\n");
+        case 0x07: web49_error("unknown opcode: staring with byte 0x7\n");
+        case 0x08: web49_error("unknown opcode: staring with byte 0x8\n");
+        case 0x09: web49_error("unknown opcode: staring with byte 0x9\n");
+        case 0x0A: web49_error("unknown opcode: staring with byte 0xA\n");
+        case 0x0B: return WEB49_OPCODE_END;
+        case 0x0C: return WEB49_OPCODE_BR;
+        case 0x0D: return WEB49_OPCODE_BR_IF;
+        case 0x0E: return WEB49_OPCODE_BR_TABLE;
+        case 0x0F: return WEB49_OPCODE_RETURN;
+        case 0x10: return WEB49_OPCODE_CALL;
+        case 0x11: return WEB49_OPCODE_CALL_INDIRECT;
+        case 0x12: web49_error("unknown opcode: staring with byte 0x12\n");
+        case 0x13: web49_error("unknown opcode: staring with byte 0x13\n");
+        case 0x14: web49_error("unknown opcode: staring with byte 0x14\n");
+        case 0x15: web49_error("unknown opcode: staring with byte 0x15\n");
+        case 0x16: web49_error("unknown opcode: staring with byte 0x16\n");
+        case 0x17: web49_error("unknown opcode: staring with byte 0x17\n");
+        case 0x18: web49_error("unknown opcode: staring with byte 0x18\n");
+        case 0x19: web49_error("unknown opcode: staring with byte 0x19\n");
+        case 0x1A: return WEB49_OPCODE_DROP;
+        case 0x1B: return WEB49_OPCODE_SELECT;
+        case 0x1C: web49_error("unknown opcode: staring with byte 0x1C\n");
+        case 0x1D: web49_error("unknown opcode: staring with byte 0x1D\n");
+        case 0x1E: web49_error("unknown opcode: staring with byte 0x1E\n");
+        case 0x1F: web49_error("unknown opcode: staring with byte 0x1F\n");
+        case 0x20: return WEB49_OPCODE_GET_LOCAL;
+        case 0x21: return WEB49_OPCODE_SET_LOCAL;
+        case 0x22: return WEB49_OPCODE_TEE_LOCAL;
+        case 0x23: return WEB49_OPCODE_GET_GLOBAL;
+        case 0x24: return WEB49_OPCODE_SET_GLOBAL;
+        case 0x25: web49_error("unknown opcode: staring with byte 0x25\n");
+        case 0x26: web49_error("unknown opcode: staring with byte 0x26\n");
+        case 0x27: web49_error("unknown opcode: staring with byte 0x27\n");
+        case 0x28: return WEB49_OPCODE_I32_LOAD;
+        case 0x29: return WEB49_OPCODE_I64_LOAD;
+        case 0x2A: return WEB49_OPCODE_F32_LOAD;
+        case 0x2B: return WEB49_OPCODE_F64_LOAD;
+        case 0x2C: return WEB49_OPCODE_I32_LOAD8_S;
+        case 0x2D: return WEB49_OPCODE_I32_LOAD8_U;
+        case 0x2E: return WEB49_OPCODE_I32_LOAD16_S;
+        case 0x2F: return WEB49_OPCODE_I32_LOAD16_U;
+        case 0x30: return WEB49_OPCODE_I64_LOAD8_S;
+        case 0x31: return WEB49_OPCODE_I64_LOAD8_U;
+        case 0x32: return WEB49_OPCODE_I64_LOAD16_S;
+        case 0x33: return WEB49_OPCODE_I64_LOAD16_U;
+        case 0x34: return WEB49_OPCODE_I64_LOAD32_S;
+        case 0x35: return WEB49_OPCODE_I64_LOAD32_U;
+        case 0x36: return WEB49_OPCODE_I32_STORE;
+        case 0x37: return WEB49_OPCODE_I64_STORE;
+        case 0x38: return WEB49_OPCODE_F32_STORE;
+        case 0x39: return WEB49_OPCODE_F64_STORE;
+        case 0x3A: return WEB49_OPCODE_I32_STORE8;
+        case 0x3B: return WEB49_OPCODE_I32_STORE16;
+        case 0x3C: return WEB49_OPCODE_I64_STORE8;
+        case 0x3D: return WEB49_OPCODE_I64_STORE16;
+        case 0x3E: return WEB49_OPCODE_I64_STORE32;
+        case 0x3F: return WEB49_OPCODE_MEMORY_SIZE;
+        case 0x40: return WEB49_OPCODE_MEMORY_GROW;
+        case 0x41: return WEB49_OPCODE_I32_CONST;
+        case 0x42: return WEB49_OPCODE_I64_CONST;
+        case 0x43: return WEB49_OPCODE_F32_CONST;
+        case 0x44: return WEB49_OPCODE_F64_CONST;
+        case 0x45: return WEB49_OPCODE_I32_EQZ;
+        case 0x46: return WEB49_OPCODE_I32_EQ;
+        case 0x47: return WEB49_OPCODE_I32_NE;
+        case 0x48: return WEB49_OPCODE_I32_LT_S;
+        case 0x49: return WEB49_OPCODE_I32_LT_U;
+        case 0x4A: return WEB49_OPCODE_I32_GT_S;
+        case 0x4B: return WEB49_OPCODE_I32_GT_U;
+        case 0x4C: return WEB49_OPCODE_I32_LE_S;
+        case 0x4D: return WEB49_OPCODE_I32_LE_U;
+        case 0x4E: return WEB49_OPCODE_I32_GE_S;
+        case 0x4F: return WEB49_OPCODE_I32_GE_U;
+        case 0x50: return WEB49_OPCODE_I64_EQZ;
+        case 0x51: return WEB49_OPCODE_I64_EQ;
+        case 0x52: return WEB49_OPCODE_I64_NE;
+        case 0x53: return WEB49_OPCODE_I64_LT_S;
+        case 0x54: return WEB49_OPCODE_I64_LT_U;
+        case 0x55: return WEB49_OPCODE_I64_GT_S;
+        case 0x56: return WEB49_OPCODE_I64_GT_U;
+        case 0x57: return WEB49_OPCODE_I64_LE_S;
+        case 0x58: return WEB49_OPCODE_I64_LE_U;
+        case 0x59: return WEB49_OPCODE_I64_GE_S;
+        case 0x5A: return WEB49_OPCODE_I64_GE_U;
+        case 0x5B: return WEB49_OPCODE_F32_EQ;
+        case 0x5C: return WEB49_OPCODE_F32_NE;
+        case 0x5D: return WEB49_OPCODE_F32_LT;
+        case 0x5E: return WEB49_OPCODE_F32_GT;
+        case 0x5F: return WEB49_OPCODE_F32_LE;
+        case 0x60: return WEB49_OPCODE_F32_GE;
+        case 0x61: return WEB49_OPCODE_F64_EQ;
+        case 0x62: return WEB49_OPCODE_F64_NE;
+        case 0x63: return WEB49_OPCODE_F64_LT;
+        case 0x64: return WEB49_OPCODE_F64_GT;
+        case 0x65: return WEB49_OPCODE_F64_LE;
+        case 0x66: return WEB49_OPCODE_F64_GE;
+        case 0x67: return WEB49_OPCODE_I32_CLZ;
+        case 0x68: return WEB49_OPCODE_I32_CTZ;
+        case 0x69: return WEB49_OPCODE_I32_POPCNT;
+        case 0x6A: return WEB49_OPCODE_I32_ADD;
+        case 0x6B: return WEB49_OPCODE_I32_SUB;
+        case 0x6C: return WEB49_OPCODE_I32_MUL;
+        case 0x6D: return WEB49_OPCODE_I32_DIV_S;
+        case 0x6E: return WEB49_OPCODE_I32_DIV_U;
+        case 0x6F: return WEB49_OPCODE_I32_REM_S;
+        case 0x70: return WEB49_OPCODE_I32_REM_U;
+        case 0x71: return WEB49_OPCODE_I32_AND;
+        case 0x72: return WEB49_OPCODE_I32_OR;
+        case 0x73: return WEB49_OPCODE_I32_XOR;
+        case 0x74: return WEB49_OPCODE_I32_SHL;
+        case 0x75: return WEB49_OPCODE_I32_SHR_S;
+        case 0x76: return WEB49_OPCODE_I32_SHR_U;
+        case 0x77: return WEB49_OPCODE_I32_ROTL;
+        case 0x78: return WEB49_OPCODE_I32_ROTR;
+        case 0x79: return WEB49_OPCODE_I64_CLZ;
+        case 0x7A: return WEB49_OPCODE_I64_CTZ;
+        case 0x7B: return WEB49_OPCODE_I64_POPCNT;
+        case 0x7C: return WEB49_OPCODE_I64_ADD;
+        case 0x7D: return WEB49_OPCODE_I64_SUB;
+        case 0x7E: return WEB49_OPCODE_I64_MUL;
+        case 0x7F: return WEB49_OPCODE_I64_DIV_S;
+        case 0x80: return WEB49_OPCODE_I64_DIV_U;
+        case 0x81: return WEB49_OPCODE_I64_REM_S;
+        case 0x82: return WEB49_OPCODE_I64_REM_U;
+        case 0x83: return WEB49_OPCODE_I64_AND;
+        case 0x84: return WEB49_OPCODE_I64_OR;
+        case 0x85: return WEB49_OPCODE_I64_XOR;
+        case 0x86: return WEB49_OPCODE_I64_SHL;
+        case 0x87: return WEB49_OPCODE_I64_SHR_S;
+        case 0x88: return WEB49_OPCODE_I64_SHR_U;
+        case 0x89: return WEB49_OPCODE_I64_ROTL;
+        case 0x8A: return WEB49_OPCODE_I64_ROTR;
+        case 0x8B: return WEB49_OPCODE_F32_ABS;
+        case 0x8C: return WEB49_OPCODE_F32_NEG;
+        case 0x8D: return WEB49_OPCODE_F32_CEIL;
+        case 0x8E: return WEB49_OPCODE_F32_FLOOR;
+        case 0x8F: return WEB49_OPCODE_F32_TRUNC;
+        case 0x90: return WEB49_OPCODE_F32_NEAREST;
+        case 0x91: return WEB49_OPCODE_F32_SQRT;
+        case 0x92: return WEB49_OPCODE_F32_ADD;
+        case 0x93: return WEB49_OPCODE_F32_SUB;
+        case 0x94: return WEB49_OPCODE_F32_MUL;
+        case 0x95: return WEB49_OPCODE_F32_DIV;
+        case 0x96: return WEB49_OPCODE_F32_MIN;
+        case 0x97: return WEB49_OPCODE_F32_MAX;
+        case 0x98: return WEB49_OPCODE_F32_COPYSIGN;
+        case 0x99: return WEB49_OPCODE_F64_ABS;
+        case 0x9A: return WEB49_OPCODE_F64_NEG;
+        case 0x9B: return WEB49_OPCODE_F64_CEIL;
+        case 0x9C: return WEB49_OPCODE_F64_FLOOR;
+        case 0x9D: return WEB49_OPCODE_F64_TRUNC;
+        case 0x9E: return WEB49_OPCODE_F64_NEAREST;
+        case 0x9F: return WEB49_OPCODE_F64_SQRT;
+        case 0xA0: return WEB49_OPCODE_F64_ADD;
+        case 0xA1: return WEB49_OPCODE_F64_SUB;
+        case 0xA2: return WEB49_OPCODE_F64_MUL;
+        case 0xA3: return WEB49_OPCODE_F64_DIV;
+        case 0xA4: return WEB49_OPCODE_F64_MIN;
+        case 0xA5: return WEB49_OPCODE_F64_MAX;
+        case 0xA6: return WEB49_OPCODE_F64_COPYSIGN;
+        case 0xA7: return WEB49_OPCODE_I32_WRAP_I64;
+        case 0xA8: return WEB49_OPCODE_I32_TRUNC_S_F32;
+        case 0xA9: return WEB49_OPCODE_I32_TRUNC_U_F32;
+        case 0xAA: return WEB49_OPCODE_I32_TRUNC_S_F64;
+        case 0xAB: return WEB49_OPCODE_I32_TRUNC_U_F64;
+        case 0xAC: return WEB49_OPCODE_I64_EXTEND_S_I32;
+        case 0xAD: return WEB49_OPCODE_I64_EXTEND_U_I32;
+        case 0xAE: return WEB49_OPCODE_I64_TRUNC_S_F32;
+        case 0xAF: return WEB49_OPCODE_I64_TRUNC_U_F32;
+        case 0xB0: return WEB49_OPCODE_I64_TRUNC_S_F64;
+        case 0xB1: return WEB49_OPCODE_I64_TRUNC_U_F64;
+        case 0xB2: return WEB49_OPCODE_F32_CONVERT_S_I32;
+        case 0xB3: return WEB49_OPCODE_F32_CONVERT_U_I32;
+        case 0xB4: return WEB49_OPCODE_F32_CONVERT_S_I64;
+        case 0xB5: return WEB49_OPCODE_F32_CONVERT_U_I64;
+        case 0xB6: return WEB49_OPCODE_F32_DEMOTE_F64;
+        case 0xB7: return WEB49_OPCODE_F64_CONVERT_S_I32;
+        case 0xB8: return WEB49_OPCODE_F64_CONVERT_U_I32;
+        case 0xB9: return WEB49_OPCODE_F64_CONVERT_S_I64;
+        case 0xBA: return WEB49_OPCODE_F64_CONVERT_U_I64;
+        case 0xBB: return WEB49_OPCODE_F64_PROMOTE_F32;
+        case 0xBC: return WEB49_OPCODE_I32_REINTERPRET_F32;
+        case 0xBD: return WEB49_OPCODE_I64_REINTERPRET_F64;
+        case 0xBE: return WEB49_OPCODE_F32_REINTERPRET_I32;
+        case 0xBF: return WEB49_OPCODE_F64_REINTERPRET_I64;
+        case 0xC0: return WEB49_OPCODE_I32_EXTEND8_S;
+        case 0xC1: return WEB49_OPCODE_I32_EXTEND16_S;
+        case 0xC2: return WEB49_OPCODE_I64_EXTEND8_S;
+        case 0xC3: return WEB49_OPCODE_I64_EXTEND16_S;
+        case 0xC4: return WEB49_OPCODE_I64_EXTEND32_S;
+        case 0xC5: web49_error("unknown opcode: staring with byte 0xC5\n");
+        case 0xC6: web49_error("unknown opcode: staring with byte 0xC6\n");
+        case 0xC7: web49_error("unknown opcode: staring with byte 0xC7\n");
+        case 0xC8: web49_error("unknown opcode: staring with byte 0xC8\n");
+        case 0xC9: web49_error("unknown opcode: staring with byte 0xC9\n");
+        case 0xCA: web49_error("unknown opcode: staring with byte 0xCA\n");
+        case 0xCB: web49_error("unknown opcode: staring with byte 0xCB\n");
+        case 0xCC: web49_error("unknown opcode: staring with byte 0xCC\n");
+        case 0xCD: web49_error("unknown opcode: staring with byte 0xCD\n");
+        case 0xCE: web49_error("unknown opcode: staring with byte 0xCE\n");
+        case 0xCF: web49_error("unknown opcode: staring with byte 0xCF\n");
+        case 0xD0: web49_error("unknown opcode: staring with byte 0xD0\n");
+        case 0xD1: web49_error("unknown opcode: staring with byte 0xD1\n");
+        case 0xD2: web49_error("unknown opcode: staring with byte 0xD2\n");
+        case 0xD3: web49_error("unknown opcode: staring with byte 0xD3\n");
+        case 0xD4: web49_error("unknown opcode: staring with byte 0xD4\n");
+        case 0xD5: web49_error("unknown opcode: staring with byte 0xD5\n");
+        case 0xD6: web49_error("unknown opcode: staring with byte 0xD6\n");
+        case 0xD7: web49_error("unknown opcode: staring with byte 0xD7\n");
+        case 0xD8: web49_error("unknown opcode: staring with byte 0xD8\n");
+        case 0xD9: web49_error("unknown opcode: staring with byte 0xD9\n");
+        case 0xDA: web49_error("unknown opcode: staring with byte 0xDA\n");
+        case 0xDB: web49_error("unknown opcode: staring with byte 0xDB\n");
+        case 0xDC: web49_error("unknown opcode: staring with byte 0xDC\n");
+        case 0xDD: web49_error("unknown opcode: staring with byte 0xDD\n");
+        case 0xDE: web49_error("unknown opcode: staring with byte 0xDE\n");
+        case 0xDF: web49_error("unknown opcode: staring with byte 0xDF\n");
+        case 0xE0: web49_error("unknown opcode: staring with byte 0xE0\n");
+        case 0xE1: web49_error("unknown opcode: staring with byte 0xE1\n");
+        case 0xE2: web49_error("unknown opcode: staring with byte 0xE2\n");
+        case 0xE3: web49_error("unknown opcode: staring with byte 0xE3\n");
+        case 0xE4: web49_error("unknown opcode: staring with byte 0xE4\n");
+        case 0xE5: web49_error("unknown opcode: staring with byte 0xE5\n");
+        case 0xE6: web49_error("unknown opcode: staring with byte 0xE6\n");
+        case 0xE7: web49_error("unknown opcode: staring with byte 0xE7\n");
+        case 0xE8: web49_error("unknown opcode: staring with byte 0xE8\n");
+        case 0xE9: web49_error("unknown opcode: staring with byte 0xE9\n");
+        case 0xEA: web49_error("unknown opcode: staring with byte 0xEA\n");
+        case 0xEB: web49_error("unknown opcode: staring with byte 0xEB\n");
+        case 0xEC: web49_error("unknown opcode: staring with byte 0xEC\n");
+        case 0xED: web49_error("unknown opcode: staring with byte 0xED\n");
+        case 0xEE: web49_error("unknown opcode: staring with byte 0xEE\n");
+        case 0xEF: web49_error("unknown opcode: staring with byte 0xEF\n");
+        case 0xF0: web49_error("unknown opcode: staring with byte 0xF0\n");
+        case 0xF1: web49_error("unknown opcode: staring with byte 0xF1\n");
+        case 0xF2: web49_error("unknown opcode: staring with byte 0xF2\n");
+        case 0xF3: web49_error("unknown opcode: staring with byte 0xF3\n");
+        case 0xF4: web49_error("unknown opcode: staring with byte 0xF4\n");
+        case 0xF5: web49_error("unknown opcode: staring with byte 0xF5\n");
+        case 0xF6: web49_error("unknown opcode: staring with byte 0xF6\n");
+        case 0xF7: web49_error("unknown opcode: staring with byte 0xF7\n");
+        case 0xF8: web49_error("unknown opcode: staring with byte 0xF8\n");
+        case 0xF9: web49_error("unknown opcode: staring with byte 0xF9\n");
+        case 0xFA: web49_error("unknown opcode: staring with byte 0xFA\n");
+        case 0xFB: switch (bytes[1]) {
+        default:
+            web49_error("unknown gc/ref-strings sequence: 0xFB 0x%"PRIu8"\n", bytes[1]);
+        }
+        case 0xFC: switch (bytes[1]) {
+        default:
+            web49_error("unknown opcode sequence: 0xFC 0x%"PRIu8"\n", bytes[1]);
+        }
+        case 0xFD: switch (bytes[1]) {
+        default:
+            web49_error("unknown simd sequence: 0xFD 0x%"PRIu8"\n", bytes[1]);
+        }
+        case 0xFE: switch (bytes[1]) {
+        default:
+            web49_error("unknown threads sequence: 0xFE 0x%"PRIu8"\n", bytes[1]);
+        }
+        case 0xFF: web49_error("unknown opcode: staring with byte 0xFF\n");
+    }
+    __builtin_trap();
+}
+
+uint8_t web49_opcode_skip(web49_opcode_t opcode) {
+    if (opcode == WEB49_OPCODE_MEMORY_COPY) {
+        return 2;
+    }
+    if (opcode == WEB49_OPCODE_MEMORY_FILL) {
+        return 1;
+    }
+    return 0;
+}
+
 web49_opcode_t web49_name_to_opcode(const char *name) {
     if (!strcmp(name, "unreachable")) {
         return WEB49_OPCODE_UNREACHABLE;

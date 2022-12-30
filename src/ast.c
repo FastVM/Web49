@@ -116,10 +116,12 @@ void web49_free_module(web49_module_t mod) {
 
 web49_section_t web49_module_get_section(web49_module_t mod, web49_section_id_t id) {
     for (size_t i = 0; i < mod.num_sections; i++) {
+        // fprintf(stderr, "got %zu, want %zu\n", (size_t) mod.sections[i].header.id, (size_t) id);
         if (mod.sections[i].header.id == id) {
             return mod.sections[i];
         }
     }
-    fprintf(stderr, "cannot find section #%zu", (size_t) id);
-    __builtin_trap();
+    return (web49_section_t) {};
+    // fprintf(stderr, "cannot find section #%zu", (size_t) id);
+    // __builtin_trap();
 }

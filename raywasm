@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+$(dirname $0)/emraylib $* -o $(dirname $0)/bin/game.wasm && $(dirname $0)/bin/raywasm $(dirname $0)/bin/game.wasm

@@ -6,6 +6,8 @@ import subprocess
 import time
 import argparse
 
+cur = os.path.dirname(os.path.realpath(__file__))
+
 os.chdir('test/bench')
 
 parser = argparse.ArgumentParser(
@@ -16,56 +18,65 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--runs', '-r', type=int, help='number of benchmark runs', default=1)
 parser.add_argument('--engine', '-e', type=str, action='append', default=[])
 parser.add_argument('--test', '-t', type=str, action='append', default=[])
+parser.add_argument('--compiler', '-c', type=str, default='emcc')
+parser.add_argument('--opt', '-O', type=str, default='3')
 
 args = parser.parse_args()
 
 runs = args.runs
 engines = args.engine
+emcc = args.compiler
+optlevel = args.opt
 
 if len(engines) == 0:
-    engines = ['wasm3', 'miniwasm', 'wasmtime', 'wasmer']
+    engines = ['wasm3', os.path.join(cur, 'bin/miniwasm')]
 
 if len(args.test) == 0: 
     tests = {
+        'nop': {
+            'runs': 100,
+            'args': [],
+            'memory': 256,
+        },
         'fibf': {
             'runs': 1,
             'args': ['35'],
-        },
-        'coremark': {
-            'runs': 1,
-            'args': ['3000'],
-        },
-        'nop': {
-            'runs': 1,
-            'args': [],
+            'memory': 256,
         },
         'binary-trees': {
             'runs': 1,
             'args': ['16'],
+            'memory': 2**12,
         },
         'fannkuch-redux': {
             'runs': 1,
             'args': ['10'],
-        },
-        'fasta': {
-            'runs': 1,
-            'args': ['5000000'],
+            'memory': 256,
         },
         'mandelbrot-simd': {
             'runs': 1,
             'args': ['2000'],
+            'memory': 256,
         },
         'mandelbrot': {
             'runs': 1,
             'args': ['2000'],
+            'memory': 256,
         },
         'nbody': {
             'runs': 1,
             'args': ['10000000'],
+            'memory': 256,
         },
         'fib': {
             'runs': 1,
             'args': ['40'],
+            'memory': 256,
+        },
+        'trap': {
+            'runs': 10,
+            'args': [],
+            'memory': 256,
         },
     }
 else:
@@ -89,7 +100,7 @@ for i in range(1, runs+1):
     print('RUN: #' + str(i))
     for test in tests.keys():
         print('  TEST: ' + test)
-        build = subprocess.call(['emcc', '-sPURE_WASI=1', '-sWASM=1', '-O3', test + '.c', '-o', test + '.wasm'])
+        build = subprocess.call([*emcc.split(' '), '-Xlinker', f'--initial-memory={tests[test]["memory"] * (2 ** 16)}', f"-O{optlevel}", test + '.c', '-o', test + '.wasm'])
         if test not in testdata:
             testdata[test] = {}
         data = testdata[test]

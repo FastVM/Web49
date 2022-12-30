@@ -534,39 +534,15 @@ web49_instr_t web49_readbin_init_expr(web49_io_input_t *in) {
 }
 
 web49_instr_t web49_readbin_instr(web49_io_input_t *in) {
-    web49_opcode_t opcode = web49_readbin_byte(in);
-    size_t skip = 0;
-    if (opcode == 0xFC) {
-        switch (web49_readbin_byte(in)) {
-            case 0x08:
-                opcode = WEB49_OPCODE_MEMORY_INIT;
-                skip = 1;
-                break;
-            case 0x09:
-                opcode = WEB49_OPCODE_DATA_DROP;
-                skip = 0;
-                break;
-            case 0x0A:
-                opcode = WEB49_OPCODE_MEMORY_COPY;
-                skip = 2;
-                break;
-            case 0x0B:
-                opcode = WEB49_OPCODE_MEMORY_FILL;
-                skip = 1;
-                break;
-            case 0x0C:
-                opcode = WEB49_OPCODE_TABLE_INIT;
-                break;
-            case 0x0D:
-                opcode = WEB49_OPCODE_ELEM_DROP;
-                break;
-            case 0x0E:
-                opcode = WEB49_OPCODE_TABLE_COPY;
-                break;
-            default:
-                break;
-        }
+    uint8_t first_byte = web49_readbin_byte(in);
+    uint8_t bytes[2] = {
+        first_byte,
+    };
+    if (web49_opcode_is_multibyte(first_byte)) {
+        bytes[1] = web49_readbin_byte(in);
     }
+    web49_opcode_t opcode = web49_bytes_to_opcode(&bytes[0]);
+    uint8_t skip = web49_opcode_skip(opcode);
     web49_immediate_id_t immediate_id = web49_opcode_immediate[opcode];
     web49_instr_immediate_t immediate = web49_readbin_instr_immediate(in, immediate_id);
     for (size_t i = 0; i < skip; i++) {

@@ -15,3 +15,6 @@ bin/*
 .vscode/*
 *.gcda
 *.core
+err.txt
+raylib/examples
+*.tmp
