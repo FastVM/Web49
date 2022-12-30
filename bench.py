@@ -38,11 +38,16 @@ if len(args.test) == 0:
             'args': [],
             'memory': 256,
         },
-        'fibf': {
+        'coremark': {
             'runs': 1,
-            'args': ['35'],
+            'args': ['3000'],
             'memory': 256,
         },
+        # 'fibf': {
+        #     'runs': 1,
+        #     'args': ['40'],
+        #     'memory': 256,
+        # },
         'binary-trees': {
             'runs': 1,
             'args': ['16'],
@@ -73,11 +78,11 @@ if len(args.test) == 0:
             'args': ['40'],
             'memory': 256,
         },
-        'trap': {
-            'runs': 10,
-            'args': [],
-            'memory': 256,
-        },
+        # 'trap': {
+        #     'runs': 10,
+        #     'args': [],
+        #     'memory': 256,
+        # },
     }
 else:
     tests = {}
