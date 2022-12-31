@@ -558,6 +558,8 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
             }
             if (code.tag == WEB49_READWAT_EXPR_TAG_FUN && web49_name_to_opcode(code.fun_fun) != WEB49_MAX_OPCODE_NUM) {
                 entry.instrs[entry.num_instrs++] = web49_readwat_instr(out, code);
+            } else if (code.tag == WEB49_READWAT_EXPR_TAG_SYM && code.sym[0] == '$') {
+                // nothing goes here
             } else if (code.tag == WEB49_READWAT_EXPR_TAG_SYM) {
                 web49_opcode_t opcode = web49_name_to_opcode(code.sym);
                 if (opcode < WEB49_MAX_OPCODE_NUM) {
@@ -1148,6 +1150,18 @@ void web49_readwat_state_toplevel(web49_readwat_state_t *out, web49_readwat_expr
         if (!strcmp(type.fun_fun, "import")) {
             web49_readwat_state_import_entry(out, type);
         }
+    }
+    uint64_t cfunc = out->num_func_imports;
+    for (uint64_t i = 0; i < expr.fun_nargs; i++) {
+        web49_readwat_expr_t type = expr.fun_args[i];
+        if (!strcmp(type.fun_fun, "func")) {
+            if (type.fun_nargs != 0 && type.fun_args[0].tag == WEB49_READWAT_EXPR_TAG_SYM && type.fun_args[0].sym[0] == '$') {
+                web49_readwat_table_set(&out->func_table, &type.fun_args[0].sym[1], cfunc++);
+            }
+        }
+    }
+    for (uint64_t i = 0; i < expr.fun_nargs; i++) {
+        web49_readwat_expr_t type = expr.fun_args[i];
         if (!strcmp(type.fun_fun, "export")) {
             web49_readwat_state_export_entry(out, type);
         }

@@ -197,6 +197,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
 
 void web49_opt_untree(web49_instr_t cur, size_t *len, web49_instr_t **out, size_t *alloc) {
     size_t nargs = cur.nargs;
+    cur.nargs = 0;
     if (cur.opcode == WEB49_OPCODE_IF) {
         for (size_t i = 0; i < nargs; i++) {
             if (cur.args[i].opcode != WEB49_OPCODE_THEN && cur.args[i].opcode != WEB49_OPCODE_ELSE && cur.args[i].opcode != WEB49_OPCODE_END) {
@@ -244,10 +245,6 @@ void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t *entry)
     size_t len = 0;
     for (size_t i = 0; i < entry->num_instrs; i++) {
         web49_opt_untree(entry->instrs[i], &len, &head, &alloc);
-    }
-    printf(" --- \n");
-    for (size_t i = 0; i < len; i++) {
-        printf("%s\n", web49_opcode_to_name(head[i].opcode));
     }
     web49_instr_t instr = web49_opt_tree_read_block(mod, &head, NULL, 0);
     entry->instrs = web49_realloc(entry->instrs, sizeof(web49_instr_t) * 1);
