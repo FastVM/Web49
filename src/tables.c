@@ -1183,6 +1183,9 @@ web49_opcode_t web49_name_to_opcode(const char *name) {
     if (!strcmp(name, "if")) {
         return WEB49_OPCODE_IF;
     }
+    if (!strcmp(name, "then")) {
+        return WEB49_OPCODE_THEN;
+    }
     if (!strcmp(name, "else")) {
         return WEB49_OPCODE_ELSE;
     }
@@ -1735,6 +1738,8 @@ const char *web49_opcode_to_name(web49_opcode_t opcode) {
             return "loop";
         case WEB49_OPCODE_IF:
             return "if";
+        case WEB49_OPCODE_THEN:
+            return "then";
         case WEB49_OPCODE_ELSE:
             return "else";
         case WEB49_OPCODE_END:

@@ -18,3 +18,4 @@ bin/*
 err.txt
 raylib/examples
 *.tmp
+test/core/*.txt

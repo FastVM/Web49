@@ -1,4 +1,6 @@
 
+WAIT ?= 1s
+
 PYTHON ?= python3
 OPT ?= -O2
 
@@ -21,36 +23,56 @@ UNAME_S_CMD != uname -s
 
 UNAME_S ?= $(UNAME_S_CMD)
 
+TEST_NAMES = address align binary-leb128 binary block br br_if br_table bulk call call_indirect comments const conversions custom data elem endianness exports f32 f32_bitwise f32_cmp f64 f64_bitwise f64_cmp fac float_exprs float_literals float_memory float_misc forward func func_ptrs global i32 i64 if imports inline-module int_exprs int_literals labels left-to-right linking load local_get local_set local_tee loop memory memory_copy memory_fill memory_grow memory_init memory_redundancy memory_size memory_trap names nop ref_func ref_is_null ref_null return select skip-stack-guard-page stack start store switch table-sub table table_copy table_fill table_get table_grow table_init table_set table_size token tokens traps type unreachable unreached-invalid unreached-valid unwind utf8-custom-section-id utf8-import-field utf8-import-module utf8-invalid-encoding
+
+TEST_PREFIX = test/core
+
+TEST_FILES = $(TEST_NAMES:%=$(TEST_PREFIX)/%.wast)
+TEST_OUTPUTS = $(TEST_NAMES:%=$(TEST_PREFIX)/%.txt)
+
 default: all
 
 all: bins
 
-bins: bin/wasm2wat$(EXE) bin/wat2wasm$(EXE) bin/wasm2wasm$(EXE) bin/miniwasm$(EXE)
+# tests
+
+test: $(TEST_OUTPUTS)
+	@cat $(TEST_OUTPUTS) | sort > results.txt
+
+$(TEST_OUTPUTS): bin/miniwasm $(@:%.txt=%.wast)
+	@cp bin/miniwasm $(@:$(TEST_PREFIX)/%.txt=./bin/%)
+	@timeout $(WAIT) $(@:$(TEST_PREFIX)/%.txt=./bin/%) $(@:%.txt=%.wast) 2>/dev/null; \
+		if test $$? -eq 0; \
+		then echo "PASS $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
+		else echo "FAIL $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
+		fi
 
 # raylib
 
 src/api/raylib.c: src/api/raylib.py src/api/raylib.json
 	$(PYTHON) src/api/raylib.py
 
-bin/raywasm$(EXE): main/raywasm.o $(OBJS) $(RAYLIB_OBJS)
+bin/raywasm: main/raywasm.o $(OBJS) $(RAYLIB_OBJS)
 	@mkdir -p bin
 	$(CC) $(OPT) main/raywasm.o $(RAYLIB_OBJS) -L/usr/local/lib $(OBJS) -o $(@) -lm -pthread -ldl $(LDFLAGS_GL_$(UNAME_S)) $(LDFLAGS)
 
 # bin
 
-bin/miniwasm$(EXE): main/miniwasm.o $(OBJS)
+bins: bin/wasm2wat bin/wat2wasm bin/wasm2wasm bin/miniwasm
+
+bin/miniwasm: main/miniwasm.o $(OBJS)
 	@mkdir -p bin
 	$(CC) $(OPT) main/miniwasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
 
-bin/wat2wasm$(EXE): main/wat2wasm.o $(OBJS)
+bin/wat2wasm: main/wat2wasm.o $(OBJS)
 	@mkdir -p bin
 	$(CC) $(OPT) main/wat2wasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
 
-bin/wasm2wat$(EXE): main/wasm2wat.o $(OBJS)
+bin/wasm2wat: main/wasm2wat.o $(OBJS)
 	@mkdir -p bin
 	$(CC) $(OPT) main/wasm2wat.o $(OBJS) -o $(@) -lm $(LDFLAGS)
 
-bin/wasm2wasm$(EXE): main/wasm2wasm.o $(OBJS)
+bin/wasm2wasm: main/wasm2wasm.o $(OBJS)
 	@mkdir -p bin
 	$(CC) $(OPT) main/wasm2wasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
 
@@ -62,8 +84,9 @@ format: .dummy
 	find . -name '*.inc' | xargs -I FILENAME clang-format -style=file -i FILENAME
 
 clean: .dummy
-	find . -name '*.o' | xargs rm
+	find src main -name '*.o' | xargs rm
 	find bin -type f | xargs rm
+	find test/core -name '*.txt' | xargs rm
 
 # intermediate files
 

@@ -40,14 +40,28 @@ int web49_file_main(const char *inarg, const char **args) {
         if (!strcmp(v, ".wast")) {
             web49_readwat_expr_t expr = web49_readwat_expr(&infile);
         new_module:;
-            mod = web49_readwat_to_module(expr);
+            if (expr.tag != WEB49_READWAT_EXPR_TAG_FUN) {
+                fprintf(stderr, "wasm spec test: expected (module ...)\n");
+                return 1;
+            }
+            if (!!strcmp(expr.fun_fun, "module")) {
+                fprintf(stderr, "wasm spec test: expected (module ...) not (%s ...)\n", expr.fun_fun);
+                return 1;
+            }
+            if (expr.fun_nargs == 2 && expr.fun_args[0].tag == WEB49_READWAT_EXPR_TAG_SYM && !strcmp(expr.fun_args[0].sym, "quote")) {
+                web49_io_input_t subinfile = web49_io_input_open_str(expr.fun_args[1].len_str, expr.fun_args[1].str);
+                expr = web49_readwat_expr(&subinfile);
+                mod = web49_readwat_to_module(expr);
+            } else {
+                mod = web49_readwat_to_module(expr);
+            }
             web49_opt_tee_module(&mod);
             web49_opt_tree_module(&mod);
             web49_interp_t interp = web49_interp_module(mod, args);
             while (true) {
                 web49_readwat_expr_t todo = web49_readwat_expr(&infile);
                 if (todo.start == todo.end) {
-                    break;
+                    return 0;
                 }
                 if (todo.tag == WEB49_READWAT_EXPR_TAG_SYM) {
                     if (todo.sym[0] == '\0') {
@@ -133,8 +147,6 @@ int web49_file_main(const char *inarg, const char **args) {
                 }
             }
             __builtin_trap();
-            // fprintf(stderr, "miniwasm cannot handle \"wasm spec test\" files yet!\n");
-            // return 1;
         } else {
             mod = web49_readwat_module(&infile);
         }

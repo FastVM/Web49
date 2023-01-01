@@ -150,7 +150,7 @@ NAME(WEB49_OPCODE_I32_CLZ) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_CTZ) {
-    locals[head[1].data.i32_u].i32_u = __builtin_ctz(LOCAL0.i32_u);
+    locals[head[1].data.i32_u].i32_u = LOCAL0.i32_s == 0 ? 32 : __builtin_ctz(LOCAL0.i32_u);
     head += 2;
     NEXT();
 }
@@ -160,17 +160,17 @@ NAME(WEB49_OPCODE_I32_POPCNT) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_CLZ) {
-    locals[head[1].data.i32_u].i64_u = LOCAL0.i64_s == 0 ? 64 : __builtin_clz(LOCAL0.i64_s);
+    locals[head[1].data.i32_u].i64_u = LOCAL0.i64_s == 0 ? 64 : __builtin_clzll(LOCAL0.i64_s);
     head += 2;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_CTZ) {
-    locals[head[1].data.i32_u].i64_u = __builtin_ctz(LOCAL0.i64_u);
+    locals[head[1].data.i32_u].i64_u = LOCAL0.i64_s == 0 ? 64 : __builtin_ctzll(LOCAL0.i64_u);
     head += 2;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_POPCNT) {
-    locals[head[1].data.i32_u].i64_u = __builtin_popcount(LOCAL0.i64_u);
+    locals[head[1].data.i32_u].i64_u = __builtin_popcountll(LOCAL0.i64_u);
     head += 2;
     NEXT();
 }
