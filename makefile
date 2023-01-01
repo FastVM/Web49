@@ -46,12 +46,12 @@ install: bins bin/raywasm raylib/lib raylib/lib
 
 raylib/lib: raylib/src
 	mkdir -p lib
-	$(EMCC) -Iraylib/include -O3 -c raylib/src/raudio.c -o raylib/lib/raudio.o
-	$(EMCC) -Iraylib/include -O3 -c raylib/src/rmodels.c -o raylib/lib/rmodels.o
-	$(EMCC) -Iraylib/include -O3 -c raylib/src/rshapes.c -o raylib/lib/rshapes.o
-	$(EMCC) -Iraylib/include -O3 -c raylib/src/rtext.c -o raylib/lib/rtext.o
-	$(EMCC) -Iraylib/include -O3 -c raylib/src/rtextures.c -o raylib/lib/rtextures.o
-	$(EMCC) -Iraylib/include -O3 -c raylib/src/utils.c -o raylib/lib/utils.o
+	$(EMCC) -Iraylib/include -O2 -c raylib/src/raudio.c -o raylib/lib/raudio.o
+	$(EMCC) -Iraylib/include -O2 -c raylib/src/rmodels.c -o raylib/lib/rmodels.o
+	$(EMCC) -Iraylib/include -O2 -c raylib/src/rshapes.c -o raylib/lib/rshapes.o
+	$(EMCC) -Iraylib/include -O2 -c raylib/src/rtext.c -o raylib/lib/rtext.o
+	$(EMCC) -Iraylib/include -O2 -c raylib/src/rtextures.c -o raylib/lib/rtextures.o
+	$(EMCC) -Iraylib/include -O2 -c raylib/src/utils.c -o raylib/lib/utils.o
 
 # tests
 

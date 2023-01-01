@@ -6,10 +6,19 @@
 #include "../src/read_wat.h"
 #include "../src/api/api.h"
 
+static web49_interp_data_t web49_main_import_silly(web49_interp_t interp) {
+    return (web49_interp_data_t) {0};
+    // fprintf(stderr, "emscripten generated bad func: %s\n", "emscripten_asm_const_int");
+    // __builtin_trap();
+}
+
 web49_env_func_t web49_main_import_func(void *state, const char *mod, const char *func) {
     if (!strcmp(mod, "wasi_snapshot_preview1")) {
         return web49_api_import_wasi(state, func);
     } else if (!strcmp(mod, "env")) {
+        if (!strcmp(func, "emscripten_asm_const_int")) {
+            return &web49_main_import_silly;
+        }
         web49_env_func_t ret = web49_api_import_raylib(func);
         if (ret == NULL) {
             __builtin_trap();
