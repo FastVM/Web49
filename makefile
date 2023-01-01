@@ -1,4 +1,6 @@
 
+WAIT ?= 1s
+
 PYTHON ?= python3
 OPT ?= -O2
 
@@ -35,11 +37,11 @@ all: bins
 # tests
 
 test: $(TEST_OUTPUTS)
-	cat $(TEST_OUTPUTS) | sort
+	@cat $(TEST_OUTPUTS) | sort > results.txt
 
 $(TEST_OUTPUTS): bin/miniwasm $(@:%.txt=%.wast)
 	@cp bin/miniwasm $(@:$(TEST_PREFIX)/%.txt=./bin/%)
-	@timeout 5s $(@:$(TEST_PREFIX)/%.txt=./bin/%) $(@:%.txt=%.wast) 2>/dev/null; \
+	@timeout $(WAIT) $(@:$(TEST_PREFIX)/%.txt=./bin/%) $(@:%.txt=%.wast) 2>/dev/null; \
 		if test $$? -eq 0; \
 		then echo "PASS $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
 		else echo "FAIL $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
@@ -82,7 +84,7 @@ format: .dummy
 	find . -name '*.inc' | xargs -I FILENAME clang-format -style=file -i FILENAME
 
 clean: .dummy
-	find . -name '*.o' | xargs rm
+	find src main -name '*.o' | xargs rm
 	find bin -type f | xargs rm
 	find test/core -name '*.txt' | xargs rm
 

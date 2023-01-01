@@ -21,6 +21,7 @@ struct web49_io_output_t {
     uint8_t *byte_buf;
 };
 
+web49_io_input_t web49_io_input_open_str(size_t len, uint8_t *str);
 web49_io_input_t web49_io_input_open(const char *filename);
 bool web49_io_input_is_empty(web49_io_input_t *input);
 size_t web49_io_input_ftell(web49_io_input_t *in);
