@@ -1,3 +1,4 @@
 #!/usr/bin/env sh
 
-emcc -Os $* $(dirname $0)/raylib/src/utils.c -I$(dirname $0)/raylib/include -s WARN_ON_UNDEFINED_SYMBOLS=0
+
+emcc -O3 "$@" $(dirname $0)/raylib/src/utils.c -I$(dirname $0)/raylib/include -s WARN_ON_UNDEFINED_SYMBOLS=0

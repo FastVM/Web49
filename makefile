@@ -4,6 +4,8 @@ WAIT ?= 1s
 PYTHON ?= python3
 OPT ?= -O2
 
+INSTALL ?= /usr/local/bin
+
 PROG_SRCS := main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c main/miniwasm.c main/raywasm.c main/runtime/rlruntime.c
 PROG_OBJS := $(PROG_SRCS:%.c=%.o)
 
@@ -33,6 +35,10 @@ TEST_OUTPUTS = $(TEST_NAMES:%=$(TEST_PREFIX)/%.txt)
 default: all
 
 all: bins
+
+install: bins bin/raywasm
+	cp -r bin/raywasm bin/miniwasm web49 emraylib raylib $(INSTALL)
+	chmod +x $(INSTALL)/raywasm $(INSTALL)/miniwasm $(INSTALL)/web49 $(INSTALL)/emraylib
 
 # tests
 
