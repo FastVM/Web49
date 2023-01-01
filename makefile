@@ -6,6 +6,8 @@ OPT ?= -O2
 
 INSTALL ?= /usr/local/bin
 
+EMCC ?= emcc
+
 PROG_SRCS := main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c main/miniwasm.c main/raywasm.c main/runtime/rlruntime.c
 PROG_OBJS := $(PROG_SRCS:%.c=%.o)
 
@@ -36,9 +38,20 @@ default: all
 
 all: bins
 
-install: bins bin/raywasm
+# install web49
+
+install: bins bin/raywasm raylib/lib raylib/lib
 	cp -r bin/raywasm bin/miniwasm web49 emraylib raylib $(INSTALL)
 	chmod +x $(INSTALL)/raywasm $(INSTALL)/miniwasm $(INSTALL)/web49 $(INSTALL)/emraylib
+
+raylib/lib: raylib/src
+	mkdir -p lib
+	$(EMCC) -Iraylib/include -O3 -c raylib/src/raudio.c -o raylib/lib/raudio.o
+	$(EMCC) -Iraylib/include -O3 -c raylib/src/rmodels.c -o raylib/lib/rmodels.o
+	$(EMCC) -Iraylib/include -O3 -c raylib/src/rshapes.c -o raylib/lib/rshapes.o
+	$(EMCC) -Iraylib/include -O3 -c raylib/src/rtext.c -o raylib/lib/rtext.o
+	$(EMCC) -Iraylib/include -O3 -c raylib/src/rtextures.c -o raylib/lib/rtextures.o
+	$(EMCC) -Iraylib/include -O3 -c raylib/src/utils.c -o raylib/lib/utils.o
 
 # tests
 
@@ -90,7 +103,7 @@ format: .dummy
 	find . -name '*.inc' | xargs -I FILENAME clang-format -style=file -i FILENAME
 
 clean: .dummy
-	find src main -name '*.o' | xargs rm
+	find src main raylib/src -name '*.o' | xargs rm
 	find bin -type f | xargs rm
 	find test/core -name '*.txt' | xargs rm
 
