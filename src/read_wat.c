@@ -160,7 +160,8 @@ uint64_t web49_readwat_expr_to_u64(web49_readwat_table_t *table, web49_readwat_e
     const char *str;
     if (expr.tag == WEB49_READWAT_EXPR_TAG_SYM) {
         str = expr.sym;
-    } else {
+    } else if (expr.tag == WEB49_READWAT_EXPR_TAG_FUN) {
+        fprintf(stderr, "bad module: expected a number, not (%s ...)\n", expr.fun_fun);
         __builtin_trap();
     }
     if (str[0] == '$') {
@@ -242,6 +243,10 @@ void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_readwat_ex
 
     for (uint64_t i = 0; i < expr.fun_nargs; i++) {
         web49_readwat_expr_t func = expr.fun_args[i];
+        if (func.tag == WEB49_READWAT_EXPR_TAG_SYM && func.sym[0] == '$') {
+            web49_readwat_table_set(&out->type_table, &func.sym[1], out->stype.num_entries);
+            continue;
+        }
         if (func.tag != WEB49_READWAT_EXPR_TAG_FUN) {
             fprintf(stderr, "expected (func ...) type, not `%s`\n", func.sym);
             exit(1);
@@ -280,6 +285,7 @@ void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_readwat_ex
                         params[num_params++] = WEB49_TYPE_F32;
                     } else if (!strcmp(name.sym, "f64")) {
                         params[num_params++] = WEB49_TYPE_F64;
+                    } else if (name.sym[0] == '$') {
                     } else {
                         fprintf(stderr, "expected param to be `i32` or `i64` or `f32` or `f64`, not `%s`\n", name.sym);
                         exit(1);
