@@ -36,7 +36,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - run: choco install emscripten glfw3
+      - run: choco install emscripten glfw3 -y --force
       - run: make CC=gcc OPT='-O3 -fomit-frame-pointer' install INSTALL=web49-windows-release
       - uses: actions/upload-artifact@v3
         with:
