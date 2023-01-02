@@ -101,9 +101,9 @@ bin/wasm2wasm: main/wasm2wasm.o $(OBJS)
 # util
 
 format: .dummy
-	find . -name '*.c' | xargs -I FILENAME clang-format -style=file -i FILENAME
-	find . -name '*.h' | xargs -I FILENAME clang-format -style=file -i FILENAME
-	find . -name '*.inc' | xargs -I FILENAME clang-format -style=file -i FILENAME
+	find src main -name '*.c' | xargs -I FILENAME clang-format -style=file -i FILENAME
+	find src main -name '*.h' | xargs -I FILENAME clang-format -style=file -i FILENAME
+	find src main -name '*.inc' | xargs -I FILENAME clang-format -style=file -i FILENAME
 
 clean: .dummy
 	find src main raylib/src raylib/lib -name '*.o' | xargs rm
