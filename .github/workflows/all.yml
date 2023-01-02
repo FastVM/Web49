@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: git clone https://github.com/emscripten-core/emsdk.git && cd emsdk && ./emsdk install latest && ./emsdk activate latest && ./emsdk_env.bat && cd ..
-      - run: make UNAME_S=Windows CC=gcc OPT='-O3 -fomit-frame-pointer' install INSTALL=web49-windows-release
+      - run: make -j4 UNAME_S=Windows CC=gcc OPT='-O3 -fomit-frame-pointer' install INSTALL=web49-windows-release
       - uses: actions/upload-artifact@v3
         with:
           name: web49-windows-release
@@ -52,7 +52,7 @@ jobs:
           prepare: |
             pkg install -y gcc emscripten
           run: |
-            make CC=gcc OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-freebsd-release
+            make -j4 CC=gcc OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-freebsd-release
       - uses: actions/upload-artifact@v3
         with:
           name: web49-freebsd-release
@@ -64,7 +64,7 @@ jobs:
         with:
           submodules: true
       - run: sudo apt install libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev emscripten
-      - run: make CC=gcc OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-linux-release
+      - run: make -j4 CC=gcc OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-linux-release
       - uses: actions/upload-artifact@v3
         with:
           name: web49-linux-release
@@ -76,7 +76,7 @@ jobs:
         with:
           submodules: true
       - run: sudo apt install libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev emscripten
-      - run: make CC=cc OPT='-g3' CFLAGS='-Wall -Wextra -Werror -Wno-unused-parameter' install INSTALL=web49-linux-debug
+      - run: make -j4 CC=cc OPT='-g3' CFLAGS='-Wall -Wextra -Werror -Wno-unused-parameter' install INSTALL=web49-linux-debug
       - uses: actions/upload-artifact@v3
         with:
           name: web49-linux-debug
@@ -88,7 +88,7 @@ jobs:
         with:
           submodules: true
       - run: brew install emscripten
-      - run: make CC=clang UNAME_S=Darwin OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-mac-release
+      - run: make -j4 CC=clang UNAME_S=Darwin OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-mac-release
       - uses: actions/upload-artifact@v3
         with:
           name: web49-mac-release
