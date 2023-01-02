@@ -48,7 +48,7 @@ install: bins bin/raywasm raylib/lib raylib/lib
 	chmod +x $(INSTALL)/raywasm $(INSTALL)/miniwasm $(INSTALL)/web49 $(INSTALL)/emraylib
 
 raylib/lib: raylib/src
-	mkdir -p lib
+	mkdir -p raylib/lib
 	$(EMCC) -Iraylib/include -O2 -c raylib/src/raudio.c -o raylib/lib/raudio.o
 	$(EMCC) -Iraylib/include -O2 -c raylib/src/rmodels.c -o raylib/lib/rmodels.o
 	$(EMCC) -Iraylib/include -O2 -c raylib/src/rshapes.c -o raylib/lib/rshapes.o
