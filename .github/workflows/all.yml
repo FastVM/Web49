@@ -47,7 +47,8 @@ jobs:
     runs-on: macos-12
     steps:
       - uses: actions/checkout@v3
-      - uses: vmactions/freebsd-vm@v0
+      - id: freebsd
+        uses: vmactions/freebsd-vm@v0
         with:
           usesh: false
           prepare: |
