@@ -4,7 +4,7 @@ WAIT ?= 1s
 PYTHON ?= python3
 OPT ?= -O2
 
-INSTALL ?= /usr/local/bin
+INSTALL ?= install
 
 EMCC ?= emcc
 

@@ -1,4 +1,4 @@
-name: Builds
+name: Builds Web49
 on: [push]
 jobs:
   benchmark:
@@ -8,8 +8,7 @@ jobs:
         with:
           submodules: true
       - run: sudo apt install gcc-11
-      - name: Setup emsdk
-        uses: mymindstorm/setup-emsdk@v11
+      - uses: mymindstorm/setup-emsdk@v11
         with:
           version: 3.1.25
           actions-cache-folder: 'emsdk-cache'
@@ -33,65 +32,54 @@ jobs:
             test/bench/nbody.png
             test/bench/fibf.png
             test/bench/coremark.png
-  freebsd-web49:
+  web49-windows-release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: make CC=gcc OPT='-O3 -fomit-frame-pointer' install INSTALL=web49-windows-release
+      - uses: actions/upload-artifact@v3
+        with:
+          name: web49-windows-release
+          path: web49-windows-release
+  web49-freebsd-release:
     runs-on: macos-12
     steps:
       - uses: actions/checkout@v3
-      - name: run in freebsd
-        id: freebsd
-        uses: vmactions/freebsd-vm@v0
+      - uses: vmactions/freebsd-vm@v0
         with:
           usesh: false
           prepare: |
             pkg install -y glfw gcc
           run: |
-            make CC=gcc OPT='-O3 -fomit-frame-pointer -flto' all bin/raywasm
+            make CC=gcc OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-freebsd-release
       - uses: actions/upload-artifact@v3
         with:
           name: web49-freebsd-release
-          path:  |
-            emraylib
-            bin/raywasm
-            bin/wasm2wat
-            bin/wat2wasm
-            bin/wasm2wasm
-            bin/miniwasm
-  linux-web49:
+          path: web49-freebsd-release
+  web49-linux-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
       - run: sudo apt install libgl1-mesa-dev libglfw3-dev
-      - run: make CC=cc OPT='-O3 -fomit-frame-pointer' all bin/raywasm
+      - run: make CC=gcc OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-linux-release
       - uses: actions/upload-artifact@v3
         with:
           name: web49-linux-release
-          path:  |
-            emraylib
-            bin/raywasm
-            bin/wasm2wat
-            bin/wat2wasm
-            bin/wasm2wasm
-            bin/miniwasm
-  linux-web49-warnings:
+          path: web49-linux-release
+  web49-linux-debug:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
       - run: sudo apt install libgl1-mesa-dev libglfw3-dev
-      - run: make CC=cc OPT='-g3' CFLAGS='-Wall -Wextra -Werror -Wno-unused-parameter' all bin/raywasm
+      - run: make CC=cc OPT='-g3' CFLAGS='-Wall -Wextra -Werror -Wno-unused-parameter' install INSTALL=web49-linux-debug
       - uses: actions/upload-artifact@v3
         with:
           name: web49-linux-debug
-          path:  |
-            emraylib
-            bin/raywasm
-            bin/wasm2wat
-            bin/wat2wasm
-            bin/wasm2wasm
-            bin/miniwasm
+          path: web49-linux-debug
   macos-web49:
     runs-on: macos-latest
     steps:
@@ -99,14 +87,8 @@ jobs:
         with:
           submodules: true
       - run: brew install glfw
-      - run: make CC=clang UNAME_S=Darwin OPT='-O3 -fomit-frame-pointer -flto' all bin/raywasm
+      - run: make CC=clang UNAME_S=Darwin OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-mac-release
       - uses: actions/upload-artifact@v3
         with:
           name: web49-mac-release
-          path: |
-            emraylib
-            bin/raywasm
-            bin/wasm2wat
-            bin/wat2wasm
-            bin/wasm2wasm
-            bin/miniwasm
+          path: web49-mac-release
