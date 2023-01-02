@@ -35,7 +35,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - run: git clone https://github.com/emscripten-core/emsdk.git && cd emsdk && ./emsdk install latest && ./emsdk activate latest && ./emsdk_env.bat && cd ..
+      - uses: mymindstorm/setup-emsdk@v11
       - run: make -j4 UNAME_S=Windows CC=gcc OPT='-O3 -fomit-frame-pointer' EMCC=./emsdk/upstream/emscripten/emcc install INSTALL=web49-windows-release
       - uses: actions/upload-artifact@v3
         with:
