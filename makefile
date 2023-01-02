@@ -16,17 +16,29 @@ WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
 
 OBJS := $(WEB49_OBJS)
 
-RAYLIB_SRCS := src/api/raylib.c raylib/src/rglfw.c raylib/src/raudio.c raylib/src/rcore.c raylib/src/rmodels.c raylib/src/rshapes.c raylib/src/rtext.c raylib/src/rtextures.c raylib/src/utils.c
-RAYLIB_OBJS := $(RAYLIB_SRCS:%.c=%.o)
+LDFLAGS_RAYLIB_Windows := -lgdi32
+LDFLAGS_RAYLIB_FreeBSD := -lGL
+LDFLAGS_RAYLIB_Linux := -lGL
+LDFLAGS_RAYLIB_Darwin := -framework OpenGL -framework Foundation -framework AppKit -framework IOKit
 
-LDFLAGS_GL_Windows := -lgdi32
-LDFLAGS_GL_FreeBSD := -lGL
-LDFLAGS_GL_Linux := -lGL
-LDFLAGS_GL_Darwin := -framework OpenGL
+CFLAGS_RAYLIB_Darwin :=  -I/usr/local/include -framework Foundation
 
 UNAME_S_CMD != uname -s
 
 UNAME_S ?= $(UNAME_S_CMD)
+
+RGLFW_M_OR_C_Windows = c
+RGLFW_M_OR_C_FreeBSD = c
+RGLFW_M_OR_C_Linux = c
+RGLFW_M_OR_C_Darwin = m
+
+RGLFW_EXT = $(RGLFW_M_OR_C_$(UNAME_S))
+
+RGLFW_NAME = raylib/src/rglfw.$(RGLFW_EXT)
+RGLFW_OBJS = $(RGLFW_NAME:%.$(RGLFW_EXT)=%.o)
+
+RAYLIB_SRCS := src/api/raylib.c raylib/src/raudio.c raylib/src/rcore.c raylib/src/rmodels.c raylib/src/rshapes.c raylib/src/rtext.c raylib/src/rtextures.c raylib/src/utils.c
+RAYLIB_OBJS := $(RAYLIB_SRCS:%.c=%.o)
 
 TEST_NAMES = address align binary-leb128 binary block br br_if br_table bulk call call_indirect comments const conversions custom data elem endianness exports f32 f32_bitwise f32_cmp f64 f64_bitwise f64_cmp fac float_exprs float_literals float_memory float_misc forward func func_ptrs global i32 i64 if imports inline-module int_exprs int_literals labels left-to-right linking load local_get local_set local_tee loop memory memory_copy memory_fill memory_grow memory_init memory_redundancy memory_size memory_trap names nop ref_func ref_is_null ref_null return select skip-stack-guard-page stack start store switch table-sub table table_copy table_fill table_get table_grow table_init table_set table_size token tokens traps type unreachable unreached-invalid unreached-valid unwind utf8-custom-section-id utf8-import-field utf8-import-module utf8-invalid-encoding
 
@@ -75,9 +87,9 @@ $(TEST_OUTPUTS): bin/miniwasm $(@:%.txt=%.wast)
 src/api/raylib.c: src/api/raylib.py src/api/raylib.json
 	$(PYTHON) src/api/raylib.py
 
-bin/raywasm: main/raywasm.o $(OBJS) $(RAYLIB_OBJS)
+bin/raywasm: main/raywasm.o $(OBJS) $(RGLFW_OBJS) $(RAYLIB_OBJS)
 	@mkdir -p bin
-	$(CC) $(OPT) main/raywasm.o $(RAYLIB_OBJS) -L/usr/local/lib $(OBJS) -o $(@) -lm -pthread -ldl $(LDFLAGS_GL_$(UNAME_S)) $(LDFLAGS)
+	$(CC) $(OPT) main/raywasm.o $(RGLFW_OBJS) $(RAYLIB_OBJS) -L/usr/local/lib $(OBJS) -o $(@) -lm -pthread -ldl $(LDFLAGS_RAYLIB_$(UNAME_S)) $(LDFLAGS)
 
 # bin
 
@@ -113,8 +125,11 @@ clean: .dummy
 
 # intermediate files
 
+$(RGLFW_OBJS): $(@:%.o=%.$(RGLFW_EXT))
+	$(CC) -c $(OPT) $(@:%.o=%.$(RGLFW_EXT)) -o $(@) -w -DPLATFORM_DESKTOP -Iraylib/include $(CFLAGS_RAYLIB_$(UNAME_S)) $(CFLAGS)
+
 $(RAYLIB_OBJS): $(@:%.o=%.c)
-	$(CC) -c $(OPT) $(@:%.o=%.c) -o $(@) -w -DPLATFORM_DESKTOP -Iraylib/include -I/usr/local/include $(CFLAGS)
+	$(CC) -c $(OPT) $(@:%.o=%.c) -o $(@) -w -DPLATFORM_DESKTOP -Iraylib/include $(CFLAGS_RAYLIB_$(UNAME_S)) $(CFLAGS)
 
 $(PROG_OBJS) $(WEB49_OBJS): $(@:%.o=%.c)
 	$(CC) -c $(OPT) $(@:%.o=%.c) -o $(@) $(CFLAGS)
