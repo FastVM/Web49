@@ -16,13 +16,13 @@ WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
 
 OBJS := $(WEB49_OBJS)
 
-RAYLIB_SRCS := src/api/raylib.c raylib/src/raudio.c raylib/src/rcore.c raylib/src/rmodels.c raylib/src/rshapes.c raylib/src/rtext.c raylib/src/rtextures.c raylib/src/utils.c
+RAYLIB_SRCS := src/api/raylib.c raylib/src/rglfw.c raylib/src/raudio.c raylib/src/rcore.c raylib/src/rmodels.c raylib/src/rshapes.c raylib/src/rtext.c raylib/src/rtextures.c raylib/src/utils.c
 RAYLIB_OBJS := $(RAYLIB_SRCS:%.c=%.o)
 
-LDFLAGS_GL_Windows = -lglfw3
-LDFLAGS_GL_FreeBSD = -lGL -lglfw
-LDFLAGS_GL_Linux = -lGL -lglfw
-LDFLAGS_GL_Darwin = -framework OpenGL -lglfw
+LDFLAGS_GL_Windows :=
+LDFLAGS_GL_FreeBSD := -lGL
+LDFLAGS_GL_Linux := -lGL
+LDFLAGS_GL_Darwin := -framework OpenGL
 
 UNAME_S_CMD != uname -s
 
