@@ -11,7 +11,7 @@ struct web49_opt_list_t {
 };
 
 web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **head, void *last, size_t nreturns) {
-    web49_opt_list_t list = (web49_opt_list_t) {
+    web49_opt_list_t list = (web49_opt_list_t){
         .nreturns = nreturns,
         .last = last,
     };

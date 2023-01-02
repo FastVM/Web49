@@ -575,23 +575,23 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                     };
                     web49_readwat_table_t *table = NULL;
                     switch (opcode) {
-                    case WEB49_OPCODE_BR:
-                    case WEB49_OPCODE_BR_IF:
-                    case WEB49_OPCODE_BR_TABLE:
-                        table = &out->branch_table;
-                        break;
-                    case WEB49_OPCODE_GET_LOCAL:
-                    case WEB49_OPCODE_SET_LOCAL:
-                    case WEB49_OPCODE_TEE_LOCAL:
-                        table = &out->local_table;
-                        break;
-                    case WEB49_OPCODE_GET_GLOBAL:
-                    case WEB49_OPCODE_SET_GLOBAL:
-                        table = &out->global_table;
-                        break;
-                    case WEB49_OPCODE_CALL:
-                        table = &out->func_table;
-                        break;
+                        case WEB49_OPCODE_BR:
+                        case WEB49_OPCODE_BR_IF:
+                        case WEB49_OPCODE_BR_TABLE:
+                            table = &out->branch_table;
+                            break;
+                        case WEB49_OPCODE_GET_LOCAL:
+                        case WEB49_OPCODE_SET_LOCAL:
+                        case WEB49_OPCODE_TEE_LOCAL:
+                            table = &out->local_table;
+                            break;
+                        case WEB49_OPCODE_GET_GLOBAL:
+                        case WEB49_OPCODE_SET_GLOBAL:
+                            table = &out->global_table;
+                            break;
+                        case WEB49_OPCODE_CALL:
+                            table = &out->func_table;
+                            break;
                     }
                     switch (id) {
                         case WEB49_IMMEDIATE_NONE:
@@ -832,23 +832,23 @@ web49_instr_t web49_readwat_instr(web49_readwat_state_t *out, web49_readwat_expr
             };
             web49_readwat_table_t *table = NULL;
             switch (opcode) {
-            case WEB49_OPCODE_BR:
-            case WEB49_OPCODE_BR_IF:
-            case WEB49_OPCODE_BR_TABLE:
-                table = &out->branch_table;
-                break;
-            case WEB49_OPCODE_GET_LOCAL:
-            case WEB49_OPCODE_SET_LOCAL:
-            case WEB49_OPCODE_TEE_LOCAL:
-                table = &out->local_table;
-                break;
-            case WEB49_OPCODE_GET_GLOBAL:
-            case WEB49_OPCODE_SET_GLOBAL:
-                table = &out->global_table;
-                break;
-            case WEB49_OPCODE_CALL:
-                table = &out->func_table;
-                break;
+                case WEB49_OPCODE_BR:
+                case WEB49_OPCODE_BR_IF:
+                case WEB49_OPCODE_BR_TABLE:
+                    table = &out->branch_table;
+                    break;
+                case WEB49_OPCODE_GET_LOCAL:
+                case WEB49_OPCODE_SET_LOCAL:
+                case WEB49_OPCODE_TEE_LOCAL:
+                    table = &out->local_table;
+                    break;
+                case WEB49_OPCODE_GET_GLOBAL:
+                case WEB49_OPCODE_SET_GLOBAL:
+                    table = &out->global_table;
+                    break;
+                case WEB49_OPCODE_CALL:
+                    table = &out->func_table;
+                    break;
             }
             switch (id) {
                 case WEB49_IMMEDIATE_NONE:
@@ -979,7 +979,7 @@ web49_instr_t web49_readwat_instr(web49_readwat_state_t *out, web49_readwat_expr
                 }
             }
             if (opcode == WEB49_OPCODE_IF) {
-                    args[nargs++] = (web49_instr_t) {.opcode = WEB49_OPCODE_END};
+                args[nargs++] = (web49_instr_t){.opcode = WEB49_OPCODE_END};
             }
             return (web49_instr_t){
                 .opcode = opcode,

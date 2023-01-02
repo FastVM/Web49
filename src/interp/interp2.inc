@@ -279,7 +279,7 @@ NAME(WEB49_OPCODE_I32_DIV_U) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_REM_S) {
-    locals[head[2].data.i32_u].i32_s = (int32_t) ((int64_t) LOCAL0.i32_s % (int64_t) LOCAL1.i32_s);
+    locals[head[2].data.i32_u].i32_s = (int32_t)((int64_t)LOCAL0.i32_s % (int64_t)LOCAL1.i32_s);
     head += 3;
     NEXT();
 }
@@ -354,7 +354,7 @@ NAME(WEB49_OPCODE_I64_DIV_U) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_REM_S) {
-    locals[head[2].data.i32_u].i64_s = (int64_t) ((__int128_t) LOCAL0.i64_s % (__int128_t) LOCAL1.i64_s);
+    locals[head[2].data.i32_u].i64_s = (int64_t)((__int128_t)LOCAL0.i64_s % (__int128_t)LOCAL1.i64_s);
     head += 3;
     NEXT();
 }
@@ -479,7 +479,7 @@ NAME(WEB49_OPCODE_MEMORY_FILL) {
     NEXT();
 }
 NAME(WEB49_OPCODE_MEMORY_COPY) {
-    size_t size = (size_t) locals[head[2].data.i32_u].i32_u;
+    size_t size = (size_t)locals[head[2].data.i32_u].i32_u;
     memmove(WEB49_INTERP_ADDR(void *, interp, LOCAL0.i32_u, size), WEB49_INTERP_ADDR(void *, interp, LOCAL0.i32_u, size), size);
     head += 3;
     NEXT();

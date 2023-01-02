@@ -16,9 +16,9 @@
 #include <string.h>
 
 #if 0
-#define web49_malloc(size) (printf("%s@%s+%zu\n", __FILE__, __LINE__, (size_t) (size)), malloc(size))
-#define web49_alloc0(size) (printf("%s@%s+%zu\n", __FILE__, __LINE__, (size_t) (size)), calloc(size, 1))
-#define web49_realloc(ptr, size) (printf("%s@%s+%zu\n", __FILE__, __LINE__, (size_t) (size)), realloc(ptr, size))
+#define web49_malloc(size) (printf("%s@%s+%zu\n", __FILE__, __LINE__, (size_t)(size)), malloc(size))
+#define web49_alloc0(size) (printf("%s@%s+%zu\n", __FILE__, __LINE__, (size_t)(size)), calloc(size, 1))
+#define web49_realloc(ptr, size) (printf("%s@%s+%zu\n", __FILE__, __LINE__, (size_t)(size)), realloc(ptr, size))
 #else
 #define web49_malloc(size) (malloc(size))
 #define web49_alloc0(size) (calloc(size, 1))

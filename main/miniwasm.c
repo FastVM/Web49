@@ -1,11 +1,11 @@
 
+#include "../src/api/api.h"
 #include "../src/ast.h"
 #include "../src/interp/interp.h"
 #include "../src/opt/tee.h"
 #include "../src/opt/tree.h"
 #include "../src/read_bin.h"
 #include "../src/read_wat.h"
-#include "../src/api/api.h"
 
 web49_env_func_t web49_main_import_func(void *state, const char *mod, const char *func) {
     if (!strcmp(mod, "wasi_snapshot_preview1")) {
@@ -19,9 +19,9 @@ web49_interp_data_t web49_main_expr_to_data(web49_readwat_expr_t expr) {
     web49_interp_data_t ret;
     if (!strcmp(expr.fun_fun, "i32.const")) {
         if (expr.fun_args[0].sym[0] == '0' && expr.fun_args[0].sym[1] == 'x') {
-            ret.i32_u = (uint32_t) web49_readwat_expr_to_i64(expr.fun_args[0]);
+            ret.i32_u = (uint32_t)web49_readwat_expr_to_i64(expr.fun_args[0]);
         } else {
-            ret.i32_s = (int32_t) web49_readwat_expr_to_i64(expr.fun_args[0]);
+            ret.i32_s = (int32_t)web49_readwat_expr_to_i64(expr.fun_args[0]);
         }
     }
     if (!strcmp(expr.fun_fun, "i64.const")) {
@@ -70,7 +70,7 @@ int web49_file_main(const char *inarg, const char **args) {
                     fprintf(stderr, "wasm spec test: dont know how to handle: <%s>\n", todo.sym);
                     return 1;
                 } else if (todo.tag == WEB49_READWAT_EXPR_TAG_STR) {
-                    fprintf(stderr, "wasm spec test: dont know how to handle: \"%.*s\"\n", (int) todo.len_str, todo.str);
+                    fprintf(stderr, "wasm spec test: dont know how to handle: \"%.*s\"\n", (int)todo.len_str, todo.str);
                     return 1;
                 } else if (!strcmp(todo.fun_fun, "module")) {
                     expr = todo;
@@ -93,19 +93,19 @@ int web49_file_main(const char *inarg, const char **args) {
                         if (!strcmp(entry.field_str, str)) {
                             web49_interp_data_t data = web49_interp_block_run(interp, &interp.funcs[j]);
                             if (!strcmp(wants.fun_fun, "i32.const")) {
-                                uint32_t expected = (uint32_t) web49_readwat_expr_to_i64(wants.fun_args[0]);
+                                uint32_t expected = (uint32_t)web49_readwat_expr_to_i64(wants.fun_args[0]);
                                 if (data.i32_u == expected) {
-                                    fprintf(stderr, "wasm spec test: invoke %s pass: 0x%08"PRIx32" == 0x%08"PRIx32"\n", entry.field_str, data.i32_u, expected);
+                                    fprintf(stderr, "wasm spec test: invoke %s pass: 0x%08" PRIx32 " == 0x%08" PRIx32 "\n", entry.field_str, data.i32_u, expected);
                                 } else {
-                                    fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%"PRIx32" != 0x%"PRIx32" (expected return value)\n", entry.field_str, data.i32_u, expected);
+                                    fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%" PRIx32 " != 0x%" PRIx32 " (expected return value)\n", entry.field_str, data.i32_u, expected);
                                     return 1;
                                 }
                             } else if (!strcmp(wants.fun_fun, "i64.const")) {
                                 int64_t expected = web49_readwat_expr_to_i64(wants.fun_args[0]);
                                 if (data.i64_s == expected) {
-                                    fprintf(stderr, "wasm spec test: invoke %s pass: 0x%016"PRIx64" == 0x%016"PRIx64"\n", entry.field_str, data.i64_u, expected);
+                                    fprintf(stderr, "wasm spec test: invoke %s pass: 0x%016" PRIx64 " == 0x%016" PRIx64 "\n", entry.field_str, data.i64_u, expected);
                                 } else {
-                                    fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%016"PRIx64" != 0x%016"PRIx64" (expected return value)\n", entry.field_str, data.i64_u, expected);
+                                    fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%016" PRIx64 " != 0x%016" PRIx64 " (expected return value)\n", entry.field_str, data.i64_u, expected);
                                     return 1;
                                 }
                             } else if (!strcmp(wants.fun_fun, "f32.const")) {

@@ -1,4 +1,5 @@
 #include "ast.h"
+
 #include "tables.h"
 
 void web49_free_instr(web49_instr_t instr) {
@@ -121,7 +122,7 @@ web49_section_t web49_module_get_section(web49_module_t mod, web49_section_id_t 
             return mod.sections[i];
         }
     }
-    return (web49_section_t) {};
+    return (web49_section_t){};
     // fprintf(stderr, "cannot find section #%zu", (size_t) id);
     // __builtin_trap();
 }

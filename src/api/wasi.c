@@ -1,9 +1,10 @@
-#include "api.h"
 #include <fcntl.h>
 #include <stdint.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+
+#include "api.h"
 
 web49_interp_data_t web49_api_import_wasi_fd_seek(web49_interp_t interp) {
     int whence = -1;
@@ -18,13 +19,13 @@ web49_interp_data_t web49_api_import_wasi_fd_seek(web49_interp_t interp) {
             whence = SEEK_SET;
             break;
         default:
-            fprintf(stderr, "bad wasi whence: %"PRIu32"\n", interp.locals[2].i32_u);
+            fprintf(stderr, "bad wasi whence: %" PRIu32 "\n", interp.locals[2].i32_u);
             __builtin_trap();
     }
     if (interp.locals[0].i32_u <= 2 && whence == SEEK_SET) {
         WEB49_INTERP_WRITE(int64_t, interp, interp.locals[3].i32_u, interp.locals[1].i64_s);
     } else {
-        WEB49_INTERP_WRITE(int64_t, interp, interp.locals[3].i32_u, (int64_t) lseek(interp.locals[0].i32_u, interp.locals[1].i64_s, whence));
+        WEB49_INTERP_WRITE(int64_t, interp, interp.locals[3].i32_u, (int64_t)lseek(interp.locals[0].i32_u, interp.locals[1].i64_s, whence));
     }
     return (web49_interp_data_t){.i32_u = 0};
 }
@@ -89,17 +90,8 @@ web49_interp_data_t web49_api_import_wasi_fd_fdstat_get(web49_interp_t interp) {
     struct stat fd_stat;
     fstat(fd, &fd_stat);
     int mode = fd_stat.st_mode;
-    uint8_t fs_filetype = (S_ISBLK(mode) ? 1 : 0) |
-                          (S_ISCHR(mode) ? 2 : 0) |
-                          (S_ISDIR(mode) ? 3 : 0) |
-                          (S_ISREG(mode) ? 4 : 0) |
-                          (S_ISLNK(mode) ? 7 : 0);
-
-    int fl = fcntl(fd, F_GETFL);
-    uint16_t fs_flags = ((fl & O_APPEND) ? 1 : 0) |
-                        ((fl & O_DSYNC) ? 2 : 0) |
-                        ((fl & O_NONBLOCK) ? 4 : 0) |
-                        ((fl & O_SYNC) ? 16 : 0);
+    uint8_t fs_filetype = (S_ISBLK(mode) ? 1 : 0) | (S_ISCHR(mode) ? 2 : 0) | (S_ISDIR(mode) ? 3 : 0) | (S_ISREG(mode) ? 4 : 0);
+    uint16_t fs_flags = 0;
     uint64_t fs_rights_base = UINT64_MAX;
     uint64_t fs_rights_inheriting = UINT64_MAX;
     if (fd <= 2) {
@@ -118,9 +110,9 @@ web49_interp_data_t web49_api_import_wasi_fd_prestat_get(web49_interp_t interp) 
     uint32_t buf = interp.locals[1].i32_u;
     WEB49_INTERP_WRITE(uint8_t, interp, buf, 0);
     if (fd == 3) {
-        WEB49_INTERP_WRITE(uint32_t, interp, buf+4, 1);
+        WEB49_INTERP_WRITE(uint32_t, interp, buf + 4, 1);
     } else if (fd == 4) {
-        WEB49_INTERP_WRITE(uint32_t, interp, buf+4, 2);
+        WEB49_INTERP_WRITE(uint32_t, interp, buf + 4, 2);
     } else {
         return (web49_interp_data_t){.i32_u = 8};
     }
@@ -146,10 +138,10 @@ web49_interp_data_t web49_api_import_wasi_path_open(web49_interp_t interp) {
         WEB49_INTERP_WRITE(int32_t, interp, path, 4);
         return (web49_interp_data_t){.i32_u = 0};
     }
-    int flags = ((oflags & 1)             ? O_CREAT     : 0) |
-                ((oflags & 4)              ? O_EXCL      : 0) |
-                ((oflags & 8)             ? O_TRUNC     : 0) |
-                ((fs_flags & 1)     ? O_APPEND    : 0);
+    int flags = ((oflags & 1) ? O_CREAT : 0) |
+                ((oflags & 4) ? O_EXCL : 0) |
+                ((oflags & 8) ? O_TRUNC : 0) |
+                ((fs_flags & 1) ? O_APPEND : 0);
     if ((fs_rights_base & 2) && (fs_rights_base & 32)) {
         flags |= O_RDWR;
     } else if (fs_rights_base & 32) {
@@ -159,15 +151,15 @@ web49_interp_data_t web49_api_import_wasi_path_open(web49_interp_t interp) {
     }
     int dirfd;
     switch (wdirfd) {
-    case 3:
-        dirfd = open("/", O_DIRECTORY);
-        break;
-    case 4:
-        dirfd = open("./", O_DIRECTORY);
-        break;
-    default:
-        fprintf(stderr, "unknown dirfd: %i\n", wdirfd);
-        __builtin_trap();
+        case 3:
+            dirfd = open("/", O_RDONLY);
+            break;
+        case 4:
+            dirfd = open("./", O_RDONLY);
+            break;
+        default:
+            fprintf(stderr, "unknown dirfd: %i\n", wdirfd);
+            __builtin_trap();
     }
     int hostfd = openat(dirfd, host_path, flags, 0644);
     close(dirfd);
@@ -198,7 +190,7 @@ web49_interp_data_t web49_api_import_wasi_fd_write(web49_interp_t interp) {
     for (size_t i = 0; i < iovs_len; i++) {
         uint32_t ptr = WEB49_INTERP_READ(uint32_t, interp, iovs + i * 8 + 0);
         uint32_t len = WEB49_INTERP_READ(uint32_t, interp, iovs + i * 8 + 4);
-       nwritten += (uint32_t)write(fd, WEB49_INTERP_ADDR(void *, interp, ptr, len), len);
+        nwritten += (uint32_t)write(fd, WEB49_INTERP_ADDR(void *, interp, ptr, len), len);
     }
     WEB49_INTERP_WRITE(uint32_t, interp, interp.locals[3].i32_u, nwritten);
     return (web49_interp_data_t){.i32_u = 0};

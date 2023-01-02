@@ -165,7 +165,7 @@ NAME(WEB49_OPCODE_CALL) {
     } else if (block->nlocals <= 1024) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE1024;
     } else {
-        fprintf(stderr, "too many locals: %zu\n", (size_t) block->nlocals);
+        fprintf(stderr, "too many locals: %zu\n", (size_t)block->nlocals);
         __builtin_trap();
     }
     head[0].ptr = block->code;

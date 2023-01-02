@@ -1,13 +1,13 @@
+#include "../src/api/api.h"
 #include "../src/ast.h"
 #include "../src/interp/interp.h"
 #include "../src/opt/tee.h"
 #include "../src/opt/tree.h"
 #include "../src/read_bin.h"
 #include "../src/read_wat.h"
-#include "../src/api/api.h"
 
 static web49_interp_data_t web49_main_import_silly(web49_interp_t interp) {
-    return (web49_interp_data_t) {0};
+    return (web49_interp_data_t){0};
     // fprintf(stderr, "emscripten generated bad func: %s\n", "emscripten_asm_const_int");
     // __builtin_trap();
 }
