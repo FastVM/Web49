@@ -161,7 +161,11 @@ web49_interp_data_t web49_api_import_wasi_path_open(web49_interp_t interp) {
             fprintf(stderr, "unknown dirfd: %i\n", wdirfd);
             __builtin_trap();
     }
+#if defined(__WIN32__)
+    int hostfd = open(host_path, flags, 0644);
+#else
     int hostfd = openat(dirfd, host_path, flags, 0644);
+#endif
     close(dirfd);
     if (hostfd < 0) {
         return (web49_interp_data_t){.i32_u = 44};
