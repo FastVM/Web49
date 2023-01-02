@@ -57,8 +57,11 @@ all: bins
 install: bins bin/raywasm raylib/lib raylib/lib
 	mkdir -p $(INSTALL)
 	mkdir -p $(INSTALL)/raylib
+	mkdir -p $(INSTALL)/raylib/lib
+	mkdir -p $(INSTALL)/raylib/include
 	cp bin/raywasm bin/miniwasm web49 emraylib $(INSTALL)
-	cp -r raylib/lib raylib/include $(INSTALL)/raylib
+	cp -r raylib/lib/* $(INSTALL)/raylib/lib
+	cp -r raylib/include/*.h $(INSTALL)/raylib/include
 	chmod +x $(INSTALL)/raywasm $(INSTALL)/miniwasm $(INSTALL)/web49 $(INSTALL)/emraylib
 
 raylib/lib: raylib/src
