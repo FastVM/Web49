@@ -41,7 +41,10 @@ all: bins
 # install web49
 
 install: bins bin/raywasm raylib/lib raylib/lib
-	cp -r bin/raywasm bin/miniwasm web49 emraylib raylib $(INSTALL)
+	mkdir -p $(INSTALL)
+	mkdir -p $(INSTALL)/raylib
+	cp bin/raywasm bin/miniwasm web49 emraylib $(INSTALL)
+	cp -r raylib/lib raylib/include $(INSTALL)/raylib
 	chmod +x $(INSTALL)/raywasm $(INSTALL)/miniwasm $(INSTALL)/web49 $(INSTALL)/emraylib
 
 raylib/lib: raylib/src
@@ -103,7 +106,7 @@ format: .dummy
 	find . -name '*.inc' | xargs -I FILENAME clang-format -style=file -i FILENAME
 
 clean: .dummy
-	find src main raylib/src -name '*.o' | xargs rm
+	find src main raylib/src raylib/lib -name '*.o' | xargs rm
 	find bin -type f | xargs rm
 	find test/core -name '*.txt' | xargs rm
 

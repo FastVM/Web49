@@ -19,3 +19,4 @@ err.txt
 raylib/examples
 *.tmp
 test/core/*.txt
+install
