@@ -38,7 +38,7 @@ jobs:
       - uses: actions/checkout@v3
       - run: git clone https://github.com/emscripten-core/emsdk.git && cd emsdk && ./emsdk install latest && ./emsdk activate latest && ./emsdk_env.bat && cd ..
       - run: choco install glfw3 
-      - run: make CC=gcc OPT='-O3 -fomit-frame-pointer' install INSTALL=web49-windows-release
+      - run: make UNAME_S=Windows CC=gcc OPT='-O3 -fomit-frame-pointer' install INSTALL=web49-windows-release
       - uses: actions/upload-artifact@v3
         with:
           name: web49-windows-release
