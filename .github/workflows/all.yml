@@ -36,6 +36,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
+      - run: choco install emscripten glfw3
       - run: make CC=gcc OPT='-O3 -fomit-frame-pointer' install INSTALL=web49-windows-release
       - uses: actions/upload-artifact@v3
         with:
@@ -49,7 +50,7 @@ jobs:
         with:
           usesh: false
           prepare: |
-            pkg install -y glfw gcc
+            pkg install -y glfw gcc emscripten
           run: |
             make CC=gcc OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-freebsd-release
       - uses: actions/upload-artifact@v3
@@ -62,7 +63,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - run: sudo apt install libgl1-mesa-dev libglfw3-dev
+      - run: sudo apt install libgl1-mesa-dev libglfw3-dev emscripten
       - run: make CC=gcc OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-linux-release
       - uses: actions/upload-artifact@v3
         with:
@@ -74,7 +75,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - run: sudo apt install libgl1-mesa-dev libglfw3-dev
+      - run: sudo apt install libgl1-mesa-dev libglfw3-dev emscripten
       - run: make CC=cc OPT='-g3' CFLAGS='-Wall -Wextra -Werror -Wno-unused-parameter' install INSTALL=web49-linux-debug
       - uses: actions/upload-artifact@v3
         with:
@@ -86,7 +87,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - run: brew install glfw
+      - run: brew install glfw emscripten
       - run: make CC=clang UNAME_S=Darwin OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-mac-release
       - uses: actions/upload-artifact@v3
         with:
