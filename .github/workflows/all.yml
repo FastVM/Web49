@@ -50,7 +50,7 @@ jobs:
         with:
           usesh: true
           prepare: |
-            pkg install -y gcc emscripten
+            pkg install -y gcc emscripten libX11
           run: |
             make -j4 CC=gcc OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-freebsd-release
       - uses: actions/upload-artifact@v3
