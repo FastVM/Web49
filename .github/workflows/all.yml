@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: mymindstorm/setup-emsdk@v11
-      - run: make -j4 UNAME_S=Windows CC=gcc OPT='-O3 -fomit-frame-pointer' EMCC=./emsdk/upstream/emscripten/emcc install INSTALL=web49-windows-release
+      - run: make -j4 UNAME_S=Windows CC=gcc OPT='-O3 -fomit-frame-pointer' install INSTALL=web49-windows-release
       - uses: actions/upload-artifact@v3
         with:
           name: web49-windows-release
@@ -88,7 +88,7 @@ jobs:
         with:
           submodules: true
       - run: brew install emscripten
-      - run: make -j4 CC=clang UNAME_S=Darwin OPT='-O3 -fomit-frame-pointer -flto' EMCC=emcc install INSTALL=web49-mac-release 
+      - run: make -j4 CC=clang UNAME_S=Darwin OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-mac-release 
       - uses: actions/upload-artifact@v3
         with:
           name: web49-mac-release
