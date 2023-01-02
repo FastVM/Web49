@@ -88,7 +88,7 @@ jobs:
         with:
           submodules: true
       - run: brew install emscripten
-      - run: make -j4 CC=clang UNAME_S=Darwin OPT='-O3 -fomit-frame-pointer -flto' EMCC=emsdk/upstream/emscripten/emcc install INSTALL=web49-mac-release 
+      - run: make -j4 CC=clang UNAME_S=Darwin OPT='-O3 -fomit-frame-pointer -flto' EMCC=emcc install INSTALL=web49-mac-release 
       - uses: actions/upload-artifact@v3
         with:
           name: web49-mac-release
