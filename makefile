@@ -17,8 +17,8 @@ WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
 OBJS := $(WEB49_OBJS)
 
 LDFLAGS_RAYLIB_Windows := -lgdi32 -lwinmm
-LDFLAGS_RAYLIB_FreeBSD := -lGL
-LDFLAGS_RAYLIB_Linux := -lGL
+LDFLAGS_RAYLIB_FreeBSD := 
+LDFLAGS_RAYLIB_Linux := 
 LDFLAGS_RAYLIB_Darwin := -framework OpenGL -framework Foundation -framework AppKit -framework IOKit
 
 CFLAGS_RAYLIB_FreeBSD := -I/usr/local/include
