@@ -41,22 +41,22 @@ jobs:
         with:
           name: web49-windows-release
           path: web49-windows-release
-  web49-freebsd-release:
-    runs-on: macos-12
-    steps:
-      - uses: actions/checkout@v3
-      - id: freebsd
-        uses: vmactions/freebsd-vm@v0
-        with:
-          usesh: true
-          prepare: |
-            pkg install -y gcc emscripten libX11 libXcursor libXi libXrandr libGL libXinerama
-          run: |
-            make -j4 CC=gcc OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-freebsd-release
-      - uses: actions/upload-artifact@v3
-        with:
-          name: web49-freebsd-release
-          path: web49-freebsd-release
+  # web49-freebsd-release:
+  #   runs-on: macos-12
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - id: freebsd
+  #       uses: vmactions/freebsd-vm@v0
+  #       with:
+  #         usesh: true
+  #         prepare: |
+  #           pkg install -y gcc emscripten libX11 libXcursor libXi libXrandr libGL libXinerama
+  #         run: |
+  #           make -j4 CC=gcc OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-freebsd-release
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: web49-freebsd-release
+  #         path: web49-freebsd-release
   web49-linux-release:
     runs-on: ubuntu-latest
     steps:
