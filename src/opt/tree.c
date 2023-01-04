@@ -68,7 +68,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
         if (cur.opcode == WEB49_OPCODE_BLOCK || cur.opcode == WEB49_OPCODE_LOOP) {
             web49_instr_t body = web49_opt_tree_read_block(mod, head, &list, cur.immediate.block_type == WEB49_TYPE_BLOCK_TYPE || cur.opcode == WEB49_OPCODE_LOOP ? 0 : 1);
             cur.nargs = 1;
-            cur.args = web49_realloc(cur.args, sizeof(web49_instr_t));
+            cur.args = web49_malloc(sizeof(web49_instr_t));
             cur.args[0] = body;
             if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
                 ret.args[ret.nargs++] = cur;
@@ -88,13 +88,13 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
             web49_instr_t ifthen = web49_opt_tree_read_block(mod, head, &list, cur.immediate.block_type == WEB49_TYPE_BLOCK_TYPE ? 0 : 1);
             if ((*head)[-1].opcode == WEB49_OPCODE_ELSE) {
                 cur.nargs = 3;
-                cur.args = web49_realloc(cur.args, sizeof(web49_instr_t) * 3);
+                cur.args = web49_malloc(sizeof(web49_instr_t) * 3);
                 cur.args[0] = ret.args[--ret.nargs];
                 cur.args[1] = ifthen;
                 cur.args[2] = web49_opt_tree_read_block(mod, head, &list, cur.immediate.block_type == WEB49_TYPE_BLOCK_TYPE ? 0 : 1);
             } else {
                 cur.nargs = 2;
-                cur.args = web49_realloc(cur.args, sizeof(web49_instr_t) * 2);
+                cur.args = web49_malloc(sizeof(web49_instr_t) * 2);
                 cur.args[0] = ret.args[--ret.nargs];
                 cur.args[1] = ifthen;
             }
@@ -174,7 +174,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
             nargs += head->nreturns;
         }
         cur.nargs = 0;
-        cur.args = web49_realloc(cur.args, sizeof(web49_instr_t) * (nargs));
+        cur.args = web49_malloc(sizeof(web49_instr_t) * (nargs));
         ret.nargs -= nargs;
         for (size_t i = 0; i < nargs; i++) {
             cur.args[cur.nargs++] = ret.args[ret.nargs + i];
@@ -210,12 +210,12 @@ void web49_opt_untree(web49_instr_t cur, size_t *len, web49_instr_t **out, size_
         }
         (*out)[(*len)++] = cur;
         for (size_t i = 0; i < nargs; i++) {
-            if (cur.args[i].opcode != WEB49_OPCODE_THEN) {
+            if (cur.args[i].opcode == WEB49_OPCODE_THEN) {
                 web49_opt_untree(cur.args[i], len, out, alloc);
             }
         }
         for (size_t i = 0; i < nargs; i++) {
-            if (cur.args[i].opcode != WEB49_OPCODE_ELSE) {
+            if (cur.args[i].opcode == WEB49_OPCODE_ELSE) {
                 web49_opt_untree(cur.args[i], len, out, alloc);
             }
         }
@@ -224,7 +224,7 @@ void web49_opt_untree(web49_instr_t cur, size_t *len, web49_instr_t **out, size_
             *out = web49_realloc(*out, sizeof(web49_instr_t) * *alloc);
         }
         (*out)[(*len)++] = (web49_instr_t) {.opcode = WEB49_OPCODE_END};
-    } else if (cur.opcode == WEB49_OPCODE_THEN) {
+    } else if (cur.opcode == WEB49_OPCODE_THEN || cur.opcode == WEB49_OPCODE_NOP) {
         for (size_t i = 0; i < nargs; i++) {
             web49_opt_untree(cur.args[i], len, out, alloc);
         }
@@ -247,6 +247,7 @@ void web49_opt_untree(web49_instr_t cur, size_t *len, web49_instr_t **out, size_
         }
         (*out)[(*len)++] = cur;
     }
+    // web49_free(cur.args);
 }
 
 void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t *entry) {
@@ -256,6 +257,11 @@ void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t *entry)
     for (size_t i = 0; i < entry->num_instrs; i++) {
         web49_opt_untree(entry->instrs[i], &len, &head, &alloc);
     }
+    if (len + 2 >= alloc) {
+        alloc = (len + 2) * 2;
+        head = web49_realloc(head, sizeof(web49_instr_t) * alloc);
+    }
+    head[len++] = (web49_instr_t) {.opcode = WEB49_OPCODE_END};
     // for (size_t i = 0; i < len; i++) {
     //     fprintf(stderr, "%s\n", web49_opcode_to_name(head[i].opcode));
     // }

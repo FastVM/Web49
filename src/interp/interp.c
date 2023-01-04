@@ -870,7 +870,7 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
     for (size_t j = 0; j < table_section.num_entries; j++) {
         web49_type_table_t entry = table_section.entries[j];
         if (entry.element_type == WEB49_TYPE_ANYFUNC) {
-            interp.table = web49_malloc(sizeof(web49_interp_block_t *) * entry.limits.maximum);
+            interp.table = web49_malloc(sizeof(web49_interp_block_t *) * entry.limits.initial);
         }
     }
     for (size_t j = 0; j < import_section.num_entries; j++) {
