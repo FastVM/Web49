@@ -5,6 +5,7 @@ import os
 import subprocess
 import time
 import argparse
+import colorsys
 
 cur = os.path.dirname(os.path.realpath(__file__))
 
@@ -29,7 +30,7 @@ emcc = args.compiler
 optlevel = args.opt
 
 if len(engines) == 0:
-    engines = ['wasm3', os.path.join(cur, 'bin/miniwasm')]
+    engines = ['wasm3', os.path.join(cur, 'bin/miniwasm'), 'wasmer', 'wasmtime']
 
 if len(args.test) == 0: 
     tests = {
@@ -70,7 +71,7 @@ if len(args.test) == 0:
         },
         'nbody': {
             'runs': 1,
-            'args': ['10000000'],
+            'args': ['2000000'],
             'memory': 256,
         },
         'fib': {
@@ -127,7 +128,10 @@ for i in range(1, runs+1):
 
         keys = [key.replace(cur, '.') for key in keys]
 
-        ax.bar(keys, values, color=(0.2, 0.3, 0.6, 0.8))
+        for i,key in enumerate(keys):
+            rgb = colorsys.hsv_to_rgb(i / (len(keys) * (5/4)), 0.4, 0.9)
+
+            ax.bar(key, values[i], color=(*rgb, 1.0))
 
         ax.set_ylabel('time taken in seconds')
         ax.set_xlabel('wasm engine')
