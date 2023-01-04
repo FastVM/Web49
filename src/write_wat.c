@@ -123,9 +123,12 @@ void web49_wat_print_section_type(web49_io_output_t *out, web49_module_t mod, we
                 }
                 web49_io_output_write_str(out, ")");
             }
-            if (entry.has_return_type) {
-                web49_io_output_write_str(out, " (result ");
-                web49_wat_print_lang_type(out, entry.return_type);
+            if (entry.num_returns != 0) {
+                web49_io_output_write_str(out, " (result");
+                for (uint64_t j = 0; j < entry.num_returns; j++) {
+                    web49_io_output_write_str(out, " ");
+                    web49_wat_print_lang_type(out, entry.return_types[j]);
+                }
                 web49_io_output_write_str(out, ")");
             }
             web49_io_output_write_str(out, ")");
@@ -200,9 +203,12 @@ void web49_wat_print_section_function(web49_io_output_t *out, web49_module_t mod
             }
             web49_io_output_write_str(out, ")");
         }
-        if (type.has_return_type) {
-            web49_io_output_write_str(out, " (result ");
-            web49_wat_print_lang_type(out, type.return_type);
+        if (type.num_returns != 0) {
+            web49_io_output_write_str(out, " (result");
+            for (uint64_t j = 0; j < type.num_returns; j++) {
+                web49_io_output_write_str(out, " ");
+                web49_wat_print_lang_type(out, type.return_types[j]);
+            }
             web49_io_output_write_str(out, ")");
         }
         if (code.num_locals != 0) {

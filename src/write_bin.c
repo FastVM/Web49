@@ -192,8 +192,8 @@ void web49_writebin_section_type(web49_writebin_buf_t *out, web49_section_t sect
             web49_writebin_byte(out, entry.params[j]);
         }
         web49_writebin_uleb(out, entry.num_returns);
-        if (entry.has_return_type != 0) {
-            web49_writebin_byte(out, entry.return_type);
+        for (uint64_t j = 0; j < entry.num_returns; j++) {
+            web49_writebin_byte(out, entry.return_types[j]);
         }
     }
 }
