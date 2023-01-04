@@ -30,7 +30,7 @@ emcc = args.compiler
 optlevel = args.opt
 
 if len(engines) == 0:
-    engines = ['wasm3', os.path.join(cur, 'bin/miniwasm'), 'wasmer', 'wasmtime']
+    engines = ['wasm3', os.path.join(cur, 'bin/miniwasm')]
 
 if len(args.test) == 0: 
     tests = {
