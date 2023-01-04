@@ -213,19 +213,16 @@ web49_section_type_t web49_readbin_section_type(web49_io_input_t *in) {
             params[j] = web49_readbin_byte(in);
         }
         uint64_t num_returns = web49_readbin_uleb(in);
-        web49_lang_type_t return_type = WEB49_TYPE_NOT_SPECIFIED;
-        bool has_return_type = false;
-        if (num_returns != 0) {
-            has_return_type = true;
-            return_type = web49_readbin_byte(in);
+        web49_lang_type_t *return_types = web49_malloc(sizeof(web49_lang_type_t) * num_returns);
+        for (size_t n = 0; n < num_returns; n++) {
+            return_types[n] = web49_readbin_byte(in);
         }
         entries[i] = (web49_section_type_entry_t){
             .type = type,
             .num_params = num_params,
             .params = params,
             .num_returns = num_returns,
-            .has_return_type = has_return_type,
-            .return_type = return_type,
+            .return_types = return_types,
         };
     }
     return (web49_section_type_t){

@@ -42,6 +42,7 @@ RAYLIB_SRCS := src/api/raylib.c raylib/src/raudio.c raylib/src/rcore.c raylib/sr
 RAYLIB_OBJS := $(RAYLIB_SRCS:%.c=%.o)
 
 TEST_NAMES = address align binary-leb128 binary block br br_if br_table bulk call call_indirect comments const conversions custom data elem endianness exports f32 f32_bitwise f32_cmp f64 f64_bitwise f64_cmp fac float_exprs float_literals float_memory float_misc forward func func_ptrs global i32 i64 if imports inline-module int_exprs int_literals labels left-to-right linking load local_get local_set local_tee loop memory memory_copy memory_fill memory_grow memory_init memory_redundancy memory_size memory_trap names nop ref_func ref_is_null ref_null return select skip-stack-guard-page stack start store switch table-sub table table_copy table_fill table_get table_grow table_init table_set table_size token tokens traps type unreachable unreached-invalid unreached-valid unwind utf8-custom-section-id utf8-import-field utf8-import-module utf8-invalid-encoding
+TEST_NAMES = address align binary-leb128 binary block br br_if br_table bulk call call_indirect comments const conversions custom data elem endianness exports f32 f32_bitwise f32_cmp f64 f64_bitwise f64_cmp fac float_exprs float_literals float_memory float_misc forward func func_ptrs global i32 i64 if imports inline-module int_exprs int_literals labels left-to-right linking load local_get local_set local_tee loop memory memory_copy memory_fill memory_grow memory_init memory_redundancy memory_size memory_trap names nop ref_func ref_is_null ref_null return select skip-stack-guard-page stack start store switch table-sub table table_copy table_fill table_get table_grow table_init table_set table_size token tokens traps type unreachable unreached-invalid unreached-valid unwind utf8-custom-section-id utf8-import-field utf8-import-module utf8-invalid-encoding
 
 TEST_PREFIX = test/core
 
@@ -60,8 +61,10 @@ install: bins bin/raywasm raylib/lib raylib/lib
 	mkdir -p $(INSTALL)/raylib/lib
 	mkdir -p $(INSTALL)/raylib/include
 	cp bin/raywasm bin/miniwasm web49 emraylib $(INSTALL)
-	cp -r raylib/lib/* $(INSTALL)/raylib/lib
-	cp -r raylib/include/*.h $(INSTALL)/raylib/include
+	ls raylib/lib/*.o | xargs -I{} cp -r {} $(INSTALL)/raylib/lib
+	ls raylib/include/*.h | xargs -I{} cp -r {} $(INSTALL)/raylib/include
+	cp -r raylib/lib $(INSTALL)/raylib
+	cp -r raylib/include $(INSTALL)/raylib
 	chmod +x $(INSTALL)/raywasm $(INSTALL)/miniwasm $(INSTALL)/web49 $(INSTALL)/emraylib
 
 raylib/lib: raylib/src

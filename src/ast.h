@@ -455,8 +455,7 @@ struct web49_section_type_entry_t {
     uint32_t num_params;
     web49_lang_type_t *params;
     uint32_t num_returns;
-    web49_lang_type_t return_type;
-    bool has_return_type;
+    web49_lang_type_t *return_types;
 };
 
 struct web49_section_type_t {
