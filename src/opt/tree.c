@@ -160,6 +160,15 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
             use_begin0 = type_section.entries[cur.immediate.call_indirect.index].num_returns == 0;
         }
         if (cur.opcode == WEB49_OPCODE_BR || cur.opcode == WEB49_OPCODE_BR_IF) {
+            // size_t depth = 0;
+            // {
+            //     web49_opt_list_t *head = &list;
+            //     while (head) {
+            //         head = head->last;
+            //         depth += 1;
+            //     }
+            // }
+            // printf("%"PRIu32"/%zu\n", cur.immediate.varuint32, depth);
             web49_opt_list_t *head = &list;
             for (size_t i = 0; i < cur.immediate.varuint32; i++) {
                 head = head->last;
@@ -198,7 +207,7 @@ web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **hea
 void web49_opt_untree(web49_instr_t cur, size_t *len, web49_instr_t **out, size_t *alloc) {
     size_t nargs = cur.nargs;
     cur.nargs = 0;
-    if (cur.opcode == WEB49_OPCODE_IF) {
+    if (cur.opcode == WEB49_OPCODE_IF && nargs != 0) {
         for (size_t i = 0; i < nargs; i++) {
             if (cur.args[i].opcode != WEB49_OPCODE_THEN && cur.args[i].opcode != WEB49_OPCODE_ELSE && cur.args[i].opcode != WEB49_OPCODE_END) {
                 web49_opt_untree(cur.args[i], len, out, alloc);
@@ -208,12 +217,17 @@ void web49_opt_untree(web49_instr_t cur, size_t *len, web49_instr_t **out, size_
             *alloc = (*len + 2) * 2;
             *out = web49_realloc(*out, sizeof(web49_instr_t) * *alloc);
         }
-        (*out)[(*len)++] = cur;
+        (*out)[(*len)++] = (web49_instr_t) { .opcode = WEB49_OPCODE_IF };
         for (size_t i = 0; i < nargs; i++) {
             if (cur.args[i].opcode == WEB49_OPCODE_THEN) {
                 web49_opt_untree(cur.args[i], len, out, alloc);
             }
         }
+        if (*len + 2 >= *alloc) {
+            *alloc = (*len + 2) * 2;
+            *out = web49_realloc(*out, sizeof(web49_instr_t) * *alloc);
+        }
+        (*out)[(*len)++] = (web49_instr_t) { .opcode = WEB49_OPCODE_ELSE };
         for (size_t i = 0; i < nargs; i++) {
             if (cur.args[i].opcode == WEB49_OPCODE_ELSE) {
                 web49_opt_untree(cur.args[i], len, out, alloc);
@@ -224,16 +238,7 @@ void web49_opt_untree(web49_instr_t cur, size_t *len, web49_instr_t **out, size_
             *out = web49_realloc(*out, sizeof(web49_instr_t) * *alloc);
         }
         (*out)[(*len)++] = (web49_instr_t) {.opcode = WEB49_OPCODE_END};
-    } else if (cur.opcode == WEB49_OPCODE_THEN || cur.opcode == WEB49_OPCODE_NOP) {
-        for (size_t i = 0; i < nargs; i++) {
-            web49_opt_untree(cur.args[i], len, out, alloc);
-        }
-    } else if (cur.opcode == WEB49_OPCODE_ELSE) {
-        if (*len + 2 >= *alloc) {
-            *alloc = (*len + 2) * 2;
-            *out = web49_realloc(*out, sizeof(web49_instr_t) * *alloc);
-        }
-        (*out)[(*len)++] = cur;
+    } else if (cur.opcode == WEB49_OPCODE_THEN || cur.opcode == WEB49_OPCODE_NOP || cur.opcode == WEB49_OPCODE_ELSE) {
         for (size_t i = 0; i < nargs; i++) {
             web49_opt_untree(cur.args[i], len, out, alloc);
         }
