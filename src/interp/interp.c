@@ -482,14 +482,14 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
 
 #if 1
 #define LABEL(name)   \
-    __builtin_trap(); \
+    __builtin_unreachable(); \
     DO_##name:;       \
     DPRINT(#name);    \
     head += 1;
 #define NEXT() goto * head->opcode
 #else
 #define LABEL(name)   \
-    __builtin_trap(); \
+    __builtin_unreachable(); \
     DO_##name:;       \
     DPRINT(#name);
 #define NEXT() goto *head++->opcode

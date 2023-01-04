@@ -19,7 +19,7 @@ parser.add_argument('--runs', '-r', type=int, help='number of benchmark runs', d
 parser.add_argument('--engine', '-e', type=str, action='append', default=[])
 parser.add_argument('--test', '-t', type=str, action='append', default=[])
 parser.add_argument('--compiler', '-c', type=str, default='emcc')
-parser.add_argument('--opt', '-O', type=str, default='3')
+parser.add_argument('--opt', '-O', type=str, default='2')
 
 args = parser.parse_args()
 
@@ -125,10 +125,12 @@ for i in range(1, runs+1):
         keys = data.keys()
         values = [sum(data[i]) / len(data[i]) for i in keys]
 
+        keys = [key.replace(cur, '.') for key in keys]
+
         ax.bar(keys, values, color=(0.2, 0.3, 0.6, 0.8))
 
         ax.set_ylabel('time taken in seconds')
         ax.set_xlabel('wasm engine')
 
-        ax.set_title(' '.join([test, *tests[test]['args'], ]))
+        ax.set_title(' '.join([test, *tests[test]['args']]))
         fig.savefig(test + '.png')
