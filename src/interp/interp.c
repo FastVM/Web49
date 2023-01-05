@@ -481,7 +481,6 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
             continue;
         }
         if (const1 && i == 1) {
-            puts(web49_opcode_to_name(cur.opcode));
             build->code[build->ncode++].data.i64_u = cur.args[i].immediate.uint64;
             continue;
         }
