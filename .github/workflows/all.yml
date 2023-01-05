@@ -25,12 +25,13 @@ jobs:
             test/bench/mandelbrot.png
             test/bench/binary-trees.png
             test/bench/nop.png
-            test/bench/fib.png
+            test/bench/fib_f32.png
+            test/bench/fib_f64.png
+            test/bench/fib_i32.png
+            test/bench/fib_i64.png
             test/bench/mandelbrot-simd.png
             test/bench/fasta.png
             test/bench/nbody.png
-            test/bench/fibf.png
-            test/bench/coremark.png
   web49-windows-release:
     runs-on: windows-latest
     steps:

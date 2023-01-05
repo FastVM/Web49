@@ -39,16 +39,31 @@ if len(args.test) == 0:
             'args': [],
             'memory': 256,
         },
-        # 'coremark': {
-        #     'runs': 1,
-        #     'args': ['3000'],
-        #     'memory': 256,
-        # },
-        # 'fibf': {
-        #     'runs': 1,
-        #     'args': ['40'],
-        #     'memory': 256,
-        # },
+        'coremark': {
+            'runs': 1,
+            'args': ['3000'],
+            'memory': 256,
+        },
+        'fib_f32': {
+            'runs': 1,
+            'args': ['40'],
+            'memory': 256,
+        },
+        'fib_i32': {
+            'runs': 1,
+            'args': ['40'],
+            'memory': 256,
+        },
+        'fib_f64': {
+            'runs': 1,
+            'args': ['40'],
+            'memory': 256,
+        },
+        'fib_i64': {
+            'runs': 1,
+            'args': ['40'],
+            'memory': 256,
+        },
         'binary-trees': {
             'runs': 1,
             'args': ['16'],
@@ -72,11 +87,6 @@ if len(args.test) == 0:
         'nbody': {
             'runs': 1,
             'args': ['2000000'],
-            'memory': 256,
-        },
-        'fib': {
-            'runs': 1,
-            'args': ['40'],
             'memory': 256,
         },
         # 'trap': {

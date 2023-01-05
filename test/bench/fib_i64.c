@@ -1,8 +1,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <inttypes.h>
 
-size_t fib(size_t n) {
+uint64_t fib(uint64_t n) {
     if (n < 2) {
         return n;
     } else {
@@ -11,12 +13,12 @@ size_t fib(size_t n) {
 }
 
 int main(int argc, char **argv) {
-    size_t n = 0;
+    uint64_t n = 0;
     for (char *head = argv[1]; *head != '\0'; head += 1) {
         n *= 10;
         n += *head - '0';
     }
-    size_t fibn = fib(n);
-    printf("fib(%zu) = %zu\n", n, fibn);
+    uint64_t fibn = fib(n);
+    printf("fib(%"PRIu64") = %"PRIu64"\n", n, fibn);
     return 0;
 }
