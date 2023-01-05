@@ -253,6 +253,46 @@ NAME(WEB49_OPCODE_IF_I32_GT_U) {
     }
     NEXT();
 }
+NAME(WEB49_OPCODE_IF_I64_EQ) {
+    if (LOCAL0.i64_u == LOCAL1.i64_u) {
+        head = head[2].ptr;
+    } else {
+        head = head[3].ptr;
+    }
+    NEXT();
+}
+NAME(WEB49_OPCODE_IF_I64_LT_S) {
+    if (LOCAL0.i64_s < LOCAL1.i64_s) {
+        head = head[2].ptr;
+    } else {
+        head = head[3].ptr;
+    }
+    NEXT();
+}
+NAME(WEB49_OPCODE_IF_I64_LT_U) {
+    if (LOCAL0.i64_u < LOCAL1.i64_u) {
+        head = head[2].ptr;
+    } else {
+        head = head[3].ptr;
+    }
+    NEXT();
+}
+NAME(WEB49_OPCODE_IF_I64_GT_S) {
+    if (LOCAL0.i64_s > LOCAL1.i64_s) {
+        head = head[2].ptr;
+    } else {
+        head = head[3].ptr;
+    }
+    NEXT();
+}
+NAME(WEB49_OPCODE_IF_I64_GT_U) {
+    if (LOCAL0.i64_u > LOCAL1.i64_u) {
+        head = head[2].ptr;
+    } else {
+        head = head[3].ptr;
+    }
+    NEXT();
+}
 NAME(WEB49_OPCODE_I32_ADD) {
     locals[head[2].data.i32_u].i32_u = LOCAL0.i32_u + LOCAL1.i32_u;
     head += 3;
