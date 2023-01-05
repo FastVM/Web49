@@ -33,7 +33,7 @@ void web49_writebin_type_memory(web49_writebin_buf_t *out, web49_type_memory_t t
 }
 void web49_writebin_init_expr(web49_writebin_buf_t *out, web49_instr_t instr) {
     web49_writebin_instr(out, instr);
-    web49_writebin_byte(out, WEB49_OPCODE_END);
+    web49_writebin_byte(out, 0x0B);
 }
 
 void web49_writebin_instr(web49_writebin_buf_t *out, web49_instr_t instr) {
