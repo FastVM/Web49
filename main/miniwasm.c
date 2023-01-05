@@ -93,7 +93,6 @@ int web49_file_main(const char *inarg, const char **args) {
                         if (!strcmp(entry.field_str, str)) {
                             web49_interp_data_t data = web49_interp_block_run(interp, &interp.funcs[j]);
                             if (wants.tag != WEB49_READWAT_EXPR_TAG_FUN) {
-                                
                             } else if (!strcmp(wants.fun_fun, "i32.const")) {
                                 uint32_t expected = (uint32_t)web49_readwat_expr_to_i64(wants.fun_args[0]);
                                 if (data.i32_u == expected) {

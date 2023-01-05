@@ -1,6 +1,8 @@
 
 #include "write_bin.h"
 
+#include "tables.h"
+
 void web49_writebin_byte(web49_writebin_buf_t *out, uint8_t u8) {
     if (out->len + 1 >= out->alloc) {
         out->alloc = (out->alloc + 2) * 4;
@@ -41,37 +43,15 @@ void web49_writebin_instr(web49_writebin_buf_t *out, web49_instr_t instr) {
     switch (instr.opcode) {
         case WEB49_OPCODE_BEGIN0:
             return;
-        case WEB49_OPCODE_MEMORY_INIT:
-            web49_writebin_byte(out, 0xFC);
-            web49_writebin_byte(out, 0x08);
+        default: {
+            size_t len = 0;
+            uint8_t bytes[8];
+            web49_opcode_to_bytes(instr.opcode, &len, &bytes[0]);
+            for (size_t i = 0; i < len; i++) {
+                web49_writebin_byte(out, bytes[i]);
+            }
             break;
-        case WEB49_OPCODE_DATA_DROP:
-            web49_writebin_byte(out, 0xFC);
-            web49_writebin_byte(out, 0x09);
-            break;
-        case WEB49_OPCODE_MEMORY_COPY:
-            web49_writebin_byte(out, 0xFC);
-            web49_writebin_byte(out, 0x0A);
-            break;
-        case WEB49_OPCODE_MEMORY_FILL:
-            web49_writebin_byte(out, 0xFC);
-            web49_writebin_byte(out, 0x0B);
-            break;
-        case WEB49_OPCODE_TABLE_INIT:
-            web49_writebin_byte(out, 0xFC);
-            web49_writebin_byte(out, 0x0C);
-            break;
-        case WEB49_OPCODE_ELEM_DROP:
-            web49_writebin_byte(out, 0xFC);
-            web49_writebin_byte(out, 0x0D);
-            break;
-        case WEB49_OPCODE_TABLE_COPY:
-            web49_writebin_byte(out, 0xFC);
-            web49_writebin_byte(out, 0x0E);
-            break;
-        default:
-            web49_writebin_byte(out, instr.opcode);
-            break;
+        }
     }
     switch (instr.immediate.id) {
         case WEB49_IMMEDIATE_NONE:

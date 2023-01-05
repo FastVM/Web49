@@ -1413,6 +1413,572 @@ web49_opcode_t web49_bytes_to_opcode(uint8_t *bytes) {
     __builtin_trap();
 }
 
+void web49_opcode_to_bytes(web49_opcode_t opcode, size_t *len, uint8_t *buf) {
+    switch (opcode) {
+        case WEB49_OPCODE_UNREACHABLE:
+            buf[(*len)++] = 0x00;
+            break;
+        case WEB49_OPCODE_NOP:
+            buf[(*len)++] = 0x01;
+            break;
+        case WEB49_OPCODE_BLOCK:
+            buf[(*len)++] = 0x02;
+            break;
+        case WEB49_OPCODE_LOOP:
+            buf[(*len)++] = 0x03;
+            break;
+        case WEB49_OPCODE_IF:
+            buf[(*len)++] = 0x04;
+            break;
+        case WEB49_OPCODE_ELSE:
+            buf[(*len)++] = 0x05;
+            break;
+        case WEB49_OPCODE_END:
+            buf[(*len)++] = 0x0B;
+            break;
+        case WEB49_OPCODE_BR:
+            buf[(*len)++] = 0x0C;
+            break;
+        case WEB49_OPCODE_BR_IF:
+            buf[(*len)++] = 0x0D;
+            break;
+        case WEB49_OPCODE_BR_TABLE:
+            buf[(*len)++] = 0x0E;
+            break;
+        case WEB49_OPCODE_RETURN:
+            buf[(*len)++] = 0x0F;
+            break;
+        case WEB49_OPCODE_CALL:
+            buf[(*len)++] = 0x10;
+            break;
+        case WEB49_OPCODE_CALL_INDIRECT:
+            buf[(*len)++] = 0x11;
+            break;
+        case WEB49_OPCODE_DROP:
+            buf[(*len)++] = 0x1A;
+            break;
+        case WEB49_OPCODE_SELECT:
+            buf[(*len)++] = 0x1B;
+            break;
+        case WEB49_OPCODE_GET_LOCAL:
+            buf[(*len)++] = 0x20;
+            break;
+        case WEB49_OPCODE_SET_LOCAL:
+            buf[(*len)++] = 0x21;
+            break;
+        case WEB49_OPCODE_TEE_LOCAL:
+            buf[(*len)++] = 0x22;
+            break;
+        case WEB49_OPCODE_GET_GLOBAL:
+            buf[(*len)++] = 0x23;
+            break;
+        case WEB49_OPCODE_SET_GLOBAL:
+            buf[(*len)++] = 0x24;
+            break;
+        case WEB49_OPCODE_I32_LOAD:
+            buf[(*len)++] = 0x28;
+            break;
+        case WEB49_OPCODE_I64_LOAD:
+            buf[(*len)++] = 0x29;
+            break;
+        case WEB49_OPCODE_F32_LOAD:
+            buf[(*len)++] = 0x2A;
+            break;
+        case WEB49_OPCODE_F64_LOAD:
+            buf[(*len)++] = 0x2B;
+            break;
+        case WEB49_OPCODE_I32_LOAD8_S:
+            buf[(*len)++] = 0x2C;
+            break;
+        case WEB49_OPCODE_I32_LOAD8_U:
+            buf[(*len)++] = 0x2D;
+            break;
+        case WEB49_OPCODE_I32_LOAD16_S:
+            buf[(*len)++] = 0x2E;
+            break;
+        case WEB49_OPCODE_I32_LOAD16_U:
+            buf[(*len)++] = 0x2F;
+            break;
+        case WEB49_OPCODE_I64_LOAD8_S:
+            buf[(*len)++] = 0x30;
+            break;
+        case WEB49_OPCODE_I64_LOAD8_U:
+            buf[(*len)++] = 0x31;
+            break;
+        case WEB49_OPCODE_I64_LOAD16_S:
+            buf[(*len)++] = 0x32;
+            break;
+        case WEB49_OPCODE_I64_LOAD16_U:
+            buf[(*len)++] = 0x33;
+            break;
+        case WEB49_OPCODE_I64_LOAD32_S:
+            buf[(*len)++] = 0x34;
+            break;
+        case WEB49_OPCODE_I64_LOAD32_U:
+            buf[(*len)++] = 0x35;
+            break;
+        case WEB49_OPCODE_I32_STORE:
+            buf[(*len)++] = 0x36;
+            break;
+        case WEB49_OPCODE_I64_STORE:
+            buf[(*len)++] = 0x37;
+            break;
+        case WEB49_OPCODE_F32_STORE:
+            buf[(*len)++] = 0x38;
+            break;
+        case WEB49_OPCODE_F64_STORE:
+            buf[(*len)++] = 0x39;
+            break;
+        case WEB49_OPCODE_I32_STORE8:
+            buf[(*len)++] = 0x3A;
+            break;
+        case WEB49_OPCODE_I32_STORE16:
+            buf[(*len)++] = 0x3B;
+            break;
+        case WEB49_OPCODE_I64_STORE8:
+            buf[(*len)++] = 0x3C;
+            break;
+        case WEB49_OPCODE_I64_STORE16:
+            buf[(*len)++] = 0x3D;
+            break;
+        case WEB49_OPCODE_I64_STORE32:
+            buf[(*len)++] = 0x3E;
+            break;
+        case WEB49_OPCODE_MEMORY_SIZE:
+            buf[(*len)++] = 0x3F;
+            break;
+        case WEB49_OPCODE_MEMORY_GROW:
+            buf[(*len)++] = 0x40;
+            break;
+        case WEB49_OPCODE_I32_CONST:
+            buf[(*len)++] = 0x41;
+            break;
+        case WEB49_OPCODE_I64_CONST:
+            buf[(*len)++] = 0x42;
+            break;
+        case WEB49_OPCODE_F32_CONST:
+            buf[(*len)++] = 0x43;
+            break;
+        case WEB49_OPCODE_F64_CONST:
+            buf[(*len)++] = 0x44;
+            break;
+        case WEB49_OPCODE_I32_EQZ:
+            buf[(*len)++] = 0x45;
+            break;
+        case WEB49_OPCODE_I32_EQ:
+            buf[(*len)++] = 0x46;
+            break;
+        case WEB49_OPCODE_I32_NE:
+            buf[(*len)++] = 0x47;
+            break;
+        case WEB49_OPCODE_I32_LT_S:
+            buf[(*len)++] = 0x48;
+            break;
+        case WEB49_OPCODE_I32_LT_U:
+            buf[(*len)++] = 0x49;
+            break;
+        case WEB49_OPCODE_I32_GT_S:
+            buf[(*len)++] = 0x4A;
+            break;
+        case WEB49_OPCODE_I32_GT_U:
+            buf[(*len)++] = 0x4B;
+            break;
+        case WEB49_OPCODE_I32_LE_S:
+            buf[(*len)++] = 0x4C;
+            break;
+        case WEB49_OPCODE_I32_LE_U:
+            buf[(*len)++] = 0x4D;
+            break;
+        case WEB49_OPCODE_I32_GE_S:
+            buf[(*len)++] = 0x4E;
+            break;
+        case WEB49_OPCODE_I32_GE_U:
+            buf[(*len)++] = 0x4F;
+            break;
+        case WEB49_OPCODE_I64_EQZ:
+            buf[(*len)++] = 0x50;
+            break;
+        case WEB49_OPCODE_I64_EQ:
+            buf[(*len)++] = 0x51;
+            break;
+        case WEB49_OPCODE_I64_NE:
+            buf[(*len)++] = 0x52;
+            break;
+        case WEB49_OPCODE_I64_LT_S:
+            buf[(*len)++] = 0x53;
+            break;
+        case WEB49_OPCODE_I64_LT_U:
+            buf[(*len)++] = 0x54;
+            break;
+        case WEB49_OPCODE_I64_GT_S:
+            buf[(*len)++] = 0x55;
+            break;
+        case WEB49_OPCODE_I64_GT_U:
+            buf[(*len)++] = 0x56;
+            break;
+        case WEB49_OPCODE_I64_LE_S:
+            buf[(*len)++] = 0x57;
+            break;
+        case WEB49_OPCODE_I64_LE_U:
+            buf[(*len)++] = 0x58;
+            break;
+        case WEB49_OPCODE_I64_GE_S:
+            buf[(*len)++] = 0x59;
+            break;
+        case WEB49_OPCODE_I64_GE_U:
+            buf[(*len)++] = 0x5A;
+            break;
+        case WEB49_OPCODE_F32_EQ:
+            buf[(*len)++] = 0x5B;
+            break;
+        case WEB49_OPCODE_F32_NE:
+            buf[(*len)++] = 0x5C;
+            break;
+        case WEB49_OPCODE_F32_LT:
+            buf[(*len)++] = 0x5D;
+            break;
+        case WEB49_OPCODE_F32_GT:
+            buf[(*len)++] = 0x5E;
+            break;
+        case WEB49_OPCODE_F32_LE:
+            buf[(*len)++] = 0x5F;
+            break;
+        case WEB49_OPCODE_F32_GE:
+            buf[(*len)++] = 0x60;
+            break;
+        case WEB49_OPCODE_F64_EQ:
+            buf[(*len)++] = 0x61;
+            break;
+        case WEB49_OPCODE_F64_NE:
+            buf[(*len)++] = 0x62;
+            break;
+        case WEB49_OPCODE_F64_LT:
+            buf[(*len)++] = 0x63;
+            break;
+        case WEB49_OPCODE_F64_GT:
+            buf[(*len)++] = 0x64;
+            break;
+        case WEB49_OPCODE_F64_LE:
+            buf[(*len)++] = 0x65;
+            break;
+        case WEB49_OPCODE_F64_GE:
+            buf[(*len)++] = 0x66;
+            break;
+        case WEB49_OPCODE_I32_CLZ:
+            buf[(*len)++] = 0x67;
+            break;
+        case WEB49_OPCODE_I32_CTZ:
+            buf[(*len)++] = 0x68;
+            break;
+        case WEB49_OPCODE_I32_POPCNT:
+            buf[(*len)++] = 0x69;
+            break;
+        case WEB49_OPCODE_I32_ADD:
+            buf[(*len)++] = 0x6A;
+            break;
+        case WEB49_OPCODE_I32_SUB:
+            buf[(*len)++] = 0x6B;
+            break;
+        case WEB49_OPCODE_I32_MUL:
+            buf[(*len)++] = 0x6C;
+            break;
+        case WEB49_OPCODE_I32_DIV_S:
+            buf[(*len)++] = 0x6D;
+            break;
+        case WEB49_OPCODE_I32_DIV_U:
+            buf[(*len)++] = 0x6E;
+            break;
+        case WEB49_OPCODE_I32_REM_S:
+            buf[(*len)++] = 0x6F;
+            break;
+        case WEB49_OPCODE_I32_REM_U:
+            buf[(*len)++] = 0x70;
+            break;
+        case WEB49_OPCODE_I32_AND:
+            buf[(*len)++] = 0x71;
+            break;
+        case WEB49_OPCODE_I32_OR:
+            buf[(*len)++] = 0x72;
+            break;
+        case WEB49_OPCODE_I32_XOR:
+            buf[(*len)++] = 0x73;
+            break;
+        case WEB49_OPCODE_I32_SHL:
+            buf[(*len)++] = 0x74;
+            break;
+        case WEB49_OPCODE_I32_SHR_S:
+            buf[(*len)++] = 0x75;
+            break;
+        case WEB49_OPCODE_I32_SHR_U:
+            buf[(*len)++] = 0x76;
+            break;
+        case WEB49_OPCODE_I32_ROTL:
+            buf[(*len)++] = 0x77;
+            break;
+        case WEB49_OPCODE_I32_ROTR:
+            buf[(*len)++] = 0x78;
+            break;
+        case WEB49_OPCODE_I64_CLZ:
+            buf[(*len)++] = 0x79;
+            break;
+        case WEB49_OPCODE_I64_CTZ:
+            buf[(*len)++] = 0x7A;
+            break;
+        case WEB49_OPCODE_I64_POPCNT:
+            buf[(*len)++] = 0x7B;
+            break;
+        case WEB49_OPCODE_I64_ADD:
+            buf[(*len)++] = 0x7C;
+            break;
+        case WEB49_OPCODE_I64_SUB:
+            buf[(*len)++] = 0x7D;
+            break;
+        case WEB49_OPCODE_I64_MUL:
+            buf[(*len)++] = 0x7E;
+            break;
+        case WEB49_OPCODE_I64_DIV_S:
+            buf[(*len)++] = 0x7F;
+            break;
+        case WEB49_OPCODE_I64_DIV_U:
+            buf[(*len)++] = 0x80;
+            break;
+        case WEB49_OPCODE_I64_REM_S:
+            buf[(*len)++] = 0x81;
+            break;
+        case WEB49_OPCODE_I64_REM_U:
+            buf[(*len)++] = 0x82;
+            break;
+        case WEB49_OPCODE_I64_AND:
+            buf[(*len)++] = 0x83;
+            break;
+        case WEB49_OPCODE_I64_OR:
+            buf[(*len)++] = 0x84;
+            break;
+        case WEB49_OPCODE_I64_XOR:
+            buf[(*len)++] = 0x85;
+            break;
+        case WEB49_OPCODE_I64_SHL:
+            buf[(*len)++] = 0x86;
+            break;
+        case WEB49_OPCODE_I64_SHR_S:
+            buf[(*len)++] = 0x87;
+            break;
+        case WEB49_OPCODE_I64_SHR_U:
+            buf[(*len)++] = 0x88;
+            break;
+        case WEB49_OPCODE_I64_ROTL:
+            buf[(*len)++] = 0x89;
+            break;
+        case WEB49_OPCODE_I64_ROTR:
+            buf[(*len)++] = 0x8A;
+            break;
+        case WEB49_OPCODE_F32_ABS:
+            buf[(*len)++] = 0x8B;
+            break;
+        case WEB49_OPCODE_F32_NEG:
+            buf[(*len)++] = 0x8C;
+            break;
+        case WEB49_OPCODE_F32_CEIL:
+            buf[(*len)++] = 0x8D;
+            break;
+        case WEB49_OPCODE_F32_FLOOR:
+            buf[(*len)++] = 0x8E;
+            break;
+        case WEB49_OPCODE_F32_TRUNC:
+            buf[(*len)++] = 0x8F;
+            break;
+        case WEB49_OPCODE_F32_NEAREST:
+            buf[(*len)++] = 0x90;
+            break;
+        case WEB49_OPCODE_F32_SQRT:
+            buf[(*len)++] = 0x91;
+            break;
+        case WEB49_OPCODE_F32_ADD:
+            buf[(*len)++] = 0x92;
+            break;
+        case WEB49_OPCODE_F32_SUB:
+            buf[(*len)++] = 0x93;
+            break;
+        case WEB49_OPCODE_F32_MUL:
+            buf[(*len)++] = 0x94;
+            break;
+        case WEB49_OPCODE_F32_DIV:
+            buf[(*len)++] = 0x95;
+            break;
+        case WEB49_OPCODE_F32_MIN:
+            buf[(*len)++] = 0x96;
+            break;
+        case WEB49_OPCODE_F32_MAX:
+            buf[(*len)++] = 0x97;
+            break;
+        case WEB49_OPCODE_F32_COPYSIGN:
+            buf[(*len)++] = 0x98;
+            break;
+        case WEB49_OPCODE_F64_ABS:
+            buf[(*len)++] = 0x99;
+            break;
+        case WEB49_OPCODE_F64_NEG:
+            buf[(*len)++] = 0x9A;
+            break;
+        case WEB49_OPCODE_F64_CEIL:
+            buf[(*len)++] = 0x9B;
+            break;
+        case WEB49_OPCODE_F64_FLOOR:
+            buf[(*len)++] = 0x9C;
+            break;
+        case WEB49_OPCODE_F64_TRUNC:
+            buf[(*len)++] = 0x9D;
+            break;
+        case WEB49_OPCODE_F64_NEAREST:
+            buf[(*len)++] = 0x9E;
+            break;
+        case WEB49_OPCODE_F64_SQRT:
+            buf[(*len)++] = 0x9F;
+            break;
+        case WEB49_OPCODE_F64_ADD:
+            buf[(*len)++] = 0xA0;
+            break;
+        case WEB49_OPCODE_F64_SUB:
+            buf[(*len)++] = 0xA1;
+            break;
+        case WEB49_OPCODE_F64_MUL:
+            buf[(*len)++] = 0xA2;
+            break;
+        case WEB49_OPCODE_F64_DIV:
+            buf[(*len)++] = 0xA3;
+            break;
+        case WEB49_OPCODE_F64_MIN:
+            buf[(*len)++] = 0xA4;
+            break;
+        case WEB49_OPCODE_F64_MAX:
+            buf[(*len)++] = 0xA5;
+            break;
+        case WEB49_OPCODE_F64_COPYSIGN:
+            buf[(*len)++] = 0xA6;
+            break;
+        case WEB49_OPCODE_I32_WRAP_I64:
+            buf[(*len)++] = 0xA7;
+            break;
+        case WEB49_OPCODE_I32_TRUNC_S_F32:
+            buf[(*len)++] = 0xA8;
+            break;
+        case WEB49_OPCODE_I32_TRUNC_U_F32:
+            buf[(*len)++] = 0xA9;
+            break;
+        case WEB49_OPCODE_I32_TRUNC_S_F64:
+            buf[(*len)++] = 0xAA;
+            break;
+        case WEB49_OPCODE_I32_TRUNC_U_F64:
+            buf[(*len)++] = 0xAB;
+            break;
+        case WEB49_OPCODE_I64_EXTEND_S_I32:
+            buf[(*len)++] = 0xAC;
+            break;
+        case WEB49_OPCODE_I64_EXTEND_U_I32:
+            buf[(*len)++] = 0xAD;
+            break;
+        case WEB49_OPCODE_I64_TRUNC_S_F32:
+            buf[(*len)++] = 0xAE;
+            break;
+        case WEB49_OPCODE_I64_TRUNC_U_F32:
+            buf[(*len)++] = 0xAF;
+            break;
+        case WEB49_OPCODE_I64_TRUNC_S_F64:
+            buf[(*len)++] = 0xB0;
+            break;
+        case WEB49_OPCODE_I64_TRUNC_U_F64:
+            buf[(*len)++] = 0xB1;
+            break;
+        case WEB49_OPCODE_F32_CONVERT_S_I32:
+            buf[(*len)++] = 0xB2;
+            break;
+        case WEB49_OPCODE_F32_CONVERT_U_I32:
+            buf[(*len)++] = 0xB3;
+            break;
+        case WEB49_OPCODE_F32_CONVERT_S_I64:
+            buf[(*len)++] = 0xB4;
+            break;
+        case WEB49_OPCODE_F32_CONVERT_U_I64:
+            buf[(*len)++] = 0xB5;
+            break;
+        case WEB49_OPCODE_F32_DEMOTE_F64:
+            buf[(*len)++] = 0xB6;
+            break;
+        case WEB49_OPCODE_F64_CONVERT_S_I32:
+            buf[(*len)++] = 0xB7;
+            break;
+        case WEB49_OPCODE_F64_CONVERT_U_I32:
+            buf[(*len)++] = 0xB8;
+            break;
+        case WEB49_OPCODE_F64_CONVERT_S_I64:
+            buf[(*len)++] = 0xB9;
+            break;
+        case WEB49_OPCODE_F64_CONVERT_U_I64:
+            buf[(*len)++] = 0xBA;
+            break;
+        case WEB49_OPCODE_F64_PROMOTE_F32:
+            buf[(*len)++] = 0xBB;
+            break;
+        case WEB49_OPCODE_I32_REINTERPRET_F32:
+            buf[(*len)++] = 0xBC;
+            break;
+        case WEB49_OPCODE_I64_REINTERPRET_F64:
+            buf[(*len)++] = 0xBD;
+            break;
+        case WEB49_OPCODE_F32_REINTERPRET_I32:
+            buf[(*len)++] = 0xBE;
+            break;
+        case WEB49_OPCODE_F64_REINTERPRET_I64:
+            buf[(*len)++] = 0xBF;
+            break;
+        case WEB49_OPCODE_I32_EXTEND8_S:
+            buf[(*len)++] = 0xC0;
+            break;
+        case WEB49_OPCODE_I32_EXTEND16_S:
+            buf[(*len)++] = 0xC1;
+            break;
+        case WEB49_OPCODE_I64_EXTEND8_S:
+            buf[(*len)++] = 0xC2;
+            break;
+        case WEB49_OPCODE_I64_EXTEND16_S:
+            buf[(*len)++] = 0xC3;
+            break;
+        case WEB49_OPCODE_I64_EXTEND32_S:
+            buf[(*len)++] = 0xC4;
+            break;
+        case WEB49_OPCODE_MEMORY_INIT:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x08;
+            break;
+        case WEB49_OPCODE_DATA_DROP:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x09;
+            break;
+        case WEB49_OPCODE_MEMORY_COPY:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x0A;
+            break;
+        case WEB49_OPCODE_MEMORY_FILL:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x0B;
+            break;
+        case WEB49_OPCODE_TABLE_INIT:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x0C;
+            break;
+        case WEB49_OPCODE_ELEM_DROP:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x0D;
+            break;
+        case WEB49_OPCODE_TABLE_COPY:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x0E;
+            break;
+        default:
+            web49_error("unknown opcode: %zu\n", (size_t)opcode);
+    }
+}
+
 uint8_t web49_opcode_skip(web49_opcode_t opcode) {
     if (opcode == WEB49_OPCODE_MEMORY_COPY) {
         return 2;

@@ -30,6 +30,7 @@ struct web49_table_stack_effect_t {
 
 bool web49_opcode_is_multibyte(uint8_t first_byte);
 web49_opcode_t web49_bytes_to_opcode(uint8_t *bytes);
+void web49_opcode_to_bytes(web49_opcode_t opcode, size_t *out_len, uint8_t *out_bytes);
 uint8_t web49_opcode_skip(web49_opcode_t opcode);
 extern const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM];
 extern const size_t web49_opcode_memsize[WEB49_MAX_OPCODE_NUM];
