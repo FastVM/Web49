@@ -6,6 +6,7 @@ import subprocess
 import time
 import argparse
 import colorsys
+import json
 
 cur = os.path.dirname(os.path.realpath(__file__))
 
@@ -28,12 +29,16 @@ runs = args.runs
 engines = args.engine
 emcc = args.compiler
 optlevel = args.opt
-
 if len(engines) == 0:
     engines = ['wasm3', os.path.join(cur, 'bin/miniwasm')]
 
 if len(args.test) == 0: 
     tests = {
+        'trap': {
+            'runs': 10,
+            'args': [],
+            'memory': 256,
+        },
         'nop': {
             'runs': 100,
             'args': [],
@@ -89,11 +94,6 @@ if len(args.test) == 0:
             'args': ['2000000'],
             'memory': 256,
         },
-        # 'trap': {
-        #     'runs': 10,
-        #     'args': [],
-        #     'memory': 256,
-        # },
     }
 else:
     tests = {}
@@ -109,8 +109,10 @@ else:
         tests[name] = {
             'args': args1,
             'runs': n,
+            'memory': 256,
         }
 
+obj = {}
 testdata = {}
 for i in range(1, runs+1):
     print('RUN: #' + str(i))
@@ -136,7 +138,7 @@ for i in range(1, runs+1):
         keys = data.keys()
         values = [sum(data[i]) / len(data[i]) for i in keys]
 
-        keys = [key.replace(cur, '.') for key in keys]
+        keys = [key.replace(cur, '.').replace('./bin/', '') for key in keys]
 
         for i,key in enumerate(keys):
             rgb = colorsys.hsv_to_rgb(i / (len(keys) * (5/4)), 0.4, 0.9)
@@ -148,3 +150,10 @@ for i in range(1, runs+1):
 
         ax.set_title(' '.join([test, *tests[test]['args']]))
         fig.savefig(test + '.png')
+        
+        obj[test] = {}
+        for i,key in enumerate(keys):
+            obj[test][key] = values[i]
+
+with open('results.json', 'w') as outputfp:
+    json.dump(obj, outputfp)

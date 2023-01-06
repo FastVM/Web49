@@ -19,4 +19,5 @@ err.txt
 raylib/examples
 *.tmp
 test/core/*.txt
+test/bench/results.json
 install

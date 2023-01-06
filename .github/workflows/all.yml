@@ -32,6 +32,8 @@ jobs:
             test/bench/mandelbrot-simd.png
             test/bench/fasta.png
             test/bench/nbody.png
+            test/bench/trap.png
+            test/bench/results.json
   web49-windows-release:
     runs-on: windows-latest
     steps:
