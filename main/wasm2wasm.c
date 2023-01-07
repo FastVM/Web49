@@ -8,13 +8,9 @@ int web49_file_main(const char *inarg, const char *outarg) {
     web49_module_t mod = web49_readbin_module(&infile);
     web49_writebin_buf_t buf = {0};
     web49_writebin_module(&buf, mod);
-    if (outarg == NULL) {
-        fwrite(buf.data, 1, buf.len, stdout);
-    } else {
-        FILE *outfile = fopen(outarg, "wb");
-        fwrite(buf.data, 1, buf.len, outfile);
-        fclose(outfile);
-    }
+    FILE *outfile = fopen(outarg, "wb");
+    fwrite(buf.data, 1, buf.len, outfile);
+    fclose(outfile);
     return 0;
 }
 
