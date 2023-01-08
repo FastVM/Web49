@@ -76,6 +76,7 @@ with open('raylib.c', 'w') as outfile:
         print('  return ret;', file=outfile)
         print('}', file=outfile)
     print('web49_env_func_t web49_api_import_raylib(const char *name) {', file=outfile)
+    print('  SetTraceLogLevel(LOG_WARNING);', file=outfile)
     for fname in names:
         print('  if (!strcmp(name, "%s")) {' % fname, file=outfile)
         print('    return &web49_api_runtime_%s;' % fname, file=outfile)
