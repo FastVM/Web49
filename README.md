@@ -1,6 +1,6 @@
 # Web49
 
-Web49 is a high performance WebAssembly Interpeter.
+Web49's miniwasm is a high performance WebAssembly Interpeter.
 
 ## Try the first release! [v0.0.1](https://github.com/FastVM/Web49/releases/tag/v0.0.1)
 
