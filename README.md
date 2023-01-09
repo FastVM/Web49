@@ -1,5 +1,7 @@
 # Web49
 
+Web49 is a high performance WebAssembly Interpeter.
+
 ## Try the first release! [v0.0.1](https://github.com/FastVM/Web49/releases/tag/v0.0.1)
 
 Web49 contains a few tools for working with WebAssembly.
