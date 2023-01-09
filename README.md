@@ -44,6 +44,8 @@ One can run the benchmarks for themselves.
 
 * python3
     * with pip
+* emcc
+* wasm3
 * make
     * tested with GNUMake
     * works with BSDMake too
