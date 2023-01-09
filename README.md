@@ -35,7 +35,7 @@ Web49 contains a few tools for working with WebAssembly.
 
 ## Benchmarks
 
-Benchmarks performed by [wasm3](https://github.com/wasm3/wasm3) and miniwasm. Ran on an 2020 Macbook Air (M1 + 8GiB ram) using [bench.py](bench.py).
+Benchmarks performed by [wasm3](https://github.com/wasm3/wasm3) and Web49's miniwasm. Ran on an 2020 Macbook Air (M1 + 8GiB ram) using [bench.py](bench.py).
 
 All Benchmarks compiled with: `emcc -O2`
 
