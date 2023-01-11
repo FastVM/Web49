@@ -655,7 +655,8 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
     }
 }
 
-web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_block_t *block) {
+web49_interp_data_t web49_interp_block_run(web49_interp_t *ptr_interp, web49_interp_block_t *block) {
+    web49_interp_t interp = *ptr_interp;
     static void *ptrs[WEB49_MAX_OPCODE_INTERP_NUM] = {
 #define TABLE_PUTV(n, v) [n] = &&DO_##v
 #if defined(WEB49_OPT_CONST0)
@@ -875,6 +876,7 @@ web49_interp_data_t web49_interp_block_run(web49_interp_t interp, web49_interp_b
 #endif
     NEXT();
 exitv:
+    *ptr_interp = interp;
     return s0;
 #if defined(WEB49_OPT_CONST0)
 #define LOCAL0 head[0].data

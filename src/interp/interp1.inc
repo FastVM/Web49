@@ -126,10 +126,9 @@ NAME(WEB49_OPCODE_I64_LOAD32_U) {
     NEXT();
 }
 NAME(WEB49_OPCODE_MEMORY_GROW) {
-    uint32_t last = interp.memsize;
+    uint64_t last = interp.memsize;
     interp.memsize += LOCAL0.i32_u * 65536;
     interp.memory = web49_realloc(interp.memory, interp.memsize);
-    // printf("grow (from: 0x%zx) (by: 0x%zx)\n", (size_t) last, (size_t) (LOCAL0.i32_u * 65536));
     memset(&interp.memory[last], 0, LOCAL0.i32_u * 65536);
     head += 2;
     NEXT();

@@ -619,6 +619,7 @@ struct web49_module_t {
     web49_section_t *sections;
 };
 
+void web49_debug_print_instr(FILE *file, web49_instr_t instr);
 void web49_free_module(web49_module_t mod);
 void web49_free_instr(web49_instr_t instr);
 web49_section_t web49_module_get_section(web49_module_t mod, web49_section_id_t id);
