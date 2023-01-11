@@ -788,35 +788,35 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
         .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
         .in[2] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I32_TRUNC_SAT_F32_S] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I32_TRUNC_SAT_F32_S] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I32_TRUNC_SAT_F32_U] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I32_TRUNC_SAT_F32_U] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I32_TRUNC_SAT_F64_S] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I32_TRUNC_SAT_F64_S] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I32_TRUNC_SAT_F64_U] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I32_TRUNC_SAT_F64_U] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I64_TRUNC_SAT_F32_S] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I64_TRUNC_SAT_F32_S] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
     },
-    [WEB49_OPCODE_I64_TRUNC_SAT_F32_U] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I64_TRUNC_SAT_F32_U] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
     },
-    [WEB49_OPCODE_I64_TRUNC_SAT_F64_S] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I64_TRUNC_SAT_F64_S] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
     },
-    [WEB49_OPCODE_I64_TRUNC_SAT_F64_U] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I64_TRUNC_SAT_F64_U] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
     },

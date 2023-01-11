@@ -118,63 +118,63 @@ void web49_free_module(web49_module_t mod) {
 static void web49_debug_print_instr_depth(FILE *file, web49_instr_t instr, size_t depth) {
     fprintf(file, "(%s", web49_opcode_to_name(instr.opcode));
     switch (instr.immediate.id) {
-    case WEB49_IMMEDIATE_NONE:
-        break;
-    case WEB49_IMMEDIATE_BLOCK_TYPE:
-        switch (instr.immediate.block_type) {
-        case WEB49_TYPE_I32:
-            fprintf(file, " (result i32)");
+        case WEB49_IMMEDIATE_NONE:
             break;
-        case WEB49_TYPE_I64:
-            fprintf(file, " (result i64)");
+        case WEB49_IMMEDIATE_BLOCK_TYPE:
+            switch (instr.immediate.block_type) {
+                case WEB49_TYPE_I32:
+                    fprintf(file, " (result i32)");
+                    break;
+                case WEB49_TYPE_I64:
+                    fprintf(file, " (result i64)");
+                    break;
+                case WEB49_TYPE_F32:
+                    fprintf(file, " (result f32)");
+                    break;
+                case WEB49_TYPE_F64:
+                    fprintf(file, " (result f64)");
+                    break;
+                default:
+                    break;
+            }
             break;
-        case WEB49_TYPE_F32:
-            fprintf(file, " (result f32)");
+        case WEB49_IMMEDIATE_VARUINT1:
             break;
-        case WEB49_TYPE_F64:
-            fprintf(file, " (result f64)");
+        case WEB49_IMMEDIATE_VARUINT32:
+            fprintf(file, " %" PRIu32, instr.immediate.varuint32);
+            break;
+        case WEB49_IMMEDIATE_VARUINT64:
+            fprintf(file, " %" PRIu64, instr.immediate.varuint64);
+            break;
+        case WEB49_IMMEDIATE_VARINT32:
+            fprintf(file, " %" PRIi32, instr.immediate.varint32);
+            break;
+        case WEB49_IMMEDIATE_VARINT64:
+            fprintf(file, " %" PRIi64, instr.immediate.varint64);
+            break;
+        case WEB49_IMMEDIATE_UINT32:
+            fprintf(file, " %" PRIi32, instr.immediate.uint32);
+            break;
+        case WEB49_IMMEDIATE_UINT64:
+            fprintf(file, " %" PRIi64, instr.immediate.uint64);
+            break;
+        case WEB49_IMMEDIATE_BR_TABLE:
+            for (size_t i = 0; i < instr.immediate.br_table.num_targets; i++) {
+                fprintf(file, " %" PRIu32, instr.immediate.br_table.targets[i]);
+            }
+            fprintf(file, " %" PRIu32, instr.immediate.br_table.default_target);
+            break;
+        case WEB49_IMMEDIATE_CALL_INDIRECT:
+            break;
+        case WEB49_IMMEDIATE_MEMORY_IMMEDIATE:
             break;
         default:
+            fprintf(file, " ...");
             break;
-        }
-        break;
-    case WEB49_IMMEDIATE_VARUINT1:
-        break;
-    case WEB49_IMMEDIATE_VARUINT32:
-        fprintf(file, " %"PRIu32, instr.immediate.varuint32);
-        break;
-    case WEB49_IMMEDIATE_VARUINT64:
-        fprintf(file, " %"PRIu64, instr.immediate.varuint64);
-        break;
-    case WEB49_IMMEDIATE_VARINT32:
-        fprintf(file, " %"PRIi32, instr.immediate.varint32);
-        break;
-    case WEB49_IMMEDIATE_VARINT64:
-        fprintf(file, " %"PRIi64, instr.immediate.varint64);
-        break;
-    case WEB49_IMMEDIATE_UINT32:
-        fprintf(file, " %"PRIi32, instr.immediate.uint32);
-        break;
-    case WEB49_IMMEDIATE_UINT64:
-        fprintf(file, " %"PRIi64, instr.immediate.uint64);
-        break;
-    case WEB49_IMMEDIATE_BR_TABLE:
-        for (size_t i = 0; i < instr.immediate.br_table.num_targets; i++) {
-            fprintf(file, " %"PRIu32, instr.immediate.br_table.targets[i]);
-        }
-        fprintf(file, " %"PRIu32, instr.immediate.br_table.default_target);
-        break;
-    case WEB49_IMMEDIATE_CALL_INDIRECT:
-        break;
-    case WEB49_IMMEDIATE_MEMORY_IMMEDIATE:
-        break;
-    default:
-        fprintf(file, " ...");
-        break;
     }
     for (size_t i = 0; i < instr.nargs; i++) {
-        fprintf(file, "\n%*c", (int) (depth * 2), ' ');
-        web49_debug_print_instr_depth(file, instr.args[i], depth+1);
+        fprintf(file, "\n%*c", (int)(depth * 2), ' ');
+        web49_debug_print_instr_depth(file, instr.args[i], depth + 1);
     }
     fprintf(file, ")");
 }

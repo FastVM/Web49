@@ -92,7 +92,7 @@ int web49_file_main(const char *inarg, const char **args) {
                         if (!strcmp(entry.field_str, str)) {
                             web49_interp_data_t data = web49_interp_block_run(&interp, &interp.funcs[j]);
                             if (todo.fun_nargs < 2) {
-                                    fprintf(stderr, "wasm spec test: invoke %s\n", entry.field_str);
+                                fprintf(stderr, "wasm spec test: invoke %s\n", entry.field_str);
                             } else {
                                 web49_readwat_expr_t wants = todo.fun_args[1];
                                 if (wants.tag != WEB49_READWAT_EXPR_TAG_FUN) {
@@ -124,7 +124,7 @@ int web49_file_main(const char *inarg, const char **args) {
                                 } else if (!strcmp(wants.fun_fun, "f64.const")) {
                                     double expected;
                                     sscanf(wants.fun_args[0].sym, "%lf", &expected);
-                                    if (data.f32 == expected || (isnan(expected) && isnan(data.f64))) {
+                                    if (data.f64 == expected || (isnan(expected) && isnan(data.f64))) {
                                         fprintf(stderr, "wasm spec test: invoke %s pass: %lf == %lf\n", entry.field_str, data.f64, expected);
                                     } else {
                                         fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %lf != %lf (expected return value)\n", entry.field_str, data.f64, expected);

@@ -622,16 +622,28 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                             imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(table, expr.fun_args[++i]);
                             break;
                         case WEB49_IMMEDIATE_VARINT32:
-                            imm.varuint64 = (int32_t)web49_readwat_expr_to_i64(expr.fun_args[++i]);
+                            imm.varint32 = (int32_t)web49_readwat_expr_to_i64(expr.fun_args[++i]);
                             break;
                         case WEB49_IMMEDIATE_VARINT64:
-                            imm.varuint64 = (int64_t)web49_readwat_expr_to_i64(expr.fun_args[++i]);
+                            imm.varint64 = (int64_t)web49_readwat_expr_to_i64(expr.fun_args[++i]);
                             break;
                         case WEB49_IMMEDIATE_UINT32:
-                            imm.varuint32 = (uint32_t)web49_readwat_expr_to_u64(table, expr.fun_args[++i]);
+                            if (opcode == WEB49_OPCODE_F32_CONST) {
+                                float f32v = 0;
+                                sscanf(expr.fun_args[++i].sym, "%f", &f32v);
+                                imm.varuint32 = *(uint32_t *)&f32v;
+                            } else {
+                                imm.varuint32 = (uint32_t)web49_readwat_expr_to_u64(table, expr.fun_args[++i]);
+                            }
                             break;
                         case WEB49_IMMEDIATE_UINT64:
-                            imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(table, expr.fun_args[++i]);
+                            if (opcode == WEB49_OPCODE_F64_CONST) {
+                                double f64v = 0;
+                                sscanf(expr.fun_args[++i].sym, "%lf", &f64v);
+                                imm.varuint64 = *(uint64_t *)&f64v;
+                            } else {
+                                imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(table, expr.fun_args[++i]);
+                            }
                             break;
                         case WEB49_IMMEDIATE_BR_TABLE: {
                             i += 1;
@@ -911,10 +923,22 @@ web49_instr_t web49_readwat_instr(web49_readwat_state_t *out, web49_readwat_expr
                     imm.varuint64 = (int64_t)web49_readwat_expr_to_i64(expr.fun_args[0]);
                     break;
                 case WEB49_IMMEDIATE_UINT32:
-                    imm.varuint32 = (uint32_t)web49_readwat_expr_to_u64(table, expr.fun_args[0]);
+                    if (opcode == WEB49_OPCODE_F32_CONST) {
+                        float f32v = 0;
+                        sscanf(expr.fun_args[0].sym, "%f", &f32v);
+                        imm.varuint32 = *(uint32_t *)&f32v;
+                    } else {
+                        imm.varuint32 = (uint32_t)web49_readwat_expr_to_u64(table, expr.fun_args[0]);
+                    }
                     break;
                 case WEB49_IMMEDIATE_UINT64:
-                    imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(table, expr.fun_args[0]);
+                    if (opcode == WEB49_OPCODE_F64_CONST) {
+                        double f64v = 0;
+                        sscanf(expr.fun_args[0].sym, "%lf", &f64v);
+                        imm.varuint64 = *(uint64_t *)&f64v;
+                    } else {
+                        imm.varuint64 = (uint64_t)web49_readwat_expr_to_u64(table, expr.fun_args[0]);
+                    }
                     break;
                 case WEB49_IMMEDIATE_BR_TABLE: {
                     uint64_t i = 0;

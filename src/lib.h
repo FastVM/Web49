@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int getentropy (void *buffer, size_t length);
+int getentropy(void *buffer, size_t length);
 
 #if 0
 #define web49_malloc(size) (printf("%s@%s+%zu\n", __FILE__, __LINE__, (size_t)(size)), malloc(size))

@@ -1,4 +1,5 @@
 #include "tree.h"
+
 #include <stdio.h>
 
 #include "../tables.h"
@@ -211,7 +212,7 @@ void web49_opt_untree(web49_instr_t cur, size_t *len, web49_instr_t **out, size_
         }
         (*out)[(*len)++] = cur;
         for (size_t i = 0; i < nargs; i++) {
-            if (cur.args[i].opcode == WEB49_OPCODE_THEN || cur.args[i].opcode == WEB49_OPCODE_ELSE ) {
+            if (cur.args[i].opcode == WEB49_OPCODE_THEN || cur.args[i].opcode == WEB49_OPCODE_ELSE) {
                 web49_opt_untree(cur.args[i], len, out, alloc);
             }
         }
@@ -219,7 +220,7 @@ void web49_opt_untree(web49_instr_t cur, size_t *len, web49_instr_t **out, size_
             *alloc = (*len + 2) * 2;
             *out = web49_realloc(*out, sizeof(web49_instr_t) * *alloc);
         }
-        (*out)[(*len)++] = (web49_instr_t) {.opcode = WEB49_OPCODE_END};
+        (*out)[(*len)++] = (web49_instr_t){.opcode = WEB49_OPCODE_END};
     } else if (cur.opcode == WEB49_OPCODE_BLOCK) {
         if (*len + 2 >= *alloc) {
             *alloc = (*len + 2) * 2;
@@ -235,7 +236,7 @@ void web49_opt_untree(web49_instr_t cur, size_t *len, web49_instr_t **out, size_
             *alloc = (*len + 2) * 2;
             *out = web49_realloc(*out, sizeof(web49_instr_t) * *alloc);
         }
-        (*out)[(*len)++] = (web49_instr_t) {.opcode = WEB49_OPCODE_END};
+        (*out)[(*len)++] = (web49_instr_t){.opcode = WEB49_OPCODE_END};
     } else if (cur.opcode == WEB49_OPCODE_THEN) {
         for (size_t i = 0; i < nargs; i++) {
             web49_opt_untree(cur.args[i], len, out, alloc);
