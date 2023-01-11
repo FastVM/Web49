@@ -25,10 +25,10 @@ uint64_t web49_readwat_table_get(web49_readwat_table_t *restrict table, const ch
 const char *web49_readwat_name(web49_io_input_t *in) {
     char first = web49_io_input_fgetc(in);
     if (first == ';') {
-        if (web49_io_input_fgetc(in) != ';') {
-            web49_io_input_rewind(in);
-            return ";";
-        }
+        // if (web49_io_input_fgetc(in) != ';') {
+        //     web49_io_input_rewind(in);
+        //     return ";";
+        // }
         while (web49_io_input_fgetc(in) != '\n') {
         }
     }
@@ -52,36 +52,18 @@ const char *web49_readwat_name(web49_io_input_t *in) {
 }
 
 web49_readwat_expr_t web49_readwat_expr(web49_io_input_t *in) {
+    char first = web49_io_input_fgetc(in);
 redo:;
     uint64_t start = web49_io_input_ftell(in);
-    char first = web49_io_input_fgetc(in);
     while (isspace(first)) {
         first = web49_io_input_fgetc(in);
     }
     if (first == ';') {
-        char second = web49_io_input_fgetc(in);
-        if (second == ';') {
-            while (web49_io_input_fgetc(in) != '\n') {
-            }
-            goto redo;
-        }
-        web49_io_input_rewind(in);
+        while (web49_io_input_fgetc(in) != '\n') {}
+        goto redo;
     }
     if (first == '(') {
         const char *name = web49_readwat_name(in);
-        if (!strcmp(name, ";")) {
-            uint64_t depth = 1;
-            while (depth != 0) {
-                char comment = web49_io_input_fgetc(in);
-                if (comment == '(') {
-                    depth += 1;
-                }
-                if (comment == ')') {
-                    depth -= 1;
-                }
-            }
-            goto redo;
-        }
         uint64_t alloc = 4;
         web49_readwat_expr_t *args = web49_malloc(sizeof(web49_readwat_expr_t) * alloc);
         uint64_t nargs = 0;
@@ -93,6 +75,11 @@ redo:;
             first = web49_io_input_fgetc(in);
             while (isspace(first)) {
                 first = web49_io_input_fgetc(in);
+                if (first == ';') {
+                    while (first != '\n') {
+                        first = web49_io_input_fgetc(in);
+                    }
+                }
             }
             if (first == ')' || first == '\0' || first == EOF) {
                 break;

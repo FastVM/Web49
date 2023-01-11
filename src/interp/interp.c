@@ -556,6 +556,8 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         case WEB49_IMMEDIATE_MEMORY_IMMEDIATE:
             build->code[build->ncode++].data.i32_u = cur.immediate.memory_immediate.offset;
             break;
+        case WEB49_IMMEDIATE_DATA_INDEX:
+            break;
         default:
             fprintf(stderr, "bad immediate: %zu\n", (size_t)cur.immediate.id);
             __builtin_trap();
@@ -925,8 +927,8 @@ exitv:
         NEXT();
     }
     LABEL(WEB49_OPCODE_DATA_DROP) {
-        fprintf(stderr, "data drop? you wish!\n");
-        __builtin_trap();
+        // fprintf(stderr, "data drop? you wish!\n");
+        // __builtin_trap();
         NEXT();
     }
     LABEL(WEB49_OPCODE_TABLE_INIT) {

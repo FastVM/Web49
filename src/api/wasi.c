@@ -6,6 +6,12 @@
 
 #include "api.h"
 
+web49_interp_data_t web49_api_import_wasi_random_get(web49_interp_t interp) {
+    uint32_t ptr = interp.locals[0].i32_u;
+    uint32_t len = interp.locals[1].i32_u;
+    getentropy(&interp.memory[ptr], len);
+    return (web49_interp_data_t){.i32_u = 0};
+}
 web49_interp_data_t web49_api_import_wasi_fd_seek(web49_interp_t interp) {
     int whence = -1;
     switch (interp.locals[2].i32_u) {
@@ -224,7 +230,9 @@ web49_interp_data_t web49_api_import_wasi_fd_prestat_dir_name(web49_interp_t int
 }
 
 web49_env_func_t web49_api_import_wasi(void *wasi, const char *func) {
-    if (!strcmp(func, "fd_seek")) {
+    if (!strcmp(func, "random_get")) {
+        return &web49_api_import_wasi_random_get;
+    } else if (!strcmp(func, "fd_seek")) {
         return &web49_api_import_wasi_fd_seek;
     } else if (!strcmp(func, "args_get")) {
         return &web49_api_import_wasi_args_get;

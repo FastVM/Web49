@@ -788,6 +788,38 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
         .in[1] = WEB49_TABLE_STACK_EFFECT_I32,
         .in[2] = WEB49_TABLE_STACK_EFFECT_I32,
     },
+    [WEB49_OPCODE_I32_TRUNC_SAT_F32_S] = (web49_table_stack_effect_t) {
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_TRUNC_SAT_F32_U] = (web49_table_stack_effect_t) {
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_TRUNC_SAT_F64_S] = (web49_table_stack_effect_t) {
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I32_TRUNC_SAT_F64_U] = (web49_table_stack_effect_t) {
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_I64_TRUNC_SAT_F32_S] = (web49_table_stack_effect_t) {
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_TRUNC_SAT_F32_U] = (web49_table_stack_effect_t) {
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_TRUNC_SAT_F64_S] = (web49_table_stack_effect_t) {
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
+    [WEB49_OPCODE_I64_TRUNC_SAT_F64_U] = (web49_table_stack_effect_t) {
+        .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
+    },
     [WEB49_OPCODE_DATA_DROP] = (web49_table_stack_effect_t){
         .fail = true,
     },
@@ -1394,6 +1426,42 @@ web49_opcode_t web49_bytes_to_opcode(uint8_t *bytes) {
             }
         case 0xFC:
             switch (bytes[1]) {
+                case 0x00:
+                    return WEB49_OPCODE_I32_TRUNC_SAT_F32_S;
+                case 0x01:
+                    return WEB49_OPCODE_I32_TRUNC_SAT_F32_U;
+                case 0x02:
+                    return WEB49_OPCODE_I32_TRUNC_SAT_F64_S;
+                case 0x03:
+                    return WEB49_OPCODE_I32_TRUNC_SAT_F64_U;
+                case 0x04:
+                    return WEB49_OPCODE_I64_TRUNC_SAT_F32_S;
+                case 0x05:
+                    return WEB49_OPCODE_I64_TRUNC_SAT_F32_U;
+                case 0x06:
+                    return WEB49_OPCODE_I64_TRUNC_SAT_F64_S;
+                case 0x07:
+                    return WEB49_OPCODE_I64_TRUNC_SAT_F64_U;
+                case 0x08:
+                    return WEB49_OPCODE_MEMORY_INIT;
+                case 0x09:
+                    return WEB49_OPCODE_MEMORY_COPY;
+                case 0x0A:
+                    return WEB49_OPCODE_MEMORY_FILL;
+                case 0x0B:
+                    return WEB49_OPCODE_DATA_DROP;
+                case 0x0C:
+                    return WEB49_OPCODE_TABLE_INIT;
+                case 0x0D:
+                    return WEB49_OPCODE_ELEM_DROP;
+                case 0x0E:
+                    return WEB49_OPCODE_TABLE_COPY;
+                case 0x0F:
+                    return WEB49_OPCODE_TABLE_GROW;
+                case 0x10:
+                    return WEB49_OPCODE_TABLE_SIZE;
+                case 0x11:
+                    return WEB49_OPCODE_TABLE_FILL;
                 default:
                     web49_error("unknown opcode sequence: 0xFC 0x%" PRIu8 "\n", bytes[1]);
             }
@@ -1945,6 +2013,38 @@ void web49_opcode_to_bytes(web49_opcode_t opcode, size_t *len, uint8_t *buf) {
             break;
         case WEB49_OPCODE_I64_EXTEND32_S:
             buf[(*len)++] = 0xC4;
+            break;
+        case WEB49_OPCODE_I32_TRUNC_SAT_F32_S:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x00;
+            break;
+        case WEB49_OPCODE_I32_TRUNC_SAT_F32_U:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x01;
+            break;
+        case WEB49_OPCODE_I32_TRUNC_SAT_F64_S:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x02;
+            break;
+        case WEB49_OPCODE_I32_TRUNC_SAT_F64_U:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x03;
+            break;
+        case WEB49_OPCODE_I64_TRUNC_SAT_F32_S:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x04;
+            break;
+        case WEB49_OPCODE_I64_TRUNC_SAT_F32_U:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x05;
+            break;
+        case WEB49_OPCODE_I64_TRUNC_SAT_F64_S:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x06;
+            break;
+        case WEB49_OPCODE_I64_TRUNC_SAT_F64_U:
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x07;
             break;
         case WEB49_OPCODE_MEMORY_INIT:
             buf[(*len)++] = 0xFC;

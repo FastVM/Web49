@@ -146,7 +146,7 @@ void web49_free_interp(web49_interp_t interp);
 #if defined(WEB49_NO_BOUNDS)
 #define WEB49_INTERP_BOUNDS(low, add) (__builtin_unreachable())
 #else
-#define WEB49_INTERP_BOUNDS(low, add) ({ fprintf(stderr, "memmory access 0x%zx of size 0x%zx out of bounds\n", (size_t) (low), (size_t) (add)); exit(1); })
+#define WEB49_INTERP_BOUNDS(low, add) ({ fprintf(stderr, "memmory access 0x%zx of size 0x%zx out of bounds\n", (size_t) (low), (size_t) (add)); __builtin_trap(); })
 #endif
 #define WEB49_INTERP_ADDR(ptrtype, interp, dest, size) ({uint32_t xptr_ = (dest); web49_interp_t sub_ = (interp); if (sub_.memsize < xptr_ + size) { WEB49_INTERP_BOUNDS(xptr_, size); }; (ptrtype) &sub_.memory[xptr_]; })
 #define WEB49_INTERP_READ(elemtype, interp, dest) (*WEB49_INTERP_ADDR(elemtype *, interp, dest, sizeof(elemtype)))
