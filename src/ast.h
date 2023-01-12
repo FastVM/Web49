@@ -262,6 +262,8 @@ enum web49_opcode_enum_t {
     WEB49_OPCODE_TABLE_SIZE,
     WEB49_OPCODE_TABLE_FILL,
     WEB49_OPCODE_BEGIN0,
+    WEB49_OPCODE_UPPER_SET,
+    WEB49_OPCODE_UPPER_GET,
     // MEMORY OPCODES
     WEB49_MAX_OPCODE_NUM,
 };
@@ -293,6 +295,9 @@ typedef struct web49_br_table_t web49_br_table_t;
 
 struct web49_call_indirect_t;
 typedef struct web49_call_indirect_t web49_call_indirect_t;
+
+struct web49_block_type_t;
+typedef struct web49_block_type_t web49_block_type_t;
 
 struct web49_memory_immediate_t;
 typedef struct web49_memory_immediate_t web49_memory_immediate_t;
@@ -404,6 +409,14 @@ struct web49_br_table_t {
 struct web49_call_indirect_t {
     uint32_t index;
     uint8_t reserved;
+};
+
+struct web49_block_type_t {
+    union {
+        web49_lang_type_t type_value;
+        uint32_t type_index;
+    };
+    bool is_type_index;    
 };
 
 struct web49_memory_immediate_t {
@@ -525,7 +538,7 @@ struct web49_instr_immediate_t {
         int64_t varint64;
         uint32_t uint32;
         uint64_t uint64;
-        web49_lang_type_t block_type;
+        web49_block_type_t block_type;
         web49_br_table_t br_table;
         web49_call_indirect_t call_indirect;
         web49_memory_immediate_t memory_immediate;
@@ -625,5 +638,6 @@ void web49_free_instr(web49_instr_t instr);
 web49_section_t web49_module_get_section(web49_module_t mod, web49_section_id_t id);
 
 #define web49_preamble_init ((web49_preamble_t){{0x00, 0x61, 0x73, 0x6D}, {0x01, 0x00, 0x00, 0x00}})
+#define web49_block_type_value(num_) ((web49_block_type_t) { .type_index = (num_), .is_type_index = false })
 
 #endif

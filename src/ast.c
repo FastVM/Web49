@@ -121,21 +121,25 @@ static void web49_debug_print_instr_depth(FILE *file, web49_instr_t instr, size_
         case WEB49_IMMEDIATE_NONE:
             break;
         case WEB49_IMMEDIATE_BLOCK_TYPE:
-            switch (instr.immediate.block_type) {
-                case WEB49_TYPE_I32:
-                    fprintf(file, " (result i32)");
-                    break;
-                case WEB49_TYPE_I64:
-                    fprintf(file, " (result i64)");
-                    break;
-                case WEB49_TYPE_F32:
-                    fprintf(file, " (result f32)");
-                    break;
-                case WEB49_TYPE_F64:
-                    fprintf(file, " (result f64)");
-                    break;
-                default:
-                    break;
+            if (instr.immediate.block_type.is_type_index) {
+                fprintf(file, " (result %"PRIu32")", instr.immediate.block_type.type_index);
+            } else {
+                switch (instr.immediate.block_type.type_value) {
+                    case WEB49_TYPE_I32:
+                        fprintf(file, " (result i32)");
+                        break;
+                    case WEB49_TYPE_I64:
+                        fprintf(file, " (result i64)");
+                        break;
+                    case WEB49_TYPE_F32:
+                        fprintf(file, " (result f32)");
+                        break;
+                    case WEB49_TYPE_F64:
+                        fprintf(file, " (result f64)");
+                        break;
+                    default:
+                        break;
+                }
             }
             break;
         case WEB49_IMMEDIATE_VARUINT1:

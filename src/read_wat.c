@@ -596,20 +596,20 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                                     exit(1);
                                 }
                                 if (!strcmp(arg.sym, "i32")) {
-                                    imm.block_type = WEB49_TYPE_I32;
+                                    imm.block_type = web49_block_type_value(WEB49_TYPE_I32);
                                 } else if (!strcmp(arg.sym, "i64")) {
-                                    imm.block_type = WEB49_TYPE_I64;
+                                    imm.block_type = web49_block_type_value(WEB49_TYPE_I64);
                                 } else if (!strcmp(arg.sym, "f32")) {
-                                    imm.block_type = WEB49_TYPE_F32;
+                                    imm.block_type = web49_block_type_value(WEB49_TYPE_F32);
                                 } else if (!strcmp(arg.sym, "f64")) {
-                                    imm.block_type = WEB49_TYPE_F64;
+                                    imm.block_type = web49_block_type_value(WEB49_TYPE_F64);
                                 } else {
                                     fprintf(stderr, "expected basic type name, not `%s`\n", arg.sym);
                                     exit(1);
                                 }
                                 i += 1;
                             } else {
-                                imm.block_type = WEB49_TYPE_BLOCK_TYPE;
+                                imm.block_type = web49_block_type_value(WEB49_TYPE_BLOCK_TYPE);
                             }
                             break;
                         case WEB49_IMMEDIATE_VARUINT1:
@@ -887,19 +887,19 @@ web49_instr_t web49_readwat_instr(web49_readwat_state_t *out, web49_readwat_expr
                             exit(1);
                         }
                         if (!strcmp(arg.sym, "i32")) {
-                            imm.block_type = WEB49_TYPE_I32;
+                            imm.block_type = web49_block_type_value(WEB49_TYPE_I32);
                         } else if (!strcmp(arg.sym, "i64")) {
-                            imm.block_type = WEB49_TYPE_I64;
+                            imm.block_type = web49_block_type_value(WEB49_TYPE_I64);
                         } else if (!strcmp(arg.sym, "f32")) {
-                            imm.block_type = WEB49_TYPE_F32;
+                            imm.block_type = web49_block_type_value(WEB49_TYPE_F32);
                         } else if (!strcmp(arg.sym, "f64")) {
-                            imm.block_type = WEB49_TYPE_F64;
+                            imm.block_type = web49_block_type_value(WEB49_TYPE_F64);
                         } else {
                             fprintf(stderr, "expected basic type name, not `%s`\n", arg.sym);
                             exit(1);
                         }
                     } else {
-                        imm.block_type = WEB49_TYPE_BLOCK_TYPE;
+                        imm.block_type = web49_block_type_value(WEB49_TYPE_BLOCK_TYPE);
                     }
                     break;
                 }

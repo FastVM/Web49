@@ -832,6 +832,12 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
     [WEB49_OPCODE_TABLE_COPY] = (web49_table_stack_effect_t){
         .fail = true,
     },
+    [WEB49_OPCODE_UPPER_SET] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+    },
+    [WEB49_OPCODE_UPPER_GET] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+    }
 };
 
 const size_t web49_opcode_memsize[WEB49_MAX_OPCODE_NUM] = {
@@ -905,6 +911,8 @@ const web49_immediate_id_t web49_opcode_immediate[WEB49_MAX_OPCODE_NUM] = {
     [WEB49_OPCODE_F64_CONST] = WEB49_IMMEDIATE_UINT64,
     [WEB49_OPCODE_MEMORY_INIT] = WEB49_IMMEDIATE_DATA_INDEX,
     [WEB49_OPCODE_DATA_DROP] = WEB49_IMMEDIATE_DATA_INDEX,
+    [WEB49_OPCODE_UPPER_SET] = WEB49_IMMEDIATE_VARINT32,
+    [WEB49_OPCODE_UPPER_GET] = WEB49_IMMEDIATE_VARINT32,
 };
 
 bool web49_opcode_is_multibyte(uint8_t first_byte) {
@@ -3022,6 +3030,10 @@ const char *web49_opcode_to_name(web49_opcode_t opcode) {
             return "elem.drop";
         case WEB49_OPCODE_TABLE_COPY:
             return "table.copy";
+        case WEB49_OPCODE_UPPER_GET:
+            return "upper.get";
+        case WEB49_OPCODE_UPPER_SET:
+            return "upper.set";
         default:
             return NULL;
     }

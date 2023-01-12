@@ -80,7 +80,7 @@ test: $(TEST_OUTPUTS)
 	@cat $(TEST_OUTPUTS) | sort > results.txt
 
 $(TEST_OUTPUTS): ./bin/miniwasm $(@:%.txt=%.wast)
-	./bin/miniwasm $(@:%.txt=%.wast) 2>/dev/null; \
+	@./bin/miniwasm $(@:%.txt=%.wast) 2>/dev/null; \
 		if test $$? -eq 0; \
 		then echo "PASS $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
 		else echo "FAIL $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \

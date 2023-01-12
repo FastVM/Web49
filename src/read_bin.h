@@ -15,7 +15,7 @@ int32_t web49_readbin_varuint32(web49_io_input_t *in);
 int64_t web49_readbin_varuint64(web49_io_input_t *in);
 uint32_t web49_readbin_uint32(web49_io_input_t *in);
 uint64_t web49_readbin_uint64(web49_io_input_t *in);
-web49_lang_type_t web49_readbin_block_type(web49_io_input_t *in);
+web49_block_type_t web49_readbin_block_type(web49_io_input_t *in);
 web49_br_table_t web49_readbin_br_table(web49_io_input_t *in);
 web49_call_indirect_t web49_readbin_call_indirect(web49_io_input_t *in);
 web49_memory_immediate_t web49_readbin_memory_immediate(web49_io_input_t *in);

@@ -3,6 +3,7 @@
 #include "../tables.h"
 
 #define OPCODE(n) ({size_t x = (n); if (ptrs[x] == NULL) {__builtin_trap();} ptrs[x]; })
+#define MAX_DEPTH 256
 
 uint64_t web49_interp_count(web49_instr_t cur) {
     uint64_t ret = 0;
@@ -251,7 +252,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         }
         state->bufs_head -= 1;
         state->depth = save;
-        if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
+        if (cur.immediate.block_type.type_value != WEB49_TYPE_BLOCK_TYPE) {
             uint32_t *over = web49_interp_link_box();
             build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_BR);
             web49_interp_link_get(state, build->ncode++, over);
@@ -277,7 +278,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         }
         state->bufs_head -= 1;
         state->depth = save;
-        if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
+        if (cur.immediate.block_type.type_value != WEB49_TYPE_BLOCK_TYPE) {
             uint32_t ret = state->depth + state->nlocals;
             state->depth += 1;
             return ret;
@@ -295,7 +296,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
             end = iff;
         }
         uint32_t *over;
-        if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
+        if (cur.immediate.block_type.type_value != WEB49_TYPE_BLOCK_TYPE) {
             over = web49_interp_link_box();
         } else {
             over = end;
@@ -318,7 +319,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         }
         state->depth = save;
         state->bufs_head -= 1;
-        if (cur.immediate.block_type != WEB49_TYPE_BLOCK_TYPE) {
+        if (cur.immediate.block_type.type_value != WEB49_TYPE_BLOCK_TYPE) {
             build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_BR);
             web49_interp_link_get(state, build->ncode++, over);
             uint32_t ret = state->depth + state->nlocals;
@@ -356,6 +357,9 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
             build->code[build->ncode++].data.i32_u = cur.immediate.varuint32;
         }
         return UINT32_MAX;
+    }
+    if (cur.opcode == WEB49_OPCODE_UPPER_GET) {
+        return MAX_DEPTH + state->nlocals + cur.immediate.varuint32;
     }
 #if defined(WEB49_OPT_CONST0)
     bool const0 = false;
@@ -527,7 +531,11 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         case WEB49_IMMEDIATE_VARUINT1:
             break;
         case WEB49_IMMEDIATE_VARUINT32:
-            build->code[build->ncode++].data.i32_u = cur.immediate.varuint32;
+            if (cur.opcode == WEB49_OPCODE_UPPER_SET) {
+                build->code[build->ncode++].data.i32_u = MAX_DEPTH + cur.immediate.varuint32 + state->nlocals;
+            } else {
+                build->code[build->ncode++].data.i32_u = cur.immediate.varuint32;
+            }
             break;
         case WEB49_IMMEDIATE_VARUINT64:
             build->code[build->ncode++].data.i64_u = cur.immediate.varuint64;

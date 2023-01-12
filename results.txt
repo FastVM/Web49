@@ -59,7 +59,6 @@ FAIL select
 FAIL skip-stack-guard-page
 FAIL stack
 FAIL start
-FAIL store
 FAIL switch
 FAIL table
 FAIL table-sub
@@ -86,5 +85,6 @@ PASS forward
 PASS i32
 PASS i64
 PASS int_exprs
+PASS store
 PASS traps
 PASS type

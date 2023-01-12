@@ -57,7 +57,11 @@ void web49_writebin_instr(web49_writebin_buf_t *out, web49_instr_t instr) {
         case WEB49_IMMEDIATE_NONE:
             break;
         case WEB49_IMMEDIATE_BLOCK_TYPE:
-            web49_writebin_byte(out, instr.immediate.block_type);
+            if (instr.immediate.block_type.is_type_index) {
+                web49_writebin_sleb(out, instr.immediate.block_type.type_index);
+            } else {
+                web49_writebin_byte(out, instr.immediate.block_type.type_value);
+            }
             break;
         case WEB49_IMMEDIATE_VARUINT1:
             web49_writebin_byte(out, instr.immediate.varuint1);
