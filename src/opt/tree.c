@@ -369,12 +369,12 @@ void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t *entry)
     // }
     // head[len++] = (web49_instr_t){.opcode = WEB49_OPCODE_END};
     // fprintf(stderr, " ---0---\n");
-    for (size_t i = 0; i < len; i++) {
-        web49_debug_print_instr(stderr, head[i]);
-    }
+    // for (size_t i = 0; i < len; i++) {
+        // web49_debug_print_instr(stderr, head[i]);
+    // }
     // fprintf(stderr, " ---1---\n");
     web49_instr_t instr = web49_opt_tree_read_block(mod, &head, NULL, 0);
-    web49_debug_print_instr(stderr, instr);
+    // web49_debug_print_instr(stderr, instr);
     // fprintf(stderr, " ---2---\n\n\n");
     entry->instrs = web49_realloc(entry->instrs, sizeof(web49_instr_t) * 1);
     entry->num_instrs = 1;

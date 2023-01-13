@@ -1,3 +1,4 @@
+FAIL align
 FAIL binary
 FAIL binary-leb128
 FAIL block
@@ -59,6 +60,7 @@ FAIL select
 FAIL skip-stack-guard-page
 FAIL stack
 FAIL start
+FAIL store
 FAIL switch
 FAIL table
 FAIL table-sub
@@ -80,11 +82,9 @@ FAIL utf8-import-field
 FAIL utf8-import-module
 FAIL utf8-invalid-encoding
 PASS address
-PASS align
 PASS forward
 PASS i32
 PASS i64
 PASS int_exprs
-PASS store
 PASS traps
 PASS type
