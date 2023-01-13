@@ -638,6 +638,6 @@ void web49_free_instr(web49_instr_t instr);
 web49_section_t web49_module_get_section(web49_module_t mod, web49_section_id_t id);
 
 #define web49_preamble_init ((web49_preamble_t){{0x00, 0x61, 0x73, 0x6D}, {0x01, 0x00, 0x00, 0x00}})
-#define web49_block_type_value(num_) ((web49_block_type_t) { .type_index = (num_), .is_type_index = false })
+#define web49_block_type_value(num_) ((web49_block_type_t) { .type_value = (num_), .is_type_index = false })
 
 #endif

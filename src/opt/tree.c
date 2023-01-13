@@ -267,13 +267,14 @@ void web49_opt_untree(web49_module_t *mod, web49_llist_t blocks, web49_instr_t c
             nparams = 0;
             nreturns = 1;
         }
+        // printf("%zu -> %zu\n", (size_t) nparams, (size_t) nreturns);
         for (size_t i = 0; i < nargs; i++) {
             if (cur.args[i].opcode != WEB49_OPCODE_THEN && cur.args[i].opcode != WEB49_OPCODE_ELSE && cur.args[i].opcode != WEB49_OPCODE_END) {
                 web49_opt_untree(mod, blocks, cur.args[i], len, out, alloc);
             }
         }
         web49_llist_t next_list = (web49_llist_t) {
-            .nreturns = 0,
+            .nreturns = nreturns,
             .next = &blocks,
         };
         if (nparams == 0) {
@@ -338,9 +339,9 @@ void web49_opt_untree(web49_module_t *mod, web49_llist_t blocks, web49_instr_t c
                 web49_opt_untree(mod, next_list, cur.args[i], len, out, alloc);
             }
         }
-        web49_opt_untree_emit_counting(WEB49_OPCODE_UPPER_SET, nparams, len, out, alloc);
+        web49_opt_untree_emit_counting(WEB49_OPCODE_UPPER_SET, nreturns, len, out, alloc);
         web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_END}, len, out, alloc);
-        web49_opt_untree_emit_counting(WEB49_OPCODE_UPPER_GET, nparams, len, out, alloc);
+        web49_opt_untree_emit_counting(WEB49_OPCODE_UPPER_GET, nreturns, len, out, alloc);
     } else if (cur.opcode == WEB49_OPCODE_THEN || cur.opcode == WEB49_OPCODE_ELSE) {
         for (size_t i = 0; i < nargs; i++) {
             web49_opt_untree(mod, blocks, cur.args[i], len, out, alloc);
@@ -368,11 +369,11 @@ void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t *entry)
     //     head = web49_realloc(head, sizeof(web49_instr_t) * alloc);
     // }
     // head[len++] = (web49_instr_t){.opcode = WEB49_OPCODE_END};
-    // fprintf(stderr, " ---0---\n");
-    // for (size_t i = 0; i < len; i++) {
-        // web49_debug_print_instr(stderr, head[i]);
-    // }
-    // fprintf(stderr, " ---1---\n");
+    fprintf(stderr, " ---0---\n");
+    for (size_t i = 0; i < len; i++) {
+        web49_debug_print_instr(stderr, head[i]);
+    }
+    fprintf(stderr, " ---1---\n");
     web49_instr_t instr = web49_opt_tree_read_block(mod, &head, NULL, 0);
     // web49_debug_print_instr(stderr, instr);
     // fprintf(stderr, " ---2---\n\n\n");
