@@ -589,7 +589,12 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                                 web49_readwat_table_set(&out->branch_table, &expr.fun_args[i + 1].sym[1], out->block_depth);
                                 i += 1;
                             }
-                            if (expr.fun_args[i + 1].tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(expr.fun_args[i + 1].fun_fun, "result")) {
+                            if (expr.fun_args[i + 1].tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(expr.fun_args[i + 1].fun_fun, "type")) {
+                                imm.block_type = (web49_block_type_t) {
+                                    .type_index = web49_readwat_expr_to_u64(&out->type_table, expr.fun_args[i + 1].fun_args[0]),
+                                    .is_type_index = true,
+                                };
+                            } else if (expr.fun_args[i + 1].tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(expr.fun_args[i + 1].fun_fun, "result")) {
                                 web49_readwat_expr_t arg = expr.fun_args[i + 1].fun_args[0];
                                 if (arg.tag != WEB49_READWAT_EXPR_TAG_SYM) {
                                     fprintf(stderr, "expected basic type\n");
@@ -880,7 +885,13 @@ web49_instr_t web49_readwat_instr(web49_readwat_state_t *out, web49_readwat_expr
                         web49_readwat_table_set(&out->branch_table, &expr.fun_args[i].sym[1], out->block_depth);
                         i += 1;
                     }
-                    if (expr.fun_args[i].tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(expr.fun_args[i].fun_fun, "result")) {
+                    imm.block_type = web49_block_type_value(WEB49_TYPE_BLOCK_TYPE);
+                    if (expr.fun_args[i].tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(expr.fun_args[i].fun_fun, "type")) {
+                        imm.block_type = (web49_block_type_t) {
+                            .type_index = web49_readwat_expr_to_u64(&out->type_table, expr.fun_args[i].fun_args[0]),
+                            .is_type_index = true,
+                        };
+                    } else if (expr.fun_args[i].tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(expr.fun_args[i].fun_fun, "result")) {
                         web49_readwat_expr_t arg = expr.fun_args[i].fun_args[0];
                         if (arg.tag != WEB49_READWAT_EXPR_TAG_SYM) {
                             fprintf(stderr, "expected basic type\n");
@@ -898,8 +909,6 @@ web49_instr_t web49_readwat_instr(web49_readwat_state_t *out, web49_readwat_expr
                             fprintf(stderr, "expected basic type name, not `%s`\n", arg.sym);
                             exit(1);
                         }
-                    } else {
-                        imm.block_type = web49_block_type_value(WEB49_TYPE_BLOCK_TYPE);
                     }
                     break;
                 }

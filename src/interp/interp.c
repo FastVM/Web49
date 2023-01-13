@@ -359,6 +359,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         return UINT32_MAX;
     }
     if (cur.opcode == WEB49_OPCODE_UPPER_GET) {
+        state->depth += 1;
         return MAX_DEPTH + state->nlocals + cur.immediate.varuint32;
     }
 #if defined(WEB49_OPT_CONST0)
@@ -369,7 +370,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     uint32_t args[16];
     for (uint64_t i = 0; i < cur.nargs; i++) {
 #if !defined(WEB49_NO_OPT)
-        if (cur.opcode != WEB49_OPCODE_CALL && cur.opcode != WEB49_OPCODE_CALL_INDIRECT) {
+        if (cur.opcode != WEB49_OPCODE_CALL && cur.opcode != WEB49_OPCODE_CALL_INDIRECT && cur.opcode != WEB49_OPCODE_UPPER_SET) {
             if (cur.args[i].opcode == WEB49_OPCODE_I32_CONST || cur.args[i].opcode == WEB49_OPCODE_I64_CONST || cur.args[i].opcode == WEB49_OPCODE_F32_CONST || cur.args[i].opcode == WEB49_OPCODE_F64_CONST) {
 #if defined(WEB49_OPT_CONST0)
                 if (i == 0) {
@@ -421,6 +422,12 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         return UINT32_MAX;
     }
     if (cur.opcode == WEB49_OPCODE_DROP) {
+        return UINT32_MAX;
+    }
+    if (cur.opcode == WEB49_OPCODE_UPPER_SET) {
+        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_SET_LOCAL);
+        build->code[build->ncode++].data.i32_u = args[cur.nargs - 1];
+        build->code[build->ncode++].data.i32_u = MAX_DEPTH + cur.immediate.varuint32 + state->nlocals;
         return UINT32_MAX;
     }
     if (cur.opcode == WEB49_OPCODE_CALL_INDIRECT) {
@@ -531,11 +538,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         case WEB49_IMMEDIATE_VARUINT1:
             break;
         case WEB49_IMMEDIATE_VARUINT32:
-            if (cur.opcode == WEB49_OPCODE_UPPER_SET) {
-                build->code[build->ncode++].data.i32_u = MAX_DEPTH + cur.immediate.varuint32 + state->nlocals;
-            } else {
-                build->code[build->ncode++].data.i32_u = cur.immediate.varuint32;
-            }
+            build->code[build->ncode++].data.i32_u = cur.immediate.varuint32;
             break;
         case WEB49_IMMEDIATE_VARUINT64:
             build->code[build->ncode++].data.i64_u = cur.immediate.varuint64;
