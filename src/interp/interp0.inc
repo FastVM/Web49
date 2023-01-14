@@ -195,10 +195,16 @@ NAME(WEB49_OPCODE_BR) {
     NEXT();
 }
 NAME(WEB49_OPCODE_GET_LOCAL) {
+    // printf("local.get %"PRIu32" -> %"PRIu32"\n", head[1].data.i32_u, head[0].data.i32_u);
     locals[head[0].data.i32_u] = locals[head[1].data.i32_u];
     head += 2;
     NEXT();
 }
+// NAME(WEB49_OPCODE_SET_LOCAL) {
+    // locals[head[1].data.i32_u] = locals[head[0].data.i32_u];
+    // head += 2;
+    // NEXT();
+// }
 NAME(WEB49_OPCODE_GET_GLOBAL) {
     locals[head[0].data.i32_u] = interp.globals[head[1].data.i32_u];
     head += 2;

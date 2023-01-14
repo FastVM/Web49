@@ -278,9 +278,10 @@ void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_block_l
         }
         if (cur.opcode == WEB49_OPCODE_BR_IF && head->nreturns != 0) {
             web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_SET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = head->nreturns}, len, out, alloc);
-            web49_opt_untree_emit_counting(WEB49_OPCODE_SET_LOCAL, head->nparams, len, out, alloc);
+            web49_opt_untree_emit_counting(WEB49_OPCODE_SET_LOCAL, head->nreturns, len, out, alloc);
             web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_GET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = head->nreturns}, len, out, alloc);
             web49_opt_untree_emit_push(cur, len, out, alloc);
+            web49_opt_untree_emit_counting(WEB49_OPCODE_GET_LOCAL, head->nreturns, len, out, alloc);
         } else {
             web49_opt_untree_emit_counting(WEB49_OPCODE_SET_LOCAL, head->nreturns, len, out, alloc);
             web49_opt_untree_emit_push(cur, len, out, alloc);

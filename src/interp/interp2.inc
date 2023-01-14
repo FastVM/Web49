@@ -189,6 +189,7 @@ NAME(WEB49_OPCODE_F64_EQ) {
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_NE) {
+    // printf("%lf != %lf #=> %s\n", LOCAL0.f64, LOCAL1.f64, LOCAL0.f64 != LOCAL1.f64 ? "true" : "false");
     locals[head[2].data.i32_u].i32_u = (uint32_t)(LOCAL0.f64 != LOCAL1.f64);
     head += 3;
     NEXT();
