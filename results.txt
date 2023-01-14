@@ -27,6 +27,7 @@ FAIL float_exprs
 FAIL float_literals
 FAIL float_memory
 FAIL float_misc
+FAIL forward
 FAIL func
 FAIL func_ptrs
 FAIL global
@@ -73,7 +74,6 @@ FAIL table_set
 FAIL table_size
 FAIL token
 FAIL tokens
-FAIL type
 FAIL unreachable
 FAIL unreached-invalid
 FAIL unreached-valid
@@ -83,8 +83,8 @@ FAIL utf8-import-field
 FAIL utf8-import-module
 FAIL utf8-invalid-encoding
 PASS address
-PASS forward
 PASS i32
 PASS i64
 PASS int_exprs
 PASS traps
+PASS type
