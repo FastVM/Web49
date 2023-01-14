@@ -1,4 +1,12 @@
-
+NAME(WEB49_OPCODE_RETURN0) {
+#if defined(WEB49_PRINT_INSTR)
+    depth -= 1;
+#endif
+    head = *--returns;
+    locals = *--stacks;
+    head += 4;
+    NEXT();
+}
 NAME(WEB49_OPCODE_CALL_DONE0) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
@@ -187,7 +195,7 @@ NAME(WEB49_OPCODE_BR) {
     NEXT();
 }
 NAME(WEB49_OPCODE_GET_LOCAL) {
-    // printf("local.get %"PRIu32"\n", head[1].data.i32_u);
+    // printf("local.get %"PRIu32" -> %" -PRIu32"\n", head[1].data.i32_u, head[0].data.i32_u);
     locals[head[0].data.i32_u] = locals[head[1].data.i32_u];
     head += 2;
     NEXT();

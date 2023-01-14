@@ -40,7 +40,7 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
         .branch = true,
     },
     [WEB49_OPCODE_RETURN] = (web49_table_stack_effect_t){
-        .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+        // .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
         .branch = true,
     },
     [WEB49_OPCODE_CALL] = (web49_table_stack_effect_t){

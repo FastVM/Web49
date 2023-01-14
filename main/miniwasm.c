@@ -90,49 +90,51 @@ int web49_file_main(const char *inarg, const char **args) {
                     for (size_t j = 0; j < exports.num_entries; j++) {
                         web49_section_export_entry_t entry = exports.entries[j];
                         if (!strcmp(entry.field_str, str)) {
-                            web49_interp_data_t data = web49_interp_block_run(&interp, &interp.funcs[j]);
+                            web49_interp_data_t *data = web49_interp_block_run(&interp, &interp.funcs[entry.index]);
                             if (todo.fun_nargs < 2) {
                                 fprintf(stderr, "wasm spec test: invoke %s\n", entry.field_str);
                             } else {
-                                web49_readwat_expr_t wants = todo.fun_args[1];
-                                if (wants.tag != WEB49_READWAT_EXPR_TAG_FUN) {
-                                } else if (!strcmp(wants.fun_fun, "i32.const")) {
-                                    uint32_t expected = (uint32_t)web49_readwat_expr_to_i64(wants.fun_args[0]);
-                                    if (data.i32_u == expected) {
-                                        fprintf(stderr, "wasm spec test: invoke %s pass: 0x%08" PRIx32 " == 0x%08" PRIx32 "\n", entry.field_str, data.i32_u, expected);
+                                for (size_t k = 0; k+1 < todo.fun_nargs; k++) {
+                                    web49_readwat_expr_t wants = todo.fun_args[k+1];
+                                    if (wants.tag != WEB49_READWAT_EXPR_TAG_FUN) {
+                                    } else if (!strcmp(wants.fun_fun, "i32.const")) {
+                                        uint32_t expected = (uint32_t)web49_readwat_expr_to_i64(wants.fun_args[0]);
+                                        if (data[k].i32_u == expected) {
+                                            fprintf(stderr, "wasm spec test: invoke %s pass: 0x%08" PRIx32 " == 0x%08" PRIx32 "\n", entry.field_str, data[k].i32_u, expected);
+                                        } else {
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%" PRIx32 " != 0x%" PRIx32 " (expected return value)\n", entry.field_str, data[k].i32_u, expected);
+                                            return 1;
+                                        }
+                                    } else if (!strcmp(wants.fun_fun, "i64.const")) {
+                                        int64_t expected = web49_readwat_expr_to_i64(wants.fun_args[0]);
+                                        if (data[k].i64_s == expected) {
+                                            fprintf(stderr, "wasm spec test: invoke %s pass: 0x%016" PRIx64 " == 0x%016" PRIx64 "\n", entry.field_str, data[k].i64_u, expected);
+                                        } else {
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%016" PRIx64 " != 0x%016" PRIx64 " (expected return value)\n", entry.field_str, data[k].i64_u, expected);
+                                            return 1;
+                                        }
+                                    } else if (!strcmp(wants.fun_fun, "f32.const")) {
+                                        float expected;
+                                        sscanf(wants.fun_args[0].sym, "%f", &expected);
+                                        if (data[k].f32 == expected || (isnan(expected) && isnan(data[k].f32))) {
+                                            fprintf(stderr, "wasm spec test: invoke %s pass: %f == %f\n", entry.field_str, data[k].f32, expected);
+                                        } else {
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %f != %f (expected return value)\n", entry.field_str, data[k].f32, expected);
+                                            return 1;
+                                        }
+                                    } else if (!strcmp(wants.fun_fun, "f64.const")) {
+                                        double expected;
+                                        sscanf(wants.fun_args[0].sym, "%lf", &expected);
+                                        if (data[k].f64 == expected || (isnan(expected) && isnan(data[k].f64))) {
+                                            fprintf(stderr, "wasm spec test: invoke %s pass: %lf == %lf\n", entry.field_str, data[k].f64, expected);
+                                        } else {
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %lf != %lf (expected return value)\n", entry.field_str, data[k].f64, expected);
+                                            return 1;
+                                        }
                                     } else {
-                                        fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%" PRIx32 " != 0x%" PRIx32 " (expected return value)\n", entry.field_str, data.i32_u, expected);
+                                        fprintf(stderr, "wasm spec test: type %s not impelemented\n", wants.fun_fun);
                                         return 1;
                                     }
-                                } else if (!strcmp(wants.fun_fun, "i64.const")) {
-                                    int64_t expected = web49_readwat_expr_to_i64(wants.fun_args[0]);
-                                    if (data.i64_s == expected) {
-                                        fprintf(stderr, "wasm spec test: invoke %s pass: 0x%016" PRIx64 " == 0x%016" PRIx64 "\n", entry.field_str, data.i64_u, expected);
-                                    } else {
-                                        fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%016" PRIx64 " != 0x%016" PRIx64 " (expected return value)\n", entry.field_str, data.i64_u, expected);
-                                        return 1;
-                                    }
-                                } else if (!strcmp(wants.fun_fun, "f32.const")) {
-                                    float expected;
-                                    sscanf(wants.fun_args[0].sym, "%f", &expected);
-                                    if (data.f32 == expected || (isnan(expected) && isnan(data.f32))) {
-                                        fprintf(stderr, "wasm spec test: invoke %s pass: %f == %f\n", entry.field_str, data.f32, expected);
-                                    } else {
-                                        fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %f != %f (expected return value)\n", entry.field_str, data.f32, expected);
-                                        return 1;
-                                    }
-                                } else if (!strcmp(wants.fun_fun, "f64.const")) {
-                                    double expected;
-                                    sscanf(wants.fun_args[0].sym, "%lf", &expected);
-                                    if (data.f64 == expected || (isnan(expected) && isnan(data.f64))) {
-                                        fprintf(stderr, "wasm spec test: invoke %s pass: %lf == %lf\n", entry.field_str, data.f64, expected);
-                                    } else {
-                                        fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %lf != %lf (expected return value)\n", entry.field_str, data.f64, expected);
-                                        return 1;
-                                    }
-                                } else {
-                                    fprintf(stderr, "wasm spec test: type %s not impelemented\n", wants.fun_fun);
-                                    return 1;
                                 }
                             }
                             goto test_found;

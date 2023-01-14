@@ -73,6 +73,7 @@ FAIL table_set
 FAIL table_size
 FAIL token
 FAIL tokens
+FAIL type
 FAIL unreachable
 FAIL unreached-invalid
 FAIL unreached-valid
@@ -87,4 +88,3 @@ PASS i32
 PASS i64
 PASS int_exprs
 PASS traps
-PASS type

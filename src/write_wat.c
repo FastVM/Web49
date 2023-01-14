@@ -315,9 +315,7 @@ void web49_wat_print_section_export(web49_io_output_t *out, web49_module_t mod, 
     }
 }
 
-void web49_wat_print_section_start(web49_io_output_t *out, web49_module_t mod, web49_section_start_t sstart) {
-    // fprintf(stderr, "unsupported: start section\n");
-}
+void web49_wat_print_section_start(web49_io_output_t *out, web49_module_t mod, web49_section_start_t sstart) {}
 
 void web49_wat_print_section_element(web49_io_output_t *out, web49_module_t mod, web49_section_element_t selement) {
     for (uint64_t i = 0; i < selement.num_entries; i++) {

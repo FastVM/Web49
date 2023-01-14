@@ -27,29 +27,6 @@ NAME(WEB49_OPCODE_BR_TABLE) {
     head = head[brvalue].ptr;
     NEXT();
 }
-NAME(WEB49_OPCODE_RETURN) {
-#if defined(WEB49_PRINT_INSTR)
-    depth -= 1;
-#endif
-    web49_interp_data_t ret = LOCAL0;
-    head = *--returns;
-    locals = *--stacks;
-    locals[head[2].data.i32_u] = ret;
-    head += 4;
-    NEXT();
-}
-NAME(WEB49_OPCODE_TEE_LOCAL) {
-    web49_interp_data_t got = LOCAL0;
-    locals[head[1].data.i32_u] = got;
-    locals[head[2].data.i32_u] = got;
-    head += 3;
-    NEXT();
-}
-NAME(WEB49_OPCODE_SET_LOCAL) {
-    locals[head[1].data.i32_u] = LOCAL0;
-    head += 2;
-    NEXT();
-}
 NAME(WEB49_OPCODE_SET_GLOBAL) {
     interp.globals[head[1].data.i32_u] = LOCAL0;
     head += 2;

@@ -102,6 +102,10 @@ web49_block_type_t web49_readbin_block_type(web49_io_input_t *in) {
     web49_block_type_t bt;
     web49_lang_type_t type = web49_readbin_byte(in);
     switch (type) {
+    case WEB49_TYPE_BLOCK_TYPE:
+        bt.type_value = WEB49_TYPE_BLOCK_TYPE;
+        bt.is_type_index = false;
+        break;
     case WEB49_TYPE_I32:
         bt.type_value = WEB49_TYPE_I32;
         bt.is_type_index = false;
@@ -129,7 +133,7 @@ web49_block_type_t web49_readbin_block_type(web49_io_input_t *in) {
     default: {
         web49_io_input_rewind(in);
         bt.is_type_index = true;
-        bt.type_value = web49_readbin_sleb(in);
+        bt.type_index = web49_readbin_sleb(in);
         break;
     }
     }

@@ -7,6 +7,7 @@ typedef uint64_t web49_interp_instr_t;
 
 enum web49_interp_instr_enum_t {
     WEB49_MIN_OPCODE_INTERP = WEB49_MAX_OPCODE_NUM,
+    WEB49_OPCODE_RETURN0,
     WEB49_OPCODE_LOAD_REG,
     WEB49_OPCODE_STORE_REG,
     WEB49_OPCODE_FFI_CALL,
@@ -138,7 +139,7 @@ struct web49_read_block_state_t {
 uint32_t *web49_interp_link_box(void);
 void web49_interp_link_get(web49_read_block_state_t *state, uint32_t out, uint32_t *from);
 web49_interp_t web49_interp_module(web49_module_t mod, const char **args);
-web49_interp_data_t web49_interp_block_run(web49_interp_t *ptr_interp, web49_interp_block_t *block);
+web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_interp_block_t *block);
 uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur, uint32_t local);
 
 void web49_free_interp(web49_interp_t interp);
