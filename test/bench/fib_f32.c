@@ -1,7 +1,7 @@
 
 #include <stdio.h>
 
-double fib(double n) {
+float fib(float n) {
     if (n < 2) {
         return n;
     } else {
@@ -10,10 +10,10 @@ double fib(double n) {
 }
 
 int main(int argc, const char **argv) {
-    double n = 35;
+    float n = 35;
     if (argc > 1) {
-        sscanf(argv[1], "%lf", &n);
+        sscanf(argv[1], "%f", &n);
     }
-    printf("%lf\n", fib(n));
+    printf("%f\n", fib(n));
     return 0;
 }
