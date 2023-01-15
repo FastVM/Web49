@@ -1,17 +1,21 @@
+NAME(WEB49_OPCODE_YIELD_POP) {
+    locals[head[0].data.i32_u] = *--yield_ptr;
+    head += 1;
+    NEXT();
+}
 NAME(WEB49_OPCODE_RETURN0) {
 #if defined(WEB49_PRINT_INSTR)
     depth -= 1;
 #endif
     head = *--returns;
     locals = *--stacks;
-    head += 4;
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE0) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
 #endif
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     head = head[0].ptr;
@@ -21,7 +25,7 @@ NAME(WEB49_OPCODE_CALL_DONE1) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
 #endif
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 1);
@@ -32,7 +36,7 @@ NAME(WEB49_OPCODE_CALL_DONE2) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
 #endif
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 2);
@@ -43,7 +47,7 @@ NAME(WEB49_OPCODE_CALL_DONE4) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
 #endif
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 4);
@@ -54,7 +58,7 @@ NAME(WEB49_OPCODE_CALL_DONE8) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
 #endif
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 8);
@@ -65,7 +69,7 @@ NAME(WEB49_OPCODE_CALL_DONE16) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
 #endif
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 16);
@@ -76,7 +80,7 @@ NAME(WEB49_OPCODE_CALL_DONE32) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
 #endif
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 32);
@@ -87,7 +91,7 @@ NAME(WEB49_OPCODE_CALL_DONE64) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
 #endif
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 64);
@@ -98,7 +102,7 @@ NAME(WEB49_OPCODE_CALL_DONE128) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
 #endif
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 128);
@@ -109,7 +113,7 @@ NAME(WEB49_OPCODE_CALL_DONE256) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
 #endif
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 256);
@@ -120,7 +124,7 @@ NAME(WEB49_OPCODE_CALL_DONE512) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
 #endif
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 512);
@@ -131,7 +135,7 @@ NAME(WEB49_OPCODE_CALL_DONE1024) {
 #if defined(WEB49_PRINT_INSTR)
     depth += 1;
 #endif
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 1024);
@@ -144,7 +148,7 @@ NAME(WEB49_OPCODE_CALL) {
 #endif
     web49_interp_block_t *block = head[0].ptr;
     web49_interp_block_run_comp(block, ptrs, interp);
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + block->nparams, 0, sizeof(web49_interp_data_t) * block->nlocals);
@@ -180,22 +184,12 @@ NAME(WEB49_OPCODE_CALL) {
     head = block->code;
     NEXT();
 }
-NAME(WEB49_OPCODE_LOAD_REG) {
-    locals[head[0].data.i32_u] = reg;
-    head += 1;
-    NEXT();
-}
-NAME(WEB49_OPCODE_STORE_REG) {
-    reg = locals[head[0].data.i32_u];
-    head += 1;
-    NEXT();
-}
 NAME(WEB49_OPCODE_BR) {
     head = head[0].ptr;
     NEXT();
 }
 NAME(WEB49_OPCODE_GET_LOCAL) {
-    // printf("local.get %"PRIu32" -> %"PRIu32"\n", head[1].data.i32_u, head[0].data.i32_u);
+    // fprintf(stderr, "r%"PRIu32" = local.get %"PRIu32" (%"PRIx64")\n", head[1].data.i32_u, head[0].data.i32_u, locals[head[1].data.i32_u].i64_u);
     locals[head[0].data.i32_u] = locals[head[1].data.i32_u];
     head += 2;
     NEXT();

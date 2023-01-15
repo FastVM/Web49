@@ -9,7 +9,6 @@ FAIL bulk
 FAIL call
 FAIL call_indirect
 FAIL comments
-FAIL const
 FAIL conversions
 FAIL custom
 FAIL data
@@ -27,7 +26,6 @@ FAIL float_exprs
 FAIL float_literals
 FAIL float_memory
 FAIL float_misc
-FAIL forward
 FAIL func
 FAIL func_ptrs
 FAIL global
@@ -50,7 +48,6 @@ FAIL memory_grow
 FAIL memory_init
 FAIL memory_redundancy
 FAIL memory_size
-FAIL memory_trap
 FAIL names
 FAIL nop
 FAIL ref_func
@@ -74,6 +71,7 @@ FAIL table_set
 FAIL table_size
 FAIL token
 FAIL tokens
+FAIL type
 FAIL unreachable
 FAIL unreached-invalid
 FAIL unreached-valid
@@ -83,8 +81,10 @@ FAIL utf8-import-field
 FAIL utf8-import-module
 FAIL utf8-invalid-encoding
 PASS address
+PASS const
+PASS forward
 PASS i32
 PASS i64
 PASS int_exprs
+PASS memory_trap
 PASS traps
-PASS type

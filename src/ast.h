@@ -261,7 +261,12 @@ enum web49_opcode_enum_t {
     WEB49_OPCODE_TABLE_GROW,
     WEB49_OPCODE_TABLE_SIZE,
     WEB49_OPCODE_TABLE_FILL,
+    
+    // for the interpreter
     WEB49_OPCODE_BEGIN0,
+    WEB49_OPCODE_YIELD_PUSH,
+    WEB49_OPCODE_YIELD_POP,
+    
     // MEMORY OPCODES
     WEB49_MAX_OPCODE_NUM,
 };
@@ -497,6 +502,7 @@ struct web49_section_import_entry_t {
 };
 
 struct web49_section_import_t {
+    uint32_t num_func_imports;
     uint32_t num_entries;
     web49_section_import_entry_t *entries;
 };
@@ -634,6 +640,7 @@ void web49_debug_print_instr(FILE *file, web49_instr_t instr);
 void web49_free_module(web49_module_t mod);
 void web49_free_instr(web49_instr_t instr);
 web49_section_t web49_module_get_section(web49_module_t mod, web49_section_id_t id);
+uint32_t web49_module_num_func_imports(web49_module_t mod);
 
 #define web49_preamble_init ((web49_preamble_t){{0x00, 0x61, 0x73, 0x6D}, {0x01, 0x00, 0x00, 0x00}})
 #define web49_block_type_value(num_) ((web49_block_type_t) { .type_value = (num_), .is_type_index = false })

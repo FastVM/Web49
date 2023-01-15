@@ -1,7 +1,12 @@
+NAME(WEB49_OPCODE_YIELD_PUSH) {
+    *yield_ptr++ = LOCAL0;
+    head += 1;
+    NEXT();
+}
 NAME(WEB49_OPCODE_CALL_INDIRECT) {
     web49_interp_block_t *block = interp.table[LOCAL0.i32_u];
     web49_interp_block_run_comp(block, ptrs, interp);
-    *returns++ = head;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + block->nparams, 0, sizeof(web49_interp_data_t) * block->nlocals);
@@ -306,6 +311,7 @@ NAME(WEB49_OPCODE_F64_CONVERT_S_I32) {
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_CONVERT_U_I32) {
+    // fprintf(stderr, "%"PRIu32" => %lf\n", LOCAL0.i32_u, (double)LOCAL0.i32_u);
     locals[head[1].data.i32_u].f64 = (double)LOCAL0.i32_u;
     head += 2;
     NEXT();

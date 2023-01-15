@@ -122,7 +122,7 @@ static void web49_debug_print_instr_depth(FILE *file, web49_instr_t instr, size_
             break;
         case WEB49_IMMEDIATE_BLOCK_TYPE:
             if (instr.immediate.block_type.is_type_index) {
-                fprintf(file, " (result %"PRIu32")", instr.immediate.block_type.type_index);
+                fprintf(file, " (type %"PRIu32")", instr.immediate.block_type.type_index);
             } else {
                 switch (instr.immediate.block_type.type_value) {
                     case WEB49_TYPE_I32:
@@ -195,4 +195,22 @@ web49_section_t web49_module_get_section(web49_module_t mod, web49_section_id_t 
         }
     }
     return (web49_section_t){};
+}
+
+uint32_t web49_module_num_func_imports(web49_module_t mod) {
+    for (size_t i = 0; i < mod.num_sections; i++) {
+        if (mod.sections[i].header.id == WEB49_SECTION_ID_IMPORT) {
+            web49_section_import_t *pimport = &mod.sections[i].import_section;
+            if (pimport->num_func_imports == 0) {
+                pimport->num_func_imports = 1;
+                for (size_t j = 0; j < pimport->num_entries; pimport++) {
+                    if (pimport->entries[j].kind == WEB49_EXTERNAL_KIND_FUNCTION) {
+                        pimport->num_func_imports += 1;
+                    }
+                }
+            }
+            return pimport->num_func_imports - 1;
+        }
+    }
+    return 0;
 }

@@ -184,32 +184,37 @@ NAME(WEB49_OPCODE_F32_GE) {
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_EQ) {
+    // fprintf(stderr, "f64.eq %lf == %lf\n", LOCAL0.f64, LOCAL1.f64);
     locals[head[2].data.i32_u].i32_u = (uint32_t)(LOCAL0.f64 == LOCAL1.f64);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_NE) {
-    // printf("%lf != %lf #=> %s\n", LOCAL0.f64, LOCAL1.f64, LOCAL0.f64 != LOCAL1.f64 ? "true" : "false");
+    // fprintf(stderr, "f64.ne %lf != %lf\n", LOCAL0.f64, LOCAL1.f64);
     locals[head[2].data.i32_u].i32_u = (uint32_t)(LOCAL0.f64 != LOCAL1.f64);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_LT) {
+    // fprintf(stderr, "f64.lt %lf < %lf\n", LOCAL0.f64, LOCAL1.f64);
     locals[head[2].data.i32_u].i32_u = (uint32_t)(LOCAL0.f64 < LOCAL1.f64);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_GT) {
+    // fprintf(stderr, "f64.gt %lf > %lf\n", LOCAL0.f64, LOCAL1.f64);
     locals[head[2].data.i32_u].i32_u = (uint32_t)(LOCAL0.f64 > LOCAL1.f64);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_LE) {
+    // fprintf(stderr, "f64.le %lf <= %lf\n", LOCAL0.f64, LOCAL1.f64);
     locals[head[2].data.i32_u].i32_u = (uint32_t)(LOCAL0.f64 <= LOCAL1.f64);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_GE) {
+    // fprintf(stderr, "f64.ge %lf >= %lf\n", LOCAL0.f64, LOCAL1.f64);
     locals[head[2].data.i32_u].i32_u = (uint32_t)(LOCAL0.f64 >= LOCAL1.f64);
     head += 3;
     NEXT();
@@ -295,6 +300,7 @@ NAME(WEB49_OPCODE_IF_I64_GT_U) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_ADD) {
+    // fprintf(stderr, "%"PRIu32" + %"PRIu32, LOCAL0.i32_u, LOCAL1.i32_u);
     locals[head[2].data.i32_u].i32_u = LOCAL0.i32_u + LOCAL1.i32_u;
     head += 3;
     NEXT();
@@ -480,21 +486,25 @@ NAME(WEB49_OPCODE_F32_COPYSIGN) {
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_ADD) {
+    // fprintf(stderr, "f64.add %lf + %lf\n", LOCAL0.f64, LOCAL1.f64);
     locals[head[2].data.i32_u].f64 = LOCAL0.f64 + LOCAL1.f64;
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_SUB) {
+    // fprintf(stderr, "f64.sub %lf - %lf\n", LOCAL0.f64, LOCAL1.f64);
     locals[head[2].data.i32_u].f64 = LOCAL0.f64 - LOCAL1.f64;
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_MUL) {
+    // fprintf(stderr, "f64.mul %lf * %lf\n", LOCAL0.f64, LOCAL1.f64);
     locals[head[2].data.i32_u].f64 = LOCAL0.f64 * LOCAL1.f64;
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_DIV) {
+    // fprintf(stderr, "f64.div %lf / %lf\n", LOCAL0.f64, LOCAL1.f64);
     locals[head[2].data.i32_u].f64 = LOCAL0.f64 / LOCAL1.f64;
     head += 3;
     NEXT();
