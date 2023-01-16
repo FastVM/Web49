@@ -874,17 +874,32 @@ void web49_readwat_state_table_entry(web49_readwat_state_t *out, web49_readwat_e
     web49_type_table_t entry;
     entry.limits.maximum = UINT32_MAX;
     bool init = false;
+    int32_t ent = 0;
     for (uint64_t i = 0; i < expr.fun_nargs; i++) {
         web49_readwat_expr_t arg = expr.fun_args[i];
         if (arg.tag == WEB49_READWAT_EXPR_TAG_FUN) {
             if (!strcmp(arg.fun_fun, "elem")) {
-                entry.limits.initial += 1;
+                web49_section_element_entry_t eentry;
+                eentry.index = out->stable.num_entries;
+                eentry.offset = (web49_instr_t) {.opcode = WEB49_OPCODE_I32_CONST, .immediate.id = WEB49_IMMEDIATE_VARINT32, .immediate.varint32 = ent };
+                eentry.num_elems = 0;
+                eentry.elems = web49_malloc(sizeof(uint32_t) * arg.fun_nargs);
+                for (uint64_t i = 0; i < arg.fun_nargs; i++) {
+                    entry.limits.initial += 1;
+                    ent += 1;
+                    eentry.elems[eentry.num_elems++] = web49_readwat_expr_to_u64(&out->func_table, arg.fun_args[i]);
+                }
+                if (out->selement.num_entries + 2 >= out->alloc_element) {
+                    out->alloc_element = (out->selement.num_entries + 2) * 2;
+                    out->selement.entries = web49_realloc(out->selement.entries, sizeof(web49_section_element_entry_t) * out->alloc_element);
+                }
+                out->selement.entries[out->selement.num_entries++] = eentry;
                 continue;
             }
-            fprintf(stderr, "did not expect a paren in table (%s ...)\n", arg.fun_fun);
+            fprintf(stderr, "did not expect (%s ...) paren in (table ...)\n", arg.fun_fun);
             exit(1);
         } else if (arg.tag == WEB49_READWAT_EXPR_TAG_STR) {
-            fprintf(stderr, "did not expect a string in table\n");
+            fprintf(stderr, "did not expect a string in (table ...)\n");
             exit(1);
         }
         if (isdigit(arg.sym[0])) {
@@ -1296,11 +1311,11 @@ void web49_readwat_state_export_entry(web49_readwat_state_t *out, web49_readwat_
 
 void web49_readwat_state_elem_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr) {
     web49_section_element_entry_t entry;
-    entry.index = out->selement.num_entries;
+    entry.index = out->stable.num_entries-1;
     entry.offset = web49_readwat_instr(out, expr.fun_args[0]);
     entry.num_elems = 0;
-    entry.elems = web49_malloc(sizeof(uint64_t) * expr.fun_nargs);
-    for (uint64_t i = 2; i < expr.fun_nargs; i++) {
+    entry.elems = web49_malloc(sizeof(uint32_t) * expr.fun_nargs);
+    for (uint64_t i = 1; i < expr.fun_nargs; i++) {
         entry.elems[entry.num_elems++] = web49_readwat_expr_to_u64(&out->func_table, expr.fun_args[i]);
     }
     if (out->selement.num_entries + 2 >= out->alloc_element) {

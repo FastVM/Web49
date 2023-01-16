@@ -838,6 +838,9 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
     [WEB49_OPCODE_YIELD_POP] = (web49_table_stack_effect_t){
         .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
     },
+    [WEB49_OPCODE_NOP1] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+    },
 };
 
 const size_t web49_opcode_memsize[WEB49_MAX_OPCODE_NUM] = {
@@ -3032,6 +3035,8 @@ const char *web49_opcode_to_name(web49_opcode_t opcode) {
             return "web49.yield_push";
         case WEB49_OPCODE_YIELD_POP:
             return "web49.yield_pop";
+        case WEB49_OPCODE_NOP1:
+            return "web49.nop1";
         default:
             return NULL;
     }

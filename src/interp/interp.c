@@ -369,6 +369,10 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         __builtin_trap();
     } 
     state->depth -= cur.nargs;
+    if (cur.opcode == WEB49_OPCODE_NOP1) {
+        state->depth += 1;
+        return UINT32_MAX;
+    }
     if (cur.opcode == WEB49_OPCODE_NOP || cur.opcode == WEB49_OPCODE_UNREACHABLE) {
         return UINT32_MAX;
     }
@@ -376,25 +380,14 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         return UINT32_MAX;
     }
     if (cur.opcode == WEB49_OPCODE_CALL_INDIRECT) {
-        // build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL_INDIRECT);
-        // build->code[build->ncode++].data.i32_u = args[cur.nargs - 1];
-        // build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
-        // if (local == UINT32_MAX) {
-        //     uint32_t out = state->depth + state->nlocals;
-        //     build->code[build->ncode++].data.i32_u = out;
-        //     build->code[build->ncode++].data.i32_u = cur.nargs - 1;
-        //     state->depth += 1;
-        //     return out;
-        // } else {
-        //     build->code[build->ncode++].data.i32_u = local;
-        //     build->code[build->ncode++].data.i32_u = cur.nargs - 1;
-        //     state->depth += 1;
-        //     return local;
-        // }
-        __builtin_trap();
+        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL_INDIRECT);
+        build->code[build->ncode++].data.i32_u = args[cur.nargs - 1];
+        build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
+        build->code[build->ncode++].data.i32_u = cur.nargs - 1;
+        return UINT32_MAX;
     }
     if (cur.opcode == WEB49_OPCODE_CALL) {
-        uint32_t nreturns = (uint32_t) state->interp->funcs[cur.immediate.varint32].nreturns;
+        // uint32_t nreturns = (uint32_t) state->interp->funcs[cur.immediate.varint32].nreturns;
         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL);
         build->code[build->ncode++].ptr = &state->interp->funcs[cur.immediate.varint32];
         build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
