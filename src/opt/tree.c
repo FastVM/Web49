@@ -24,27 +24,10 @@ static void web49_check(web49_instr_t cur) {
 }
 
 web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **head) {
-    web49_section_type_t type_section;
-    web49_section_function_t function_section;
-    web49_section_import_t import_section;
-    int32_t num_funcs = 0;
-    for (uint64_t s = 0; s < mod->num_sections; s++) {
-        web49_section_t cur = mod->sections[s];
-        if (cur.header.id == WEB49_SECTION_ID_TYPE) {
-            type_section = cur.type_section;
-        }
-        if (cur.header.id == WEB49_SECTION_ID_FUNCTION) {
-            function_section = cur.function_section;
-        }
-        if (cur.header.id == WEB49_SECTION_ID_IMPORT) {
-            import_section = cur.import_section;
-            for (uint64_t j = 0; j < import_section.num_entries; j++) {
-                if (import_section.entries[j].kind == WEB49_EXTERNAL_KIND_FUNCTION) {
-                    num_funcs++;
-                }
-            }
-        }
-    }
+    web49_section_import_t import_section = web49_module_get_section(*mod, WEB49_SECTION_ID_IMPORT).import_section;
+    web49_section_function_t function_section = web49_module_get_section(*mod, WEB49_SECTION_ID_FUNCTION).function_section;
+    web49_section_type_t type_section = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).type_section;
+    int32_t num_funcs = web49_module_num_func_imports(*mod);
     web49_instr_t ret;
     uint64_t nalloc = 8;
     ret.nargs = 0;
@@ -337,16 +320,34 @@ void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_block_l
         }
         web49_opt_untree_emit_push(cur, len, out, alloc);
         web49_section_type_t type = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).type_section;
-        web49_section_type_entry_t ent;
+        web49_section_type_entry_t ent = (web49_section_type_entry_t) {0};
         if (cur.opcode == WEB49_OPCODE_CALL_INDIRECT) {
             ent = type.entries[cur.immediate.call_indirect.index];
         } else if (cur.opcode == WEB49_OPCODE_CALL) {
-            web49_section_function_t func = web49_module_get_section(*mod, WEB49_SECTION_ID_FUNCTION).function_section;
-            uint32_t num_func_imports = web49_module_num_func_imports(*mod);
-            ent = type.entries[func.entries[cur.immediate.varuint32]];
+            uint32_t thresh = web49_module_num_func_imports(*mod);
+            if (cur.immediate.varuint32 < thresh) {
+                web49_section_import_t imports = web49_module_get_section(*mod, WEB49_SECTION_ID_IMPORT).import_section;
+                size_t c = 0;
+                for (size_t i = 0; i < imports.num_entries; i++) {
+                    if (c == cur.immediate.varuint32) {
+                        ent = type.entries[imports.entries[i].func_type.data];                        
+                        goto found_call_ent;
+                    }
+                    if (imports.entries[i].kind == WEB49_EXTERNAL_KIND_FUNCTION) {
+                        c += 1;
+                    }
+                }
+                fprintf(stderr, "could not find (func %zu)\n", (size_t) cur.immediate.varuint32);
+                __builtin_trap();
+            } else {
+                web49_section_function_t func = web49_module_get_section(*mod, WEB49_SECTION_ID_FUNCTION).function_section;
+                uint32_t num_func_imports = web49_module_num_func_imports(*mod);
+                ent = type.entries[func.entries[cur.immediate.varuint32 - thresh]];
+            }
         } else {
             __builtin_trap();
         }
+    found_call_ent:;
         for (uint32_t i = 0; i < ent.num_returns; i++) {
             web49_opt_untree_emit_push((web49_instr_t) {.opcode = WEB49_OPCODE_YIELD_POP}, len, out, alloc);
         }

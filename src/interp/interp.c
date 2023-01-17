@@ -354,15 +354,15 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         args[i] = web49_interp_read_instr(state, cur.args[i], UINT32_MAX);
         uint32_t end = state->depth;
         if (begin + 1 != end) {
-            // fprintf(stderr, "error: the below instruction did not yield exactly 1 value (debug: %"PRIu32"+1 != %"PRIu32")\n", begin, end);
-            // web49_debug_print_instr(stderr, cur.args[i]);
-            // __builtin_trap();
-            state->depth = begin + 1;
+            fprintf(stderr, "error: the below instruction did not yield exactly 1 value (debug: %"PRIu32"+1 != %"PRIu32")\n", begin, end);
+            web49_debug_print_instr(stderr, cur.args[i]);
+            __builtin_trap();
+            // state->depth = begin + 1;
         }
     }
     uint32_t outer_end = state->depth;
     if (outer_begin + cur.nargs != outer_end) {
-        fprintf(stderr, "error: stack should have been at %zu, but was at %zu\n", outer_begin + cur.nargs, outer_end);
+        fprintf(stderr, "error: stack should have been at %zu, but was at %zu\n", (size_t) (outer_begin + cur.nargs), (size_t) outer_end);
         web49_debug_print_instr(stderr, cur);
         __builtin_trap();
     }
@@ -383,7 +383,6 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     if (cur.opcode == WEB49_OPCODE_CALL_INDIRECT) {
         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL_INDIRECT);
         build->code[build->ncode++].data.i32_u = args[cur.nargs - 1];
-        build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
         build->code[build->ncode++].data.i32_u = cur.nargs - 1;
         return UINT32_MAX;
     }
@@ -538,7 +537,7 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
             state.nlocals = block->nparams + block->nlocals;
             uint32_t ret = UINT32_MAX;
             for (uint64_t i = 0; i < block->num_instrs; i++) {
-                // web49_debug_print_instr(stderr, block->instrs[i]);
+                web49_debug_print_instr(stderr, block->instrs[i]);
                 uint32_t tmp = web49_interp_read_instr(&state, block->instrs[i], UINT32_MAX);
                 if (tmp != UINT32_MAX) {
                     ret = tmp;
@@ -769,7 +768,7 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
         TABLE_PUT0(WEB49_OPCODE_RETURN0),
         TABLE_PUT1(WEB49_OPCODE_YIELD_PUSH),
         TABLE_PUT0(WEB49_OPCODE_YIELD_POP),
-#undef TABLE_POP
+#undef TABLE_PUTV
 #undef TABLE_PUT1
 #undef TABLE_PUT2
         [WEB49_OPCODE_MEMORY_INIT] = &&DO_WEB49_OPCODE_MEMORY_INIT,
@@ -869,11 +868,9 @@ exitv:
     LABEL(WEB49_OPCODE_FFI_CALL) {
         interp.locals = locals;
         web49_env_func_t func = head[0].ptr;
-        web49_interp_data_t data = func(interp);
+        *yield_ptr++ = func(interp);
         head = *--returns;
         locals = *--stacks;
-        locals[head[2].data.i32_u] = data;
-        head += 4;
         NEXT();
     }
 }

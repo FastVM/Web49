@@ -171,6 +171,9 @@ static void web49_debug_print_instr_depth(FILE *file, web49_instr_t instr, size_
         case WEB49_IMMEDIATE_CALL_INDIRECT:
             break;
         case WEB49_IMMEDIATE_MEMORY_IMMEDIATE:
+            if (instr.immediate.memory_immediate.offset != 0) {
+                fprintf(file, " offset=%"PRIu32, instr.immediate.memory_immediate.offset);
+            }
             break;
         default:
             fprintf(file, " ...");
@@ -203,7 +206,7 @@ uint32_t web49_module_num_func_imports(web49_module_t mod) {
             web49_section_import_t *pimport = &mod.sections[i].import_section;
             if (pimport->num_func_imports == 0) {
                 pimport->num_func_imports = 1;
-                for (size_t j = 0; j < pimport->num_entries; pimport++) {
+                for (size_t j = 0; j < pimport->num_entries; j++) {
                     if (pimport->entries[j].kind == WEB49_EXTERNAL_KIND_FUNCTION) {
                         pimport->num_func_imports += 1;
                     }

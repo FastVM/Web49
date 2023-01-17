@@ -6,7 +6,7 @@ NAME(WEB49_OPCODE_YIELD_PUSH) {
 NAME(WEB49_OPCODE_CALL_INDIRECT) {
     web49_interp_block_t *block = interp.table[LOCAL0.i32_u];
     web49_interp_block_run_comp(block, ptrs, interp);
-    *returns++ = head + 3;
+    *returns++ = head + 2;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + block->nparams, 0, sizeof(web49_interp_data_t) * block->nlocals);
@@ -39,6 +39,7 @@ NAME(WEB49_OPCODE_SET_GLOBAL) {
 }
 NAME(WEB49_OPCODE_I32_LOAD) {
     locals[head[1].data.i32_u].i32_u = WEB49_INTERP_READ(uint32_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
+    // printf("[4](0x%"PRIx32" + 0x%"PRIx32") = 0x%"PRIx32"\n", LOCAL0.i32_u, head[2].data.i32_u, locals[head[1].data.i32_u].i32_u);
     head += 3;
     NEXT();
 }

@@ -525,7 +525,10 @@ NAME(WEB49_OPCODE_F64_COPYSIGN) {
     NEXT();
 }
 NAME(WEB49_OPCODE_MEMORY_FILL) {
-    memset(WEB49_INTERP_ADDR(void *, interp, LOCAL0.i32_u, LOCAL1.i32_u), LOCAL1.i32_u, locals[head[2].data.i32_u].i32_u);
+    uint32_t size = LOCAL0.i32_u;
+    uint32_t byte = LOCAL1.i32_u;
+    uint32_t dest = locals[head[2].data.i32_u].i32_u;
+    memset(WEB49_INTERP_ADDR(void *, interp, dest, size), byte, size);
     head += 3;
     NEXT();
 }
