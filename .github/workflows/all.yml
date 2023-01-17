@@ -50,7 +50,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - run: sudo apt install libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev emscripten
+      - run: sudo apt install --fix-missing libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev emscripten
       - run: make -j4 CC=gcc OPT='-O3 -fomit-frame-pointer -flto' install INSTALL=web49-linux-release
       - uses: actions/upload-artifact@v3
         with:
@@ -62,7 +62,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - run: sudo apt install libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev emscripten
+      - run: sudo apt install --fix-missing libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev emscripten
       - run: make -j4 CC=cc OPT='-g3' CFLAGS='-Wall -Wextra -Werror -Wno-unused-parameter' install INSTALL=web49-linux-debug
       - uses: actions/upload-artifact@v3
         with:
