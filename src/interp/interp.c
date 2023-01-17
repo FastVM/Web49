@@ -354,9 +354,10 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         args[i] = web49_interp_read_instr(state, cur.args[i], UINT32_MAX);
         uint32_t end = state->depth;
         if (begin + 1 != end) {
-            fprintf(stderr, "error: the below instruction did not yield exactly 1 value (debug: %"PRIu32"+1 != %"PRIu32")\n", begin, end);
-            web49_debug_print_instr(stderr, cur.args[i]);
-            __builtin_trap();
+            // fprintf(stderr, "error: the below instruction did not yield exactly 1 value (debug: %"PRIu32"+1 != %"PRIu32")\n", begin, end);
+            // web49_debug_print_instr(stderr, cur.args[i]);
+            // __builtin_trap();
+            state->depth = begin + 1;
         }
     }
     uint32_t outer_end = state->depth;
@@ -458,7 +459,6 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         case WEB49_IMMEDIATE_VARUINT1:
             break;
         case WEB49_IMMEDIATE_VARUINT32:
-            // fprintf(stderr, "%s %zu\n", web49_opcode_to_name(cur.opcode), (size_t) cur.immediate.varuint32);
             build->code[build->ncode++].data.i32_u = cur.immediate.varuint32;
             break;
         case WEB49_IMMEDIATE_VARUINT64:

@@ -553,6 +553,7 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                 entry.instrs[entry.num_instrs++] = web49_readwat_instr(out, code);
             } else if (code.tag == WEB49_READWAT_EXPR_TAG_SYM && code.sym[0] == '$') {
                 // nothing goes here
+                web49_readwat_table_set(&out->func_table, &code.sym[1], out->scode.num_entries);
             } else if (code.tag == WEB49_READWAT_EXPR_TAG_SYM) {
                 web49_opcode_t opcode = web49_name_to_opcode(code.sym);
                 if (opcode < WEB49_MAX_OPCODE_NUM) {
@@ -887,7 +888,9 @@ void web49_readwat_state_table_entry(web49_readwat_state_t *out, web49_readwat_e
                 for (uint64_t i = 0; i < arg.fun_nargs; i++) {
                     entry.limits.initial += 1;
                     ent += 1;
-                    eentry.elems[eentry.num_elems++] = web49_readwat_expr_to_u64(&out->func_table, arg.fun_args[i]);
+                    uint64_t n = web49_readwat_expr_to_u64(&out->func_table, arg.fun_args[i]);
+                    fprintf(stderr, "func %zu\n", (size_t) n);
+                    eentry.elems[eentry.num_elems++] = n;
                 }
                 if (out->selement.num_entries + 2 >= out->alloc_element) {
                     out->alloc_element = (out->selement.num_entries + 2) * 2;
@@ -1387,8 +1390,9 @@ void web49_readwat_state_toplevel(web49_readwat_state_t *out, web49_readwat_expr
         web49_readwat_expr_t type = expr.fun_args[i];
         if (!strcmp(type.fun_fun, "func")) {
             if (type.fun_nargs != 0 && type.fun_args[0].tag == WEB49_READWAT_EXPR_TAG_SYM && type.fun_args[0].sym[0] == '$') {
-                web49_readwat_table_set(&out->func_table, &type.fun_args[0].sym[1], cfunc++);
+                web49_readwat_table_set(&out->func_table, &type.fun_args[0].sym[1], cfunc);
             }
+            cfunc += 1;
         }
     }
     for (uint64_t i = 0; i < expr.fun_nargs; i++) {

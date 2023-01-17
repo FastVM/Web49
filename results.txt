@@ -1,6 +1,5 @@
 FAIL binary
 FAIL binary-leb128
-FAIL block
 FAIL br
 FAIL br_if
 FAIL br_table
@@ -35,7 +34,6 @@ FAIL int_literals
 FAIL labels
 FAIL left-to-right
 FAIL linking
-FAIL load
 FAIL local_get
 FAIL local_set
 FAIL local_tee
@@ -43,12 +41,10 @@ FAIL loop
 FAIL memory
 FAIL memory_copy
 FAIL memory_fill
-FAIL memory_grow
 FAIL memory_init
 FAIL memory_redundancy
 FAIL memory_size
 FAIL names
-FAIL nop
 FAIL ref_func
 FAIL ref_is_null
 FAIL ref_null
@@ -69,7 +65,6 @@ FAIL table_set
 FAIL table_size
 FAIL token
 FAIL tokens
-FAIL unreachable
 FAIL unreached-invalid
 FAIL unreached-valid
 FAIL unwind
@@ -79,12 +74,17 @@ FAIL utf8-import-module
 FAIL utf8-invalid-encoding
 PASS address
 PASS align
+PASS block
 PASS const
 PASS forward
 PASS i32
 PASS i64
 PASS int_exprs
+PASS load
+PASS memory_grow
 PASS memory_trap
+PASS nop
 PASS store
 PASS traps
 PASS type
+PASS unreachable

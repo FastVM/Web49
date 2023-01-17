@@ -28,7 +28,7 @@ NAME(WEB49_OPCODE_CALL_DONE1) {
     *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
-    memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 1);
+    locals[head[3].data.i32_u].i64_u = 0;
     head = head[0].ptr;
     NEXT();
 }
@@ -39,7 +39,9 @@ NAME(WEB49_OPCODE_CALL_DONE2) {
     *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
-    memset(locals + head[3].data.i32_u, 0, sizeof(web49_interp_data_t) * 2);
+    web49_interp_data_t *data = &locals[head[3].data.i32_u]; 
+    data[0].i64_u = 0;
+    data[1].i64_u = 0;
     head = head[0].ptr;
     NEXT();
 }

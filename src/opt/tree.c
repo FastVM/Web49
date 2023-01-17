@@ -410,7 +410,7 @@ void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t *entry,
     // }
     // fprintf(stderr, " ---3---\n");
     web49_instr_t instr = web49_opt_tree_read_block(mod, &head);
-    web49_debug_print_instr(stderr, instr);
+    // web49_debug_print_instr(stderr, instr);
     // fprintf(stderr, " ---4---\n\n\n");
     entry->instrs = web49_realloc(entry->instrs, sizeof(web49_instr_t) * 1);
     entry->num_instrs = 1;

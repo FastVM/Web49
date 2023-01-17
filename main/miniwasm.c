@@ -96,8 +96,8 @@ int web49_file_main(const char *inarg, const char **args) {
                                 fprintf(stderr, "wasm spec test: invoke %s\n", entry.field_str);
                             } else {
                                 for (size_t k = 1; k < todo.fun_nargs; k++) {
-                                    // int n = todo.fun_nargs-k-1;
-                                    int n = k-1;
+                                    int n = todo.fun_nargs-k-1;
+                                    // int n = k-1;
                                     web49_readwat_expr_t wants = todo.fun_args[k];
                                     if (wants.tag != WEB49_READWAT_EXPR_TAG_FUN) {
                                     } else if (!strcmp(wants.fun_fun, "i32.const")) {
