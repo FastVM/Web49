@@ -10,7 +10,7 @@ Web49 contains a few tools for working with WebAssembly.
     * miniwasm
         * [fast](#benchmarks) wasm interpreter
             * uses technology from [minivm](https://github.com/fastvm/minivm)
-        * suports multiple wasm formats
+        * supports multiple wasm formats
             * wasm binary format: ~100% complete
             * wasm text format: ~95% complete
             * wasm spect test: ~75% complete
