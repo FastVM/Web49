@@ -70,11 +70,12 @@ void web49_readwat_skip(web49_io_input_t *in) {
             if (first == ';') {
                 while (true) {
                     first = web49_io_input_fgetc(in);
-                    if (first == ';') {
-                        first = web49_io_input_fgetc(in);
-                        if (first == ')') {
-                            break;
-                        }
+                    if (first != ';') {
+                        continue;
+                    }
+                    first = web49_io_input_fgetc(in);
+                    if (first == ')') {
+                        break;
                     }
                 }
                 continue;
