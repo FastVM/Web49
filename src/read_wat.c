@@ -55,10 +55,31 @@ void web49_readwat_skip(web49_io_input_t *in) {
             continue;
         }
         if (first == ';') {
+            first = web49_io_input_fgetc(in);
+            if (first != ';') {
+                web49_io_input_rewind(in);
+                break;
+            }
             while (first != '\n') {
                 first = web49_io_input_fgetc(in);
             }
             continue;
+        }
+        if (first == '(') {
+            first = web49_io_input_fgetc(in);
+            if (first == ';') {
+                while (true) {
+                    first = web49_io_input_fgetc(in);
+                    if (first == ';') {
+                        first = web49_io_input_fgetc(in);
+                        if (first == ')') {
+                            break;
+                        }
+                    }
+                }
+                continue;
+            }
+            web49_io_input_rewind(in);
         }
         web49_io_input_rewind(in);
         break;
