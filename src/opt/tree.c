@@ -184,8 +184,9 @@ struct web49_block_list_t;
 typedef struct web49_block_list_t web49_block_list_t;
 
 struct web49_block_list_t {
-    uint32_t nparams;
-    uint32_t nreturns;
+    uint32_t nparams: 16;
+    uint32_t nreturns: 15;
+    bool ret: 1;
 };
 
 void web49_opt_untree_emit_push(web49_instr_t cur, size_t *len, web49_instr_t **out, size_t *alloc) {
@@ -193,7 +194,7 @@ void web49_opt_untree_emit_push(web49_instr_t cur, size_t *len, web49_instr_t **
         *alloc = (*len + 2) * 2;
         *out = web49_realloc(*out, sizeof(web49_instr_t) * *alloc);
     }
-    (*out)[(*len)++] = (web49_instr_t) {
+    (*out)[(*len)++] = (web49_instr_t){
         .opcode = cur.opcode,
         .immediate = cur.immediate,
     };
@@ -212,9 +213,11 @@ void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_block_l
     size_t nargs = cur.nargs;
     cur.nargs = 0;
     if (cur.opcode == WEB49_OPCODE_IF) {
-        web49_block_list_t list;
+        web49_block_list_t list = (web49_block_list_t) {
+            .ret = false,
+        };
         web49_block_type_t type = cur.immediate.block_type;
-        cur.immediate.block_type = (web49_block_type_t) {
+        cur.immediate.block_type = (web49_block_type_t){
             .type_value = WEB49_TYPE_BLOCK_TYPE,
             .is_type_index = false,
         };
@@ -240,9 +243,9 @@ void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_block_l
         if (list.nparams == 0) {
             web49_opt_untree_emit_push(cur, len, out, alloc);
         } else {
-            web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_SET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = list.nparams+MAX_LOCAL}, len, out, alloc);
+            web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_SET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = list.nparams + MAX_LOCAL}, len, out, alloc);
             web49_opt_untree_emit_counting(WEB49_OPCODE_YIELD_PUSH, list.nparams, len, out, alloc);
-            web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_GET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = list.nparams+MAX_LOCAL}, len, out, alloc);
+            web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_GET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = list.nparams + MAX_LOCAL}, len, out, alloc);
             web49_opt_untree_emit_push(cur, len, out, alloc);
         }
         for (size_t i = 0; i < nargs; i++) {
@@ -257,6 +260,10 @@ void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_block_l
         } else {
             head -= cur.immediate.varuint32;
         }
+        if (head->ret) {
+            fprintf(stderr, "br.as.ret\n");
+            __builtin_trap();
+        }
         for (size_t i = 0; i < nargs; i++) {
             web49_opt_untree(mod, func_nreturns, pblocks, cur.args[i], len, out, alloc);
         }
@@ -264,16 +271,18 @@ void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_block_l
             web49_opt_untree_emit_counting(WEB49_OPCODE_YIELD_PUSH, head->nreturns, len, out, alloc);
             web49_opt_untree_emit_push(cur, len, out, alloc);
         } else {
-            web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_SET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = head->nreturns+MAX_LOCAL}, len, out, alloc);
+            web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_SET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = head->nreturns + MAX_LOCAL}, len, out, alloc);
             web49_opt_untree_emit_counting(WEB49_OPCODE_YIELD_PUSH, head->nreturns, len, out, alloc);
-            web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_GET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = head->nreturns+MAX_LOCAL}, len, out, alloc);
+            web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_GET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = head->nreturns + MAX_LOCAL}, len, out, alloc);
             web49_opt_untree_emit_push(cur, len, out, alloc);
             web49_opt_untree_emit_counting(WEB49_OPCODE_YIELD_POP, head->nreturns, len, out, alloc);
         }
     } else if (cur.opcode == WEB49_OPCODE_BLOCK || cur.opcode == WEB49_OPCODE_LOOP) {
-        web49_block_list_t list;
+        web49_block_list_t  list = (web49_block_list_t) {
+            .ret = false,
+        };
         web49_block_type_t type = cur.immediate.block_type;
-        cur.immediate.block_type = (web49_block_type_t) {
+        cur.immediate.block_type = (web49_block_type_t){
             .type_value = WEB49_TYPE_BLOCK_TYPE,
             .is_type_index = false,
         };
@@ -320,7 +329,7 @@ void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_block_l
         }
         web49_opt_untree_emit_push(cur, len, out, alloc);
         web49_section_type_t type = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).type_section;
-        web49_section_type_entry_t ent = (web49_section_type_entry_t) {0};
+        web49_section_type_entry_t ent = (web49_section_type_entry_t){0};
         if (cur.opcode == WEB49_OPCODE_CALL_INDIRECT) {
             ent = type.entries[cur.immediate.call_indirect.index];
         } else if (cur.opcode == WEB49_OPCODE_CALL) {
@@ -330,14 +339,14 @@ void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_block_l
                 size_t c = 0;
                 for (size_t i = 0; i < imports.num_entries; i++) {
                     if (c == cur.immediate.varuint32) {
-                        ent = type.entries[imports.entries[i].func_type.data];                        
+                        ent = type.entries[imports.entries[i].func_type.data];
                         goto found_call_ent;
                     }
                     if (imports.entries[i].kind == WEB49_EXTERNAL_KIND_FUNCTION) {
                         c += 1;
                     }
                 }
-                fprintf(stderr, "could not find (func %zu)\n", (size_t) cur.immediate.varuint32);
+                fprintf(stderr, "could not find (func %zu)\n", (size_t)cur.immediate.varuint32);
                 __builtin_trap();
             } else {
                 web49_section_function_t func = web49_module_get_section(*mod, WEB49_SECTION_ID_FUNCTION).function_section;
@@ -349,7 +358,7 @@ void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_block_l
         }
     found_call_ent:;
         for (uint32_t i = 0; i < ent.num_returns; i++) {
-            web49_opt_untree_emit_push((web49_instr_t) {.opcode = WEB49_OPCODE_YIELD_POP}, len, out, alloc);
+            web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_YIELD_POP}, len, out, alloc);
         }
     } else if (cur.opcode == WEB49_OPCODE_RETURN) {
         for (size_t i = 0; i < nargs; i++) {
@@ -369,7 +378,10 @@ void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_block_l
         //     web49_opt_untree_emit_counting(WEB49_OPCODE_YIELD_POP, func_nreturns, len, out, alloc);
         // }
         for (size_t i = 0; i < func_nreturns; i++) {
-            web49_opt_untree_emit_push((web49_instr_t){ .opcode = WEB49_OPCODE_YIELD_PUSH, }, len, out, alloc);
+            web49_opt_untree_emit_push((web49_instr_t){
+                                           .opcode = WEB49_OPCODE_YIELD_PUSH,
+                                       },
+                                       len, out, alloc);
         }
         web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_RETURN}, len, out, alloc);
     } else {
@@ -386,10 +398,11 @@ void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t *entry,
     size_t len = 0;
     web49_block_list_t stack_blocks[256];
     web49_block_list_t *blocks = &stack_blocks[0];
-    blocks[0] = (web49_block_list_t) {
+    blocks[0] = (web49_block_list_t){
         // .nparams = type.num_params,
-        .nparams = 0,
-        .nreturns = 0,
+        .nparams = type.num_params,
+        .nreturns = type.num_returns,
+        .ret = true,
     };
     // fprintf(stderr, " ---0---\n");
     // web49_opt_untree_emit_push((web49_instr_t) {.opcode = WEB49_OPCODE_BLOCK}, &len, &head, &alloc);
@@ -402,7 +415,7 @@ void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t *entry,
     //     web49_debug_print_instr(stderr, head[i]);
     // }
     web49_instr_t bump = head[--len];
-    web49_opt_untree(mod, type.num_returns, &blocks, (web49_instr_t) {.opcode = WEB49_OPCODE_RETURN}, &len, &head, &alloc);
+    web49_opt_untree(mod, type.num_returns, &blocks, (web49_instr_t){.opcode = WEB49_OPCODE_RETURN}, &len, &head, &alloc);
     web49_opt_untree_emit_push(bump, &len, &head, &alloc);
     // fprintf(stderr, " ---2---\n");
     // for (size_t i = 0; i < len; i++) {

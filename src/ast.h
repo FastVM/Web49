@@ -261,13 +261,13 @@ enum web49_opcode_enum_t {
     WEB49_OPCODE_TABLE_GROW,
     WEB49_OPCODE_TABLE_SIZE,
     WEB49_OPCODE_TABLE_FILL,
-    
+
     // for the interpreter
     WEB49_OPCODE_BEGIN0,
     WEB49_OPCODE_NOP1,
     WEB49_OPCODE_YIELD_PUSH,
     WEB49_OPCODE_YIELD_POP,
-    
+
     // MEMORY OPCODES
     WEB49_MAX_OPCODE_NUM,
 };
@@ -420,7 +420,7 @@ struct web49_block_type_t {
         web49_lang_type_t type_value;
         uint32_t type_index;
     };
-    bool is_type_index;    
+    bool is_type_index;
 };
 
 struct web49_memory_immediate_t {
@@ -644,6 +644,6 @@ web49_section_t web49_module_get_section(web49_module_t mod, web49_section_id_t 
 uint32_t web49_module_num_func_imports(web49_module_t mod);
 
 #define web49_preamble_init ((web49_preamble_t){{0x00, 0x61, 0x73, 0x6D}, {0x01, 0x00, 0x00, 0x00}})
-#define web49_block_type_value(num_) ((web49_block_type_t) { .type_value = (num_), .is_type_index = false })
+#define web49_block_type_value(num_) ((web49_block_type_t){.type_value = (num_), .is_type_index = false})
 
 #endif

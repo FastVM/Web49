@@ -122,7 +122,7 @@ static void web49_debug_print_instr_depth(FILE *file, web49_instr_t instr, size_
             break;
         case WEB49_IMMEDIATE_BLOCK_TYPE:
             if (instr.immediate.block_type.is_type_index) {
-                fprintf(file, " (type %"PRIu32")", instr.immediate.block_type.type_index);
+                fprintf(file, " (type %" PRIu32 ")", instr.immediate.block_type.type_index);
             } else {
                 switch (instr.immediate.block_type.type_value) {
                     case WEB49_TYPE_I32:
@@ -172,7 +172,7 @@ static void web49_debug_print_instr_depth(FILE *file, web49_instr_t instr, size_
             break;
         case WEB49_IMMEDIATE_MEMORY_IMMEDIATE:
             if (instr.immediate.memory_immediate.offset != 0) {
-                fprintf(file, " offset=%"PRIu32, instr.immediate.memory_immediate.offset);
+                fprintf(file, " offset=%" PRIu32, instr.immediate.memory_immediate.offset);
             }
             break;
         default:

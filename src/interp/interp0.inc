@@ -39,7 +39,7 @@ NAME(WEB49_OPCODE_CALL_DONE2) {
     *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
-    web49_interp_data_t *data = &locals[head[2].data.i32_u]; 
+    web49_interp_data_t *data = &locals[head[2].data.i32_u];
     data[0].i64_u = 0;
     data[1].i64_u = 0;
     head = head[0].ptr;
@@ -197,9 +197,9 @@ NAME(WEB49_OPCODE_GET_LOCAL) {
     NEXT();
 }
 // NAME(WEB49_OPCODE_SET_LOCAL) {
-    // locals[head[1].data.i32_u] = locals[head[0].data.i32_u];
-    // head += 2;
-    // NEXT();
+// locals[head[1].data.i32_u] = locals[head[0].data.i32_u];
+// head += 2;
+// NEXT();
 // }
 NAME(WEB49_OPCODE_GET_GLOBAL) {
     locals[head[0].data.i32_u] = interp.globals[head[1].data.i32_u];

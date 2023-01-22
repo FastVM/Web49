@@ -54,7 +54,7 @@ void web49_wat_print_instr_depth(web49_io_output_t *out, web49_instr_t instr, ui
             break;
         case WEB49_IMMEDIATE_BLOCK_TYPE:
             if (instr.immediate.block_type.is_type_index) {
-                web49_io_output_fprintf(out, " (type %"PRIu32")", instr.immediate.block_type.type_index);
+                web49_io_output_fprintf(out, " (type %" PRIu32 ")", instr.immediate.block_type.type_index);
             } else {
                 if (instr.immediate.block_type.type_value != WEB49_TYPE_BLOCK_TYPE) {
                     web49_io_output_write_str(out, " (result ");

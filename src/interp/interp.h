@@ -8,7 +8,8 @@ typedef uint64_t web49_interp_instr_t;
 enum web49_interp_instr_enum_t {
     WEB49_MIN_OPCODE_INTERP = WEB49_MAX_OPCODE_NUM,
     WEB49_OPCODE_RETURN0,
-    WEB49_OPCODE_FFI_CALL,
+    WEB49_OPCODE_FFI_CALL0,
+    WEB49_OPCODE_FFI_CALL1,
     WEB49_OPCODE_IF_I32_EQ,
     WEB49_OPCODE_IF_I32_LT_S,
     WEB49_OPCODE_IF_I32_LT_U,
@@ -105,10 +106,10 @@ union web49_interp_opcode_t {
 
 struct web49_interp_block_t {
     web49_interp_opcode_t *code;
-    uint32_t nlocals: 32;
-    uint16_t nparams: 16;
-    uint16_t nreturns: 15;
-    bool is_code: 1;
+    uint32_t nlocals : 32;
+    uint16_t nparams : 16;
+    uint16_t nreturns : 15;
+    bool is_code : 1;
     union {
         struct {
             web49_instr_t *instrs;
