@@ -46,8 +46,8 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
         .in[0] = WEB49_TABLE_STACK_EFFECT_ARGS,
     },
     [WEB49_OPCODE_CALL_INDIRECT] = (web49_table_stack_effect_t){
-        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .in[1] = WEB49_TABLE_STACK_EFFECT_ARGS_INDIRECT,
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
     [WEB49_OPCODE_DROP] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
@@ -850,6 +850,15 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
     },
     [WEB49_OPCODE_CALL1] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_ARGS,
+        .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+    },
+    [WEB49_OPCODE_CALL_INDIRECT0] = (web49_table_stack_effect_t){
+        .in[1] = WEB49_TABLE_STACK_EFFECT_ARGS_INDIRECT,
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
+    },
+    [WEB49_OPCODE_CALL_INDIRECT1] = (web49_table_stack_effect_t){
+        .in[1] = WEB49_TABLE_STACK_EFFECT_ARGS_INDIRECT,
+        .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
     },
 };
@@ -3056,6 +3065,10 @@ const char *web49_opcode_to_name(web49_opcode_t opcode) {
             return "web49.call0";
         case WEB49_OPCODE_CALL1:
             return "web49.call1";
+        case WEB49_OPCODE_CALL_INDIRECT0:
+            return "web49.call_indirect0";
+        case WEB49_OPCODE_CALL_INDIRECT1:
+            return "web49.call_indirect1";
         default:
             return NULL;
     }

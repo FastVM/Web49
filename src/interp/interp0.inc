@@ -17,7 +17,7 @@ NAME(WEB49_OPCODE_CALL_DONE0) {
 #endif
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
+    locals += head[2].data.i32_u;
     head = head[0].ptr;
     NEXT();
 }
@@ -27,8 +27,8 @@ NAME(WEB49_OPCODE_CALL_DONE1) {
 #endif
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
-    locals[head[2].data.i32_u].i64_u = 0;
+    locals += head[2].data.i32_u;
+    locals[head[2].data.i32_u + 0].i64_u = 0;
     head = head[0].ptr;
     NEXT();
 }
@@ -38,10 +38,9 @@ NAME(WEB49_OPCODE_CALL_DONE2) {
 #endif
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
-    web49_interp_data_t *data = &locals[head[2].data.i32_u];
-    data[0].i64_u = 0;
-    data[1].i64_u = 0;
+    locals += head[2].data.i32_u;
+    locals[head[2].data.i32_u + 0].i64_u = 0;
+    locals[head[2].data.i32_u + 1].i64_u = 0;
     head = head[0].ptr;
     NEXT();
 }
@@ -51,8 +50,8 @@ NAME(WEB49_OPCODE_CALL_DONE4) {
 #endif
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
-    memset(locals + head[2].data.i32_u, 0, sizeof(web49_interp_data_t) * 4);
+    locals += head[2].data.i32_u;
+    memset(locals + head[1].data.i32_u, 0, sizeof(web49_interp_data_t) * 4);
     head = head[0].ptr;
     NEXT();
 }
@@ -62,8 +61,8 @@ NAME(WEB49_OPCODE_CALL_DONE8) {
 #endif
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
-    memset(locals + head[2].data.i32_u, 0, sizeof(web49_interp_data_t) * 8);
+    locals += head[2].data.i32_u;
+    memset(locals + head[1].data.i32_u, 0, sizeof(web49_interp_data_t) * 8);
     head = head[0].ptr;
     NEXT();
 }
@@ -73,8 +72,8 @@ NAME(WEB49_OPCODE_CALL_DONE16) {
 #endif
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
-    memset(locals + head[2].data.i32_u, 0, sizeof(web49_interp_data_t) * 16);
+    locals += head[2].data.i32_u;
+    memset(locals + head[1].data.i32_u, 0, sizeof(web49_interp_data_t) * 16);
     head = head[0].ptr;
     NEXT();
 }
@@ -84,8 +83,8 @@ NAME(WEB49_OPCODE_CALL_DONE32) {
 #endif
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
-    memset(locals + head[2].data.i32_u, 0, sizeof(web49_interp_data_t) * 32);
+    locals += head[2].data.i32_u;
+    memset(locals + head[1].data.i32_u, 0, sizeof(web49_interp_data_t) * 32);
     head = head[0].ptr;
     NEXT();
 }
@@ -95,8 +94,8 @@ NAME(WEB49_OPCODE_CALL_DONE64) {
 #endif
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
-    memset(locals + head[2].data.i32_u, 0, sizeof(web49_interp_data_t) * 64);
+    locals += head[2].data.i32_u;
+    memset(locals + head[1].data.i32_u, 0, sizeof(web49_interp_data_t) * 64);
     head = head[0].ptr;
     NEXT();
 }
@@ -106,8 +105,8 @@ NAME(WEB49_OPCODE_CALL_DONE128) {
 #endif
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
-    memset(locals + head[2].data.i32_u, 0, sizeof(web49_interp_data_t) * 128);
+    locals += head[2].data.i32_u;
+    memset(locals + head[1].data.i32_u, 0, sizeof(web49_interp_data_t) * 128);
     head = head[0].ptr;
     NEXT();
 }
@@ -117,8 +116,8 @@ NAME(WEB49_OPCODE_CALL_DONE256) {
 #endif
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
-    memset(locals + head[2].data.i32_u, 0, sizeof(web49_interp_data_t) * 256);
+    locals += head[2].data.i32_u;
+    memset(locals + head[1].data.i32_u, 0, sizeof(web49_interp_data_t) * 256);
     head = head[0].ptr;
     NEXT();
 }
@@ -128,8 +127,8 @@ NAME(WEB49_OPCODE_CALL_DONE512) {
 #endif
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
-    memset(locals + head[2].data.i32_u, 0, sizeof(web49_interp_data_t) * 512);
+    locals += head[2].data.i32_u;
+    memset(locals + head[1].data.i32_u, 0, sizeof(web49_interp_data_t) * 512);
     head = head[0].ptr;
     NEXT();
 }
@@ -139,8 +138,8 @@ NAME(WEB49_OPCODE_CALL_DONE1024) {
 #endif
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
-    memset(locals + head[2].data.i32_u, 0, sizeof(web49_interp_data_t) * 1024);
+    locals += head[2].data.i32_u;
+    memset(locals + head[1].data.i32_u, 0, sizeof(web49_interp_data_t) * 1024);
     head = head[0].ptr;
     NEXT();
 }
@@ -152,7 +151,7 @@ NAME(WEB49_OPCODE_CALL) {
     web49_interp_block_run_comp(block, ptrs, interp);
     *returns++ = head + 3;
     *stacks++ = locals;
-    locals += head[1].data.i32_u;
+    locals += head[2].data.i32_u;
     memset(locals + block->nparams, 0, sizeof(web49_interp_data_t) * block->nlocals);
     if (block->nlocals == 0) {
         head[-1].ptr = &&DO_WEB49_OPCODE_CALL_DONE0;
@@ -183,6 +182,7 @@ NAME(WEB49_OPCODE_CALL) {
         __builtin_trap();
     }
     head[0].ptr = block->code;
+    head[1].data.i32_u = block->nlocals;
     head = block->code;
     NEXT();
 }
@@ -191,16 +191,10 @@ NAME(WEB49_OPCODE_BR) {
     NEXT();
 }
 NAME(WEB49_OPCODE_GET_LOCAL) {
-    // fprintf(stderr, "r%"PRIu32" = local.get %"PRIu32" (%"PRIx64")\n", head[1].data.i32_u, head[0].data.i32_u, locals[head[1].data.i32_u].i64_u);
     locals[head[0].data.i32_u] = locals[head[1].data.i32_u];
     head += 2;
     NEXT();
 }
-// NAME(WEB49_OPCODE_SET_LOCAL) {
-// locals[head[1].data.i32_u] = locals[head[0].data.i32_u];
-// head += 2;
-// NEXT();
-// }
 NAME(WEB49_OPCODE_GET_GLOBAL) {
     locals[head[0].data.i32_u] = interp.globals[head[1].data.i32_u];
     head += 2;

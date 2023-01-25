@@ -8,10 +8,9 @@ NAME(WEB49_OPCODE_RETURN1) {
     depth -= 1;
 #endif
     web49_interp_data_t reg = LOCAL0;
-    printf("%"PRIu64"\n", reg.i64_u);
+    locals[0] = reg;
     head = *--returns;
     locals = *--stacks;
-    locals[head[-3].data.i32_u] = reg;
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_INDIRECT) {
