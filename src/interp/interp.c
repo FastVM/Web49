@@ -392,13 +392,13 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         return UINT32_MAX;
     }
     if (cur.opcode == WEB49_OPCODE_CALL_INDIRECT0) {
-        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL_INDIRECT);
+        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL_INDIRECT + add);
         build->code[build->ncode++].data.i32_u = args[cur.nargs - 1];
         build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
         return UINT32_MAX;
     }
     if (cur.opcode == WEB49_OPCODE_CALL_INDIRECT1) {
-        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL_INDIRECT);
+        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL_INDIRECT + add);
         build->code[build->ncode++].data.i32_u = args[cur.nargs - 1];
         build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
         if (local != UINT32_MAX && local != state->depth + state->nlocals) {
@@ -943,7 +943,7 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
         .memsize = memsize,
         .stacks = web49_malloc(sizeof(web49_interp_data_t *) * (1 << 12)),
         .returns = web49_malloc(sizeof(web49_opcode_t *) * (1 << 12)),
-        .yield_base = web49_alloc0(sizeof(web49_interp_data_t) * (16)),
+        .yield_base = web49_alloc0(sizeof(web49_interp_data_t) * (1)),
     };
     for (size_t j = 0; j < table_section.num_entries; j++) {
         web49_type_table_t entry = table_section.entries[j];

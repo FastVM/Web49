@@ -49,7 +49,6 @@ NAME(WEB49_OPCODE_SET_GLOBAL) {
 }
 NAME(WEB49_OPCODE_I32_LOAD) {
     locals[head[1].data.i32_u].i32_u = WEB49_INTERP_READ(uint32_t, interp, LOCAL0.i32_u + head[2].data.i32_u);
-    // printf("[4](0x%"PRIx32" + 0x%"PRIx32") = 0x%"PRIx32"\n", LOCAL0.i32_u, head[2].data.i32_u, locals[head[1].data.i32_u].i32_u);
     head += 3;
     NEXT();
 }

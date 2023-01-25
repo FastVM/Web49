@@ -300,7 +300,6 @@ NAME(WEB49_OPCODE_IF_I64_GT_U) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_ADD) {
-    // fprintf(stderr, "%"PRIu32" + %"PRIu32, LOCAL0.i32_u, LOCAL1.i32_u);
     locals[head[2].data.i32_u].i32_u = LOCAL0.i32_u + LOCAL1.i32_u;
     head += 3;
     NEXT();

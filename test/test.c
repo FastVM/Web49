@@ -1,7 +1,19 @@
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <inttypes.h>
 
-int main() {
-    printf("0x%p\n", malloc(4));
-    return 0;
+uint64_t fib(uint64_t n) {
+    if (n < 2) {
+        return n;
+    } else {
+        return fib(n - 2) + fib(n - 1);
+    }
+}
+
+int main(int argc, char **argv) {
+    uint64_t n = 5;
+    uint64_t fibn = fib(n);
+    return fibn;
 }
