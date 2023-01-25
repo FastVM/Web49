@@ -3,6 +3,17 @@ NAME(WEB49_OPCODE_YIELD_PUSH) {
     head += 1;
     NEXT();
 }
+NAME(WEB49_OPCODE_RETURN1) {
+#if defined(WEB49_PRINT_INSTR)
+    depth -= 1;
+#endif
+    web49_interp_data_t reg = LOCAL0;
+    printf("%"PRIu64"\n", reg.i64_u);
+    head = *--returns;
+    locals = *--stacks;
+    locals[head[-3].data.i32_u] = reg;
+    NEXT();
+}
 NAME(WEB49_OPCODE_CALL_INDIRECT) {
     web49_interp_block_t *block = interp.table[LOCAL0.i32_u];
     web49_interp_block_run_comp(block, ptrs, interp);

@@ -7,7 +7,6 @@ typedef uint64_t web49_interp_instr_t;
 
 enum web49_interp_instr_enum_t {
     WEB49_MIN_OPCODE_INTERP = WEB49_MAX_OPCODE_NUM,
-    WEB49_OPCODE_RETURN0,
     WEB49_OPCODE_FFI_CALL0,
     WEB49_OPCODE_FFI_CALL1,
     WEB49_OPCODE_IF_I32_EQ,
@@ -94,6 +93,7 @@ struct web49_interp_t {
     web49_interp_data_t **restrict stacks;
     web49_interp_opcode_t **restrict returns;
     web49_interp_data_t *yield_base;
+    uint32_t num_funcs;
 };
 
 union web49_interp_opcode_t {

@@ -167,6 +167,7 @@ int web49_file_main(const char *inarg, const char **args) {
             mod = web49_readwat_module(&infile);
         }
     }
+    free(infile.byte_buf);
     web49_opt_tee_module(&mod);
     web49_opt_tree_module(&mod);
     uint32_t start = 0;

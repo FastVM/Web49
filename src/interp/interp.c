@@ -321,7 +321,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     uint32_t outer_begin = state->depth;
     for (uint64_t i = 0; i < cur.nargs; i++) {
 #if !defined(WEB49_NO_OPT)
-        if (cur.opcode != WEB49_OPCODE_CALL && cur.opcode != WEB49_OPCODE_CALL_INDIRECT) {
+        if (cur.opcode != WEB49_OPCODE_CALL0 && cur.opcode != WEB49_OPCODE_CALL1 && cur.opcode != WEB49_OPCODE_CALL_INDIRECT) {
             if (cur.args[i].opcode == WEB49_OPCODE_I32_CONST || cur.args[i].opcode == WEB49_OPCODE_I64_CONST || cur.args[i].opcode == WEB49_OPCODE_F32_CONST || cur.args[i].opcode == WEB49_OPCODE_F64_CONST) {
 #if defined(WEB49_OPT_CONST0)
                 if (i == 0) {
@@ -361,6 +361,10 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
             state->depth = begin + 1;
         }
     }
+    if (build->ncode + 16 >= build->alloc) {
+        build->alloc = (build->ncode + 16) * 4;
+        build->code = web49_realloc(build->code, sizeof(web49_interp_opcode_t) * build->alloc);
+    }
     uint32_t outer_end = state->depth;
     if (outer_begin + cur.nargs != outer_end) {
         fprintf(stderr, "error: stack should have been at %zu, but was at %zu\n", (size_t)(outer_begin + cur.nargs), (size_t)outer_end);
@@ -389,44 +393,11 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         // web49_debug_print_instr(stderr, cur);
         return UINT32_MAX;
     }
-    if (cur.opcode == WEB49_OPCODE_CALL) {
-        // uint32_t nreturns = (uint32_t) state->interp->funcs[cur.immediate.varint32].nreturns;
+    if (cur.opcode == WEB49_OPCODE_CALL0 || cur.opcode == WEB49_OPCODE_CALL1) {
         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL);
         build->code[build->ncode++].ptr = &state->interp->funcs[cur.immediate.varint32];
         build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
         build->code[build->ncode++].data.i32_u = cur.nargs;
-        //     case 0:
-        //         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL);
-        //         build->code[build->ncode++].ptr = &state->interp->funcs[cur.immediate.varint32];
-        //         build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
-        //         build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
-        //         build->code[build->ncode++].data.i32_u = cur.nargs;
-        //         return UINT32_MAX;
-        //     case 1:
-        //         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL);
-        //         build->code[build->ncode++].ptr = &state->interp->funcs[cur.immediate.varint32];
-        //         build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
-        //         if (local == UINT32_MAX) {
-        //             uint32_t out = state->depth + state->nlocals;
-        //             build->code[build->ncode++].data.i32_u = out;
-        //             build->code[build->ncode++].data.i32_u = cur.nargs;
-        //             state->depth += 1;
-        //             return out;
-        //         } else {
-        //             build->code[build->ncode++].data.i32_u = local;
-        //             build->code[build->ncode++].data.i32_u = cur.nargs;
-        //             state->depth += 1;
-        //             return local;
-        //         }
-        //         break;
-        //     default:
-        //         fprintf(stderr, "cannot compile %zu returns yet\n", (size_t)state->interp->funcs[cur.immediate.varint32].nreturns);
-        //         __builtin_trap();
-        // }
-        return UINT32_MAX;
-    }
-    if (cur.opcode == WEB49_OPCODE_RETURN) {
-        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_RETURN0);
         return UINT32_MAX;
     }
     build->code[build->ncode++].opcode = OPCODE(cur.opcode + add);
@@ -540,7 +511,7 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
             state.nlocals = block->nparams + block->nlocals;
             uint32_t ret = UINT32_MAX;
             for (uint64_t i = 0; i < block->num_instrs; i++) {
-                web49_debug_print_instr(stderr, block->instrs[i]);
+                // web49_debug_print_instr(stderr, block->instrs[i]);
                 uint32_t tmp = web49_interp_read_instr(&state, block->instrs[i], UINT32_MAX);
                 if (tmp != UINT32_MAX) {
                     ret = tmp;
@@ -564,7 +535,11 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
             }
             web49_free(state.links);
             web49_free(state.bufs_base);
+            for (size_t instr=0; instr < block->num_instrs; instr++) {
+                web49_free_instr(block->instrs[instr]);
+            }            
             web49_free(block->instrs);
+            block->instrs = NULL;
             block->code = state.build.code;
         } else {
             web49_interp_opcode_t *instrs = web49_malloc(sizeof(web49_interp_opcode_t) * 2);
@@ -582,7 +557,9 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
                 __builtin_trap();
             }
             web49_free(block->module_str);
+            block->module_str = NULL;
             web49_free(block->field_str);
+            block->field_str = NULL;
             block->code = instrs;
         }
     }
@@ -776,6 +753,7 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
         TABLE_PUT2(WEB49_OPCODE_MEMORY_FILL),
         TABLE_PUT2(WEB49_OPCODE_MEMORY_COPY),
         TABLE_PUT0(WEB49_OPCODE_RETURN0),
+        TABLE_PUT1(WEB49_OPCODE_RETURN1),
         TABLE_PUT1(WEB49_OPCODE_YIELD_PUSH),
         TABLE_PUT0(WEB49_OPCODE_YIELD_POP),
 #undef TABLE_PUTV
@@ -935,14 +913,12 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
         if (entry->kind == WEB49_EXTERNAL_KIND_FUNCTION) {
             web49_interp_block_t *block = &interp.funcs[cur_func++];
             block->is_code = false;
-            block->module_str = entry->module_str;
-            block->field_str = entry->field_str;
+            block->module_str = web49_strdup(entry->module_str);
+            block->field_str = web49_strdup(entry->field_str);
             block->code = NULL;
             block->nlocals = 0;
             block->nparams = 0;
             block->nreturns = 1;
-            entry->module_str = NULL;
-            entry->field_str = NULL;
         }
     }
     for (size_t j = 0; j < global_section.num_entries; j++) {
@@ -981,10 +957,26 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
             interp.table[i + entry.offset.immediate.varint32] = &interp.funcs[entry.elems[i]];
         }
     }
+    interp.num_funcs = cur_func;
     return interp;
 }
 
 void web49_free_interp(web49_interp_t interp) {
+    for (size_t func=0; func < interp.num_funcs; func++) {
+        web49_interp_block_t *block = &interp.funcs[func];
+        web49_free(block->code);
+        if (block->is_code) {
+            if (block->instrs != NULL) {
+                for (size_t instr=0; instr < block->num_instrs; instr++) {
+                    web49_free_instr(block->instrs[instr]);
+                }            
+                web49_free(block->instrs);
+            }
+        } else {
+            web49_free(block->module_str);
+            web49_free(block->field_str);
+        }
+    }
     web49_free(interp.memory);
     web49_free(interp.funcs);
     web49_free(interp.locals_base);
@@ -992,4 +984,5 @@ void web49_free_interp(web49_interp_t interp) {
     web49_free(interp.stacks);
     web49_free(interp.returns);
     web49_free(interp.yield_base);
+    web49_free(interp.table);
 }

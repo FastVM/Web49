@@ -27,7 +27,6 @@ FAIL float_misc
 FAIL func
 FAIL func_ptrs
 FAIL global
-FAIL if
 FAIL imports
 FAIL inline-module
 FAIL int_literals
@@ -55,7 +54,6 @@ FAIL stack
 FAIL start
 FAIL switch
 FAIL table
-FAIL table-sub
 FAIL table_copy
 FAIL table_fill
 FAIL table_get
@@ -63,9 +61,9 @@ FAIL table_grow
 FAIL table_init
 FAIL table_set
 FAIL table_size
+FAIL table-sub
 FAIL token
 FAIL tokens
-FAIL type
 FAIL unreached-invalid
 FAIL unreached-valid
 FAIL unwind
@@ -80,6 +78,7 @@ PASS const
 PASS forward
 PASS i32
 PASS i64
+PASS if
 PASS int_exprs
 PASS load
 PASS memory_grow
@@ -87,4 +86,5 @@ PASS memory_trap
 PASS nop
 PASS store
 PASS traps
+PASS type
 PASS unreachable

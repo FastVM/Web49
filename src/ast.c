@@ -27,6 +27,7 @@ void web49_free_module(web49_module_t mod) {
                 for (size_t j = 0; j < cur.num_entries; j++) {
                     web49_section_type_entry_t ent = cur.entries[j];
                     web49_free(ent.params);
+                    web49_free(ent.return_types);
                 }
                 web49_free(cur.entries);
                 break;

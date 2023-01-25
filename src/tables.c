@@ -40,17 +40,14 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
         .branch = true,
     },
     [WEB49_OPCODE_RETURN] = (web49_table_stack_effect_t){
-        // .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
         .branch = true,
     },
     [WEB49_OPCODE_CALL] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_ARGS,
-        // .out[0] = WEB49_TABLE_STACK_EFFECT_RET,
     },
     [WEB49_OPCODE_CALL_INDIRECT] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .in[1] = WEB49_TABLE_STACK_EFFECT_ARGS_INDIRECT,
-        // .out[0] = WEB49_TABLE_STACK_EFFECT_RET_INDIRECT,
     },
     [WEB49_OPCODE_DROP] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
@@ -839,6 +836,20 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
         .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
     },
     [WEB49_OPCODE_NOP1] = (web49_table_stack_effect_t){
+        .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+    },
+    [WEB49_OPCODE_RETURN0] = (web49_table_stack_effect_t){
+        .branch = true,
+    },
+    [WEB49_OPCODE_RETURN1] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_ANY,
+        .branch = true,
+    },
+    [WEB49_OPCODE_CALL0] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_ARGS,
+    },
+    [WEB49_OPCODE_CALL1] = (web49_table_stack_effect_t){
+        .in[0] = WEB49_TABLE_STACK_EFFECT_ARGS,
         .out[0] = WEB49_TABLE_STACK_EFFECT_ANY,
     },
 };
@@ -3037,6 +3048,14 @@ const char *web49_opcode_to_name(web49_opcode_t opcode) {
             return "web49.yield_pop";
         case WEB49_OPCODE_NOP1:
             return "web49.nop1";
+        case WEB49_OPCODE_RETURN0:
+            return "web49.return0";
+        case WEB49_OPCODE_RETURN1:
+            return "web49.return1";
+        case WEB49_OPCODE_CALL0:
+            return "web49.call0";
+        case WEB49_OPCODE_CALL1:
+            return "web49.call1";
         default:
             return NULL;
     }
