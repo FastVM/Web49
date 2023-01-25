@@ -7,7 +7,7 @@
 #include "../src/read_bin.h"
 #include "../src/read_wat.h"
 
-web49_env_func_t web49_main_import_func(void *state, const char *mod, const char *func) {
+static web49_env_func_t web49_main_import_func(void *state, const char *mod, const char *func) {
     (void)state;
     if (!strcmp(mod, "wasi_snapshot_preview1")) {
         return web49_api_import_wasi(func);
@@ -16,7 +16,7 @@ web49_env_func_t web49_main_import_func(void *state, const char *mod, const char
     }
 }
 
-web49_interp_data_t web49_main_expr_to_data(web49_readwat_expr_t expr) {
+static web49_interp_data_t web49_main_expr_to_data(web49_readwat_expr_t expr) {
     web49_interp_data_t ret;
     if (!strcmp(expr.fun_fun, "i32.const")) {
         if (expr.fun_args[0].sym[0] == '0' && expr.fun_args[0].sym[1] == 'x') {
@@ -24,14 +24,16 @@ web49_interp_data_t web49_main_expr_to_data(web49_readwat_expr_t expr) {
         } else {
             ret.i32_s = (int32_t)web49_readwat_expr_to_i64(expr.fun_args[0]);
         }
-    }
-    if (!strcmp(expr.fun_fun, "i64.const")) {
+    } else if (!strcmp(expr.fun_fun, "i64.const")) {
         ret.i64_s = web49_readwat_expr_to_i64(expr.fun_args[0]);
+    } else {
+        fprintf(stderr, "dont know how to handle: (%s ...), in that context\n", expr.fun_fun);
+        __builtin_trap();
     }
     return ret;
 }
 
-int web49_file_main(const char *inarg, const char **args) {
+static int web49_file_main(const char *inarg, const char **args) {
     web49_io_input_t infile = web49_io_input_open(inarg);
     web49_module_t mod;
     if (memcmp(infile.byte_buf, "\0asm", 4) == 0) {
@@ -97,7 +99,7 @@ int web49_file_main(const char *inarg, const char **args) {
                                 fprintf(stderr, "wasm spec test: invoke %s\n", entry.field_str);
                             } else {
                                 for (size_t k = 1; k < todo.fun_nargs; k++) {
-                                    int n = todo.fun_nargs - k - 1;
+                                    size_t n = todo.fun_nargs - k - 1;
                                     // int n = k-1;
                                     web49_readwat_expr_t wants = todo.fun_args[k];
                                     if (wants.tag != WEB49_READWAT_EXPR_TAG_FUN) {
@@ -122,10 +124,10 @@ int web49_file_main(const char *inarg, const char **args) {
                                     } else if (!strcmp(wants.fun_fun, "f32.const")) {
                                         float expected;
                                         sscanf(wants.fun_args[0].sym, "%f", &expected);
-                                        if (data[n].f32 == expected || (isnan(expected) && isnan(data[n].f32))) {
-                                            fprintf(stderr, "wasm spec test: invoke %s pass: %f == %f\n", entry.field_str, data[n].f32, expected);
+                                        if (data[n].f32 == expected || (isnanf(expected) && isnanf(data[n].f32))) {
+                                            fprintf(stderr, "wasm spec test: invoke %s pass: %f == %f\n", entry.field_str, (double) data[n].f32, (double) expected);
                                         } else {
-                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %f != %f (expected return value)\n", entry.field_str, data[n].f32, expected);
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %f != %f (expected return value)\n", entry.field_str, (double) data[n].f32, (double) expected);
                                             ret = 1;
                                             goto next_test;
                                         }
@@ -135,7 +137,7 @@ int web49_file_main(const char *inarg, const char **args) {
                                         if (data[n].f64 == expected || (isnan(expected) && isnan(data[n].f64))) {
                                             fprintf(stderr, "wasm spec test: invoke %s pass: %lf == %lf\n", entry.field_str, data[n].f64, expected);
                                         } else {
-                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %lf != %lf (expected return value)\n", entry.field_str, data[n].f64, expected);
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %f != %f (expected return value)\n", entry.field_str, data[n].f64, expected);
                                             ret = 1;
                                             goto next_test;
                                         }
@@ -163,7 +165,6 @@ int web49_file_main(const char *inarg, const char **args) {
                 }
             next_test:;
             }
-            __builtin_trap();
         } else {
             mod = web49_readwat_module(&infile);
         }

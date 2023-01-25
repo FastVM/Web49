@@ -3,7 +3,7 @@
 #include "../src/read_wat.h"
 #include "../src/write_bin.h"
 
-int web49_file_main(const char *inarg, const char *outarg) {
+static int web49_file_main(const char *inarg, const char *outarg) {
     web49_io_input_t infile = web49_io_input_open(inarg);
     web49_module_t mod = web49_readwat_module(&infile);
     web49_writebin_buf_t buf = {0};

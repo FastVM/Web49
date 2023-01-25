@@ -19,7 +19,7 @@ enum web49_interp_instr_enum_t {
     WEB49_OPCODE_IF_I64_LT_U,
     WEB49_OPCODE_IF_I64_GT_S,
     WEB49_OPCODE_IF_I64_GT_U,
-    WEB49_MAX_OPCODE_INTERP,
+    WEB49_MAX_OPCODE_INTERP = WEB49_OPCODE_IF_I64_GT_U + 1,
 #if defined(WEB49_OPT_CONST0)
     WEB49_OPCODE_WITH_CONST0 = WEB49_MAX_OPCODE_INTERP * 1,
     WEB49_OPCODE_WITH_CONST1 = WEB49_MAX_OPCODE_INTERP * 2,
@@ -60,9 +60,9 @@ struct web49_interp_link_t {
 };
 
 struct web49_interp_build_t {
-    uint64_t alloc;
     web49_interp_opcode_t *code;
-    uint64_t ncode;
+    uint32_t alloc;
+    uint32_t ncode;
 };
 
 union web49_interp_data_t {
@@ -87,18 +87,18 @@ struct web49_interp_t {
     web49_interp_block_t *funcs;
     const char **args;
     void *import_state;
-    uint64_t memsize;
     web49_env_table_t import_func;
     void *locals_base;
     web49_interp_data_t **restrict stacks;
     web49_interp_opcode_t **restrict returns;
     web49_interp_data_t *yield_base;
+    uint32_t memsize;
     uint32_t num_funcs;
 };
 
 union web49_interp_opcode_t {
     void *opcode;
-    void *ptr;
+    web49_env_func_t func;
     web49_interp_data_t data;
     web49_interp_block_t *block;
     size_t link;
@@ -149,7 +149,7 @@ void web49_free_interp(web49_interp_t interp);
 #else
 #define WEB49_INTERP_BOUNDS(low, add) ({ fprintf(stderr, "memmory access 0x%zx of size 0x%zx out of bounds\n", (size_t) (low), (size_t) (add)); __builtin_trap(); })
 #endif
-#define WEB49_INTERP_ADDR(ptrtype, interp, dest, size) ({uint32_t xptr_ = (dest); web49_interp_t sub_ = (interp); if (sub_.memsize < xptr_ + size) { WEB49_INTERP_BOUNDS(xptr_, size); }; (ptrtype) &sub_.memory[xptr_]; })
+#define WEB49_INTERP_ADDR(ptrtype, interp, dest, size) ({uint32_t xptr_ = (uint32_t) (dest); web49_interp_t sub_ = (interp); if (sub_.memsize < xptr_ + size) { WEB49_INTERP_BOUNDS(xptr_, size); }; (ptrtype) &sub_.memory[xptr_]; })
 #define WEB49_INTERP_READ(elemtype, interp, dest) (*WEB49_INTERP_ADDR(elemtype *, interp, dest, sizeof(elemtype)))
 #define WEB49_INTERP_WRITE(elemtype, interp, dest, src) (*WEB49_INTERP_ADDR(elemtype *, interp, dest, sizeof(elemtype)) = (src))
 

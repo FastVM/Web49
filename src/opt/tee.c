@@ -3,7 +3,7 @@
 #include "../tables.h"
 
 void web49_opt_tee_code(web49_section_code_entry_t *entry) {
-    uint64_t len = 0;
+    uint32_t len = 0;
     uint64_t alloc = entry->num_instrs + 16;
     web49_instr_t *next = web49_malloc(sizeof(web49_instr_t) * alloc);
     for (uint64_t i = 0; i < entry->num_instrs; i++) {

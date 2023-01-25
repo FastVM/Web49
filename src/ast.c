@@ -198,7 +198,7 @@ web49_section_t web49_module_get_section(web49_module_t mod, web49_section_id_t 
             return mod.sections[i];
         }
     }
-    return (web49_section_t){};
+    return (web49_section_t){0};
 }
 
 uint32_t web49_module_num_func_imports(web49_module_t mod) {

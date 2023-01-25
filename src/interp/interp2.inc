@@ -221,81 +221,81 @@ NAME(WEB49_OPCODE_F64_GE) {
 }
 NAME(WEB49_OPCODE_IF_I32_EQ) {
     if (LOCAL0.i32_u == LOCAL1.i32_u) {
-        head = head[2].ptr;
+        head = head[2].opcode;
     } else {
-        head = head[3].ptr;
+        head = head[3].opcode;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I32_LT_S) {
     if (LOCAL0.i32_s < LOCAL1.i32_s) {
-        head = head[2].ptr;
+        head = head[2].opcode;
     } else {
-        head = head[3].ptr;
+        head = head[3].opcode;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I32_LT_U) {
     if (LOCAL0.i32_u < LOCAL1.i32_u) {
-        head = head[2].ptr;
+        head = head[2].opcode;
     } else {
-        head = head[3].ptr;
+        head = head[3].opcode;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I32_GT_S) {
     if (LOCAL0.i32_s > LOCAL1.i32_s) {
-        head = head[2].ptr;
+        head = head[2].opcode;
     } else {
-        head = head[3].ptr;
+        head = head[3].opcode;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I32_GT_U) {
     if (LOCAL0.i32_u > LOCAL1.i32_u) {
-        head = head[2].ptr;
+        head = head[2].opcode;
     } else {
-        head = head[3].ptr;
+        head = head[3].opcode;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I64_EQ) {
     if (LOCAL0.i64_u == LOCAL1.i64_u) {
-        head = head[2].ptr;
+        head = head[2].opcode;
     } else {
-        head = head[3].ptr;
+        head = head[3].opcode;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I64_LT_S) {
     if (LOCAL0.i64_s < LOCAL1.i64_s) {
-        head = head[2].ptr;
+        head = head[2].opcode;
     } else {
-        head = head[3].ptr;
+        head = head[3].opcode;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I64_LT_U) {
     if (LOCAL0.i64_u < LOCAL1.i64_u) {
-        head = head[2].ptr;
+        head = head[2].opcode;
     } else {
-        head = head[3].ptr;
+        head = head[3].opcode;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I64_GT_S) {
     if (LOCAL0.i64_s > LOCAL1.i64_s) {
-        head = head[2].ptr;
+        head = head[2].opcode;
     } else {
-        head = head[3].ptr;
+        head = head[3].opcode;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I64_GT_U) {
     if (LOCAL0.i64_u > LOCAL1.i64_u) {
-        head = head[2].ptr;
+        head = head[2].opcode;
     } else {
-        head = head[3].ptr;
+        head = head[3].opcode;
     }
     NEXT();
 }
@@ -527,7 +527,7 @@ NAME(WEB49_OPCODE_MEMORY_FILL) {
     uint32_t size = LOCAL0.i32_u;
     uint32_t byte = LOCAL1.i32_u;
     uint32_t dest = locals[head[2].data.i32_u].i32_u;
-    memset(WEB49_INTERP_ADDR(void *, interp, dest, size), byte, size);
+    memset(WEB49_INTERP_ADDR(void *, interp, dest, size), (int) byte, size);
     head += 3;
     NEXT();
 }

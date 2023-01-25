@@ -18,7 +18,7 @@ static web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_
     web49_section_import_t import_section = web49_module_get_section(*mod, WEB49_SECTION_ID_IMPORT).import_section;
     web49_section_function_t function_section = web49_module_get_section(*mod, WEB49_SECTION_ID_FUNCTION).function_section;
     web49_section_type_t type_section = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).type_section;
-    int32_t num_funcs = web49_module_num_func_imports(*mod);
+    uint32_t num_funcs = web49_module_num_func_imports(*mod);
     web49_instr_t ret;
     uint64_t nalloc = 8;
     ret.nargs = 0;
@@ -105,14 +105,14 @@ static web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_
         size_t nargs = 0;
         for (size_t i = 0; effect.in[i] != WEB49_TABLE_STACK_EFFECT_END; i++) {
             if (effect.in[i] == WEB49_TABLE_STACK_EFFECT_ARGS) {
-                if (cur.immediate.varint32 >= num_funcs) {
-                    int32_t entry = function_section.entries[cur.immediate.varint32 - num_funcs];
+                if (cur.immediate.varuint32 >= num_funcs) {
+                    uint32_t entry = function_section.entries[cur.immediate.varuint32 - num_funcs];
                     nargs += type_section.entries[entry].num_params;
                 } else {
-                    int32_t index = 0;
+                    uint32_t index = 0;
                     for (uint64_t j = 0; j < import_section.num_entries; j++) {
                         if (import_section.entries[j].kind == WEB49_EXTERNAL_KIND_FUNCTION) {
-                            if (index == cur.immediate.varint32) {
+                            if (index == cur.immediate.varuint32) {
                                 nargs += type_section.entries[import_section.entries[j].func_type.data].num_params;
                                 break;
                             }
@@ -130,14 +130,14 @@ static web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_
         if (effect.out[0] == WEB49_TABLE_STACK_EFFECT_END) {
             use_begin0 = true;
         } else if (effect.out[0] == WEB49_TABLE_STACK_EFFECT_RET) {
-            if (cur.immediate.varint32 >= num_funcs) {
-                int32_t entry = function_section.entries[cur.immediate.varint32 - num_funcs];
+            if (cur.immediate.varuint32 >= num_funcs) {
+                uint32_t entry = function_section.entries[cur.immediate.varuint32 - num_funcs];
                 use_begin0 = !type_section.entries[entry].num_returns;
             } else {
-                int32_t index = 0;
-                for (uint64_t j = 0; j < import_section.num_entries; j++) {
+                uint32_t index = 0;
+                for (uint32_t j = 0; j < import_section.num_entries; j++) {
                     if (import_section.entries[j].kind == WEB49_EXTERNAL_KIND_FUNCTION) {
-                        if (index == cur.immediate.varint32) {
+                        if (index == cur.immediate.varuint32) {
                             use_begin0 = !type_section.entries[import_section.entries[j].func_type.data].num_returns;
                             break;
                         }
