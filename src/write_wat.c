@@ -112,6 +112,7 @@ void web49_wat_print_instr_depth(web49_io_output_t *out, web49_instr_t instr, ui
 }
 
 void web49_wat_print_section_type(web49_io_output_t *out, web49_module_t mod, web49_section_type_t stype) {
+    (void)mod;
     for (uint64_t i = 0; i < stype.num_entries; i++) {
         web49_io_output_write_str(out, "\n  (type");
         web49_io_output_write_str(out, " ");
@@ -144,6 +145,7 @@ void web49_wat_print_section_type(web49_io_output_t *out, web49_module_t mod, we
 }
 
 void web49_wat_print_section_import(web49_io_output_t *out, web49_module_t mod, web49_section_import_t simport) {
+    (void)mod;
     size_t num_funcs = 0;
     for (uint64_t i = 0; i < simport.num_entries; i++) {
         web49_section_import_entry_t import = simport.entries[i];
@@ -177,6 +179,7 @@ void web49_wat_print_section_import(web49_io_output_t *out, web49_module_t mod, 
 }
 
 void web49_wat_print_section_function(web49_io_output_t *out, web49_module_t mod, web49_section_function_t sfunction) {
+    (void)mod;
     size_t num_funcs = 0;
     web49_section_code_t code_section;
     web49_section_type_t type_section;
@@ -248,6 +251,7 @@ void web49_wat_print_section_function(web49_io_output_t *out, web49_module_t mod
 }
 
 void web49_wat_print_section_table(web49_io_output_t *out, web49_module_t mod, web49_section_table_t stable) {
+    (void)mod;
     for (uint64_t i = 0; i < stable.num_entries; i++) {
         web49_type_table_t table = stable.entries[i];
         web49_io_output_fprintf(out, "\n  (table (;%zu;) %" PRIu64, (size_t)i, table.limits.initial);
@@ -265,6 +269,7 @@ void web49_wat_print_section_table(web49_io_output_t *out, web49_module_t mod, w
 }
 
 void web49_wat_print_section_memory(web49_io_output_t *out, web49_module_t mod, web49_section_memory_t smemory) {
+    (void)mod;
     for (uint64_t i = 0; i < smemory.num_entries; i++) {
         web49_type_memory_t mem = smemory.entries[i];
         if (mem.maximum != UINT32_MAX) {
@@ -276,6 +281,7 @@ void web49_wat_print_section_memory(web49_io_output_t *out, web49_module_t mod, 
 }
 
 void web49_wat_print_section_global(web49_io_output_t *out, web49_module_t mod, web49_section_global_t sglobal) {
+    (void)mod;
     for (uint64_t i = 0; i < sglobal.num_entries; i++) {
         web49_section_global_entry_t global = sglobal.entries[i];
         web49_io_output_fprintf(out, "\n  (global (;%zu;) ", (size_t)i);
@@ -294,6 +300,7 @@ void web49_wat_print_section_global(web49_io_output_t *out, web49_module_t mod, 
 }
 
 void web49_wat_print_section_export(web49_io_output_t *out, web49_module_t mod, web49_section_export_t sexport) {
+    (void)mod;
     for (uint64_t i = 0; i < sexport.num_entries; i++) {
         web49_section_export_entry_t export = sexport.entries[i];
         web49_io_output_fprintf(out, "\n  (export \"%s\" ", export.field_str);
@@ -315,9 +322,14 @@ void web49_wat_print_section_export(web49_io_output_t *out, web49_module_t mod, 
     }
 }
 
-void web49_wat_print_section_start(web49_io_output_t *out, web49_module_t mod, web49_section_start_t sstart) {}
+void web49_wat_print_section_start(web49_io_output_t *out, web49_module_t mod, web49_section_start_t sstart) {
+    (void)out;
+    (void)mod;
+    (void)sstart;
+}
 
 void web49_wat_print_section_element(web49_io_output_t *out, web49_module_t mod, web49_section_element_t selement) {
+    (void)mod;
     for (uint64_t i = 0; i < selement.num_entries; i++) {
         web49_section_element_entry_t element = selement.entries[i];
         web49_io_output_fprintf(out, "\n  (elem (;%" PRIu64 ";) (", i);
@@ -331,9 +343,13 @@ void web49_wat_print_section_element(web49_io_output_t *out, web49_module_t mod,
 }
 
 void web49_wat_print_section_code(web49_io_output_t *out, web49_module_t mod, web49_section_code_t scode) {
+    (void)out;
+    (void)mod;
+    (void)scode;
 }
 
 void web49_wat_print_section_data(web49_io_output_t *out, web49_module_t mod, web49_section_data_t sdata) {
+    (void)mod;
     for (uint64_t i = 0; i < sdata.num_entries; i++) {
         web49_section_data_entry_t data = sdata.entries[i];
         web49_io_output_fprintf(out, "\n  (data (;%" PRIu64 ";) (", i);

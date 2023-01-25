@@ -505,7 +505,11 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
 
 #if defined(WEB49_PRINT_INSTR)
 #if defined(WEB49_PRINT_INSTR_DEPTH)
-#define DPRINT(name) for (size_t p=0; p<depth; p++) { fprintf(stderr, "| "); } fprintf(stderr, name "\n")
+#define DPRINT(name)                     \
+    for (size_t p = 0; p < depth; p++) { \
+        fprintf(stderr, "| ");           \
+    }                                    \
+    fprintf(stderr, name "\n")
 #else
 #define DPRINT(name) fprintf(stderr, name "\n")
 #endif
@@ -545,13 +549,8 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
             state.links = NULL;
             state.depth = 0;
             state.nlocals = block->nparams + block->nlocals;
-            uint32_t ret = UINT32_MAX;
             for (uint64_t i = 0; i < block->num_instrs; i++) {
-                // web49_debug_print_instr(stderr, block->instrs[i]);
-                uint32_t tmp = web49_interp_read_instr(&state, block->instrs[i], UINT32_MAX);
-                if (tmp != UINT32_MAX) {
-                    ret = tmp;
-                }
+                web49_interp_read_instr(&state, block->instrs[i], UINT32_MAX);
             }
             state.build.code[state.build.ncode++].opcode = OPCODE(WEB49_OPCODE_RETURN0);
             for (size_t i = 0; i < state.nlinks; i++) {
@@ -807,9 +806,13 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
     web49_interp_block_run_comp(block, ptrs, interp);
     web49_interp_data_t **restrict stacks = interp.stacks;
     web49_interp_opcode_t **restrict returns = interp.returns;
-    web49_interp_opcode_t r0[] = {
-        &&exitv,
-        &&exitv,
+    web49_interp_opcode_t r0[2] = {
+        (web49_interp_opcode_t){
+            .ptr = &&exitv,
+        },
+        (web49_interp_opcode_t){
+            .ptr = &&exitv,
+        },
     };
     *returns++ = r0;
     *stacks++ = &interp.locals[0];
@@ -956,12 +959,14 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
         if (entry->kind == WEB49_EXTERNAL_KIND_FUNCTION) {
             web49_interp_block_t *block = &interp.funcs[cur_func++];
             block->is_code = false;
-            block->module_str = web49_strdup(entry->module_str);
-            block->field_str = web49_strdup(entry->field_str);
+            block->module_str = entry->module_str;
+            block->field_str = entry->field_str;
             block->code = NULL;
             block->nlocals = 0;
             block->nparams = 0;
             block->nreturns = 1;
+            entry->module_str = NULL;
+            entry->field_str = NULL;
         }
     }
     for (size_t j = 0; j < global_section.num_entries; j++) {

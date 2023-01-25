@@ -8,8 +8,9 @@
 #include "../src/read_wat.h"
 
 web49_env_func_t web49_main_import_func(void *state, const char *mod, const char *func) {
+    (void)state;
     if (!strcmp(mod, "wasi_snapshot_preview1")) {
-        return web49_api_import_wasi(state, func);
+        return web49_api_import_wasi(func);
     } else {
         return NULL;
     }

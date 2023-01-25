@@ -176,6 +176,9 @@ uint64_t web49_readwat_expr_to_u64(web49_readwat_table_t *table, web49_readwat_e
     } else if (expr.tag == WEB49_READWAT_EXPR_TAG_FUN) {
         fprintf(stderr, "bad module: expected a number, not (%s ...)\n", expr.fun_fun);
         __builtin_trap();
+    } else {
+        fprintf(stderr, "bad module: expected a number not a string");
+        __builtin_trap();
     }
     if (str[0] == '$') {
         uint64_t ret = web49_readwat_table_get(table, &str[1]);

@@ -229,7 +229,7 @@ web49_interp_data_t web49_api_import_wasi_fd_prestat_dir_name(web49_interp_t int
     return (web49_interp_data_t){.i32_u = 0};
 }
 
-web49_env_func_t web49_api_import_wasi(void *wasi, const char *func) {
+web49_env_func_t web49_api_import_wasi(const char *func) {
     if (!strcmp(func, "random_get")) {
         return &web49_api_import_wasi_random_get;
     } else if (!strcmp(func, "fd_seek")) {

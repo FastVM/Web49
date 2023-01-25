@@ -2,7 +2,7 @@
 
 #include "../tables.h"
 
-void web49_opt_tee_code(web49_module_t *mod, web49_section_code_entry_t *entry) {
+void web49_opt_tee_code(web49_section_code_entry_t *entry) {
     uint64_t len = 0;
     uint64_t alloc = entry->num_instrs + 16;
     web49_instr_t *next = web49_malloc(sizeof(web49_instr_t) * alloc);
@@ -36,7 +36,7 @@ void web49_opt_tee_module(web49_module_t *mod) {
         web49_section_t cur = mod->sections[s];
         if (cur.header.id == WEB49_SECTION_ID_CODE) {
             for (uint64_t i = 0; i < cur.code_section.num_entries; i++) {
-                web49_opt_tee_code(mod, &cur.code_section.entries[i]);
+                web49_opt_tee_code(&cur.code_section.entries[i]);
             }
         }
     }
