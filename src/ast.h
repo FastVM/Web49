@@ -461,21 +461,6 @@ struct web49_type_t {
     web49_lang_type_t tag;
 };
 
-// enum {
-//     WEB49_SECTION_TYPE_CUSTOM = 0,
-//     WEB49_SECTION_TYPE_TYPE = 1,
-//     WEB49_SECTION_TYPE_IMPORT = 2,
-//     WEB49_SECTION_TYPE_FUNCTION = 3,
-//     WEB49_SECTION_TYPE_TABLE = 4,
-//     WEB49_SECTION_TYPE_MEMORY = 5,
-//     WEB49_SECTION_TYPE_GLOBAL = 6,
-//     WEB49_SECTION_TYPE_EXPORT = 7,
-//     WEB49_SECTION_TYPE_START = 8,
-//     WEB49_SECTION_TYPE_ELEMENT = 9,
-//     WEB49_SECTION_TYPE_CODE = 10,
-//     WEB49_SECTION_TYPE_DAT = 11,
-// };
-
 struct web49_section_custom_t {
     const char *name;
     void *payload;

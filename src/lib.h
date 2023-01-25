@@ -18,6 +18,13 @@
 
 int getentropy(void *buffer, size_t length);
 
+#if defined(WEB49_COUNT_ALLOC)
+extern size_t web49_total_alloc;
+#define web49_req_mem(size) (web49_total_alloc += (size))
+#else
+#define web49_req_mem(size) ((void)(size))
+#endif
+
 #if 0
 #define web49_malloc(size) (printf("%s@%s+%zu\n", __FILE__, __LINE__, (size_t)(size)), malloc(size))
 #define web49_alloc0(size) (printf("%s@%s+%zu\n", __FILE__, __LINE__, (size_t)(size)), calloc(size, 1))
@@ -25,6 +32,7 @@ int getentropy(void *buffer, size_t length);
 #define web49_free(ptr) (free((void *)ptr))
 #else
 static void *web49_malloc(size_t size) {
+	web49_req_mem(size);
 	void *ret = malloc(size);
 	if (size != 0 && ret == NULL) {
 		fprintf(stderr, "malloc(%zu) => %s\n", size, strerror(errno));
@@ -33,6 +41,7 @@ static void *web49_malloc(size_t size) {
 	return ret;
 }
 static void *web49_alloc0(size_t size) {
+	web49_req_mem(size);
 	void *ret = calloc(size, 1);
 	if (size != 0 && ret == NULL) {
 		fprintf(stderr, "calloc(%zu, 1) => %s\n", size, strerror(errno));
@@ -41,6 +50,7 @@ static void *web49_alloc0(size_t size) {
 	return ret;
 }
 static void *web49_realloc(void *ptr, size_t size) {
+	web49_req_mem(size);
 	void *ret = realloc(ptr, size);
 	if (size != 0 && ret == NULL) {
 		fprintf(stderr, "realloc(%p, %zu) => %s\n", ptr, size, strerror(errno));

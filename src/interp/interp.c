@@ -190,7 +190,15 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
         build->code[build->ncode++].data.i32_u = cond.immediate.varint32;
         web49_interp_link_get(state, build->ncode++, ift);
         web49_interp_link_get(state, build->ncode++, iff);
+    } else if (cond.opcode == WEB49_OPCODE_I32_CONST) {
+        build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_BR);
+        if (cond.immediate.varint32 != 0) {
+            web49_interp_link_get(state, build->ncode++, ift);
+        } else {
+            web49_interp_link_get(state, build->ncode++, iff);
+        }
     } else {
+        // web49_debug_print_instr(stderr, cond);
         uint32_t cpos = web49_interp_read_instr(state, cond, UINT32_MAX);
         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_IF);
         build->code[build->ncode++].data.i32_u = cpos;
@@ -201,7 +209,6 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
 }
 
 uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur, uint32_t local) {
-    // web49_debug_print_instr(stderr, cur);
     web49_interp_build_t *build = &state->build;
     void **ptrs = state->ptrs;
     uint32_t off = 16;
@@ -306,7 +313,6 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         state->depth -= 1;
         if (ret != cur.immediate.varuint32 && ret != UINT32_MAX) {
             build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_GET_LOCAL);
-            // fprintf(stderr, "%zu\n", (size_t) cur.immediate.varuint32);
             build->code[build->ncode++].data.i32_u = cur.immediate.varuint32;
             build->code[build->ncode++].data.i32_u = ret;
         }
@@ -389,8 +395,6 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL_INDIRECT);
         build->code[build->ncode++].data.i32_u = args[cur.nargs - 1];
         build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
-        // fprintf(stderr, " --- \ncall_indirect %zu %zu\n", (size_t) args[cur.nargs-1], state->depth + state->nlocals);
-        // web49_debug_print_instr(stderr, cur);
         return UINT32_MAX;
     }
     if (cur.opcode == WEB49_OPCODE_CALL0 || cur.opcode == WEB49_OPCODE_CALL1) {
@@ -398,7 +402,18 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         build->code[build->ncode++].ptr = &state->interp->funcs[cur.immediate.varint32];
         build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
         build->code[build->ncode++].data.i32_u = cur.nargs;
-        return UINT32_MAX;
+        if (cur.opcode == WEB49_OPCODE_CALL0) {
+            return UINT32_MAX;
+        } else {
+            if (local != UINT32_MAX && local != state->depth + state->nlocals) {
+                build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_GET_LOCAL);
+                build->code[build->ncode++].data.i32_u = local;
+                build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
+                return local;
+            } else {
+                return state->depth + state->nlocals;
+            }
+        }
     }
     build->code[build->ncode++].opcode = OPCODE(cur.opcode + add);
     for (uint64_t i = 0; i < cur.nargs; i++) {
@@ -538,6 +553,7 @@ void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49
             for (size_t instr=0; instr < block->num_instrs; instr++) {
                 web49_free_instr(block->instrs[instr]);
             }            
+            block->num_instrs = 0;
             web49_free(block->instrs);
             block->instrs = NULL;
             block->code = state.build.code;
@@ -966,12 +982,10 @@ void web49_free_interp(web49_interp_t interp) {
         web49_interp_block_t *block = &interp.funcs[func];
         web49_free(block->code);
         if (block->is_code) {
-            if (block->instrs != NULL) {
-                for (size_t instr=0; instr < block->num_instrs; instr++) {
-                    web49_free_instr(block->instrs[instr]);
-                }            
-                web49_free(block->instrs);
-            }
+            for (size_t instr=0; instr < block->num_instrs; instr++) {
+                web49_free_instr(block->instrs[instr]);
+            }            
+            web49_free(block->instrs);
         } else {
             web49_free(block->module_str);
             web49_free(block->field_str);

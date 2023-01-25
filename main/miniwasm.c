@@ -167,7 +167,7 @@ int web49_file_main(const char *inarg, const char **args) {
             mod = web49_readwat_module(&infile);
         }
     }
-    free(infile.byte_buf);
+    web49_free(infile.byte_buf);
     web49_opt_tee_module(&mod);
     web49_opt_tree_module(&mod);
     uint32_t start = 0;
@@ -176,6 +176,7 @@ int web49_file_main(const char *inarg, const char **args) {
         web49_section_export_entry_t entry = exports.entries[j];
         if (!strcmp(entry.field_str, "_start")) {
             start = entry.index;
+            break;
         }
     }
     web49_interp_t interp = web49_interp_module(mod, args);
