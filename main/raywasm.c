@@ -12,7 +12,7 @@ static web49_interp_data_t web49_main_import_silly(web49_interp_t interp) {
 
 web49_env_func_t web49_main_import_func(void *state, const char *mod, const char *func) {
     if (!strcmp(mod, "wasi_snapshot_preview1")) {
-        return web49_api_import_wasi(state, func);
+        return web49_api_import_wasi(func);
     } else if (!strcmp(mod, "env")) {
         if (!strcmp(func, "emscripten_asm_const_int")) {
             return &web49_main_import_silly;

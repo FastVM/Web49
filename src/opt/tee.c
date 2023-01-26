@@ -4,9 +4,9 @@
 
 void web49_opt_tee_code(web49_section_code_entry_t *entry) {
     uint32_t len = 0;
-    uint64_t alloc = entry->num_instrs + 16;
+    uint32_t alloc = entry->num_instrs + 16;
     web49_instr_t *next = web49_malloc(sizeof(web49_instr_t) * alloc);
-    for (uint64_t i = 0; i < entry->num_instrs; i++) {
+    for (uint32_t i = 0; i < entry->num_instrs; i++) {
         web49_instr_t instr = entry->instrs[i];
         if (len + 2 >= alloc) {
             alloc = (len + 2) * 2;

@@ -124,7 +124,7 @@ static int web49_file_main(const char *inarg, const char **args) {
                                     } else if (!strcmp(wants.fun_fun, "f32.const")) {
                                         float expected;
                                         sscanf(wants.fun_args[0].sym, "%f", &expected);
-                                        if (data[n].f32 == expected || (isnanf(expected) && isnanf(data[n].f32))) {
+                                        if (data[n].f32 == expected || (isnan(expected) && isnan(data[n].f32))) {
                                             fprintf(stderr, "wasm spec test: invoke %s pass: %f == %f\n", entry.field_str, (double) data[n].f32, (double) expected);
                                         } else {
                                             fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %f != %f (expected return value)\n", entry.field_str, (double) data[n].f32, (double) expected);

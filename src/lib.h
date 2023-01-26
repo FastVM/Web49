@@ -16,7 +16,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(_WIN32)
+#define getentropy(buf, len) ((int)0)
+#else
 int getentropy(void *buffer, size_t length);
+#endif
 
 #if defined(WEB49_COUNT_ALLOC)
 extern size_t web49_total_alloc;

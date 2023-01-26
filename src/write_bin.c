@@ -3,14 +3,14 @@
 
 #include "tables.h"
 
-void web49_writebin_byte(web49_writebin_buf_t *out, uint8_t u8) {
+static void web49_writebin_byte(web49_writebin_buf_t *out, uint8_t u8) {
     if (out->len + 1 >= out->alloc) {
         out->alloc = (out->alloc + 2) * 4;
         out->data = web49_realloc(out->data, sizeof(uint8_t) * out->alloc);
     }
     out->data[out->len++] = u8;
 }
-void web49_writebin_fwrite(web49_writebin_buf_t *out, size_t n, const void *data) {
+static void web49_writebin_fwrite(web49_writebin_buf_t *out, size_t n, const void *data) {
     const uint8_t *udata = (const uint8_t *)data;
     for (size_t i = 0; i < n; i++) {
         web49_writebin_byte(out, udata[i]);
@@ -31,7 +31,7 @@ void web49_writebin_type_memory(web49_writebin_buf_t *out, web49_type_memory_t t
         web49_writebin_uleb(out, type.maximum);
     }
 }
-void web49_writebin_init_expr(web49_writebin_buf_t *out, web49_instr_t instr) {
+static void web49_writebin_init_expr(web49_writebin_buf_t *out, web49_instr_t instr) {
     web49_writebin_instr(out, instr);
     web49_writebin_byte(out, 0x0B);
 }

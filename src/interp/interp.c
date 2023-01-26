@@ -183,7 +183,6 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
             web49_interp_link_get(state, build->ncode++, iff);
         }
     } else {
-        // web49_debug_print_instr(stderr, cond);
         uint32_t cpos = web49_interp_read_instr(state, cond, UINT32_MAX);
         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_IF);
         build->code[build->ncode++].data.i32_u = cpos;
@@ -535,6 +534,9 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
             state.depth = 0;
             state.nlocals = block->nparams + block->nlocals;
             for (uint64_t i = 0; i < block->num_instrs; i++) {
+#if defined(WEB49_PRINT_AST)
+                web49_debug_print_instr(stderr, block->instrs[i]);
+#endif
                 web49_interp_read_instr(&state, block->instrs[i], UINT32_MAX);
             }
             state.build.code[state.build.ncode++].opcode = OPCODE(WEB49_OPCODE_RETURN0);
