@@ -812,7 +812,7 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
     NEXT();
 exitv:
     *ptr_interp = interp;
-    return interp.yield_base;
+    return &locals[0];
 #if defined(WEB49_OPT_CONST0)
 #define LOCAL0 head[0].data
 #define NAME(x) LABEL(x##_C0)

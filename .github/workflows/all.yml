@@ -17,6 +17,7 @@ jobs:
       - run: sudo apt install -y python3 python3-pip
       - run: pip3 install matplotlib
       - run: python3 bench.py
+        timeout-minutes: 3
       - uses: actions/upload-artifact@v3
         with:
           name: benchmarks

@@ -1,7 +1,5 @@
-FAIL address
 FAIL binary
 FAIL binary-leb128
-FAIL block
 FAIL br
 FAIL br_if
 FAIL br_table
@@ -9,7 +7,6 @@ FAIL bulk
 FAIL call
 FAIL call_indirect
 FAIL comments
-FAIL const
 FAIL conversions
 FAIL custom
 FAIL data
@@ -30,8 +27,6 @@ FAIL float_misc
 FAIL func
 FAIL func_ptrs
 FAIL global
-FAIL i32
-FAIL i64
 FAIL if
 FAIL imports
 FAIL inline-module
@@ -39,7 +34,6 @@ FAIL int_literals
 FAIL labels
 FAIL left-to-right
 FAIL linking
-FAIL load
 FAIL local_get
 FAIL local_set
 FAIL local_tee
@@ -51,9 +45,7 @@ FAIL memory_grow
 FAIL memory_init
 FAIL memory_redundancy
 FAIL memory_size
-FAIL memory_trap
 FAIL names
-FAIL nop
 FAIL ref_func
 FAIL ref_is_null
 FAIL ref_null
@@ -81,9 +73,17 @@ FAIL utf8-custom-section-id
 FAIL utf8-import-field
 FAIL utf8-import-module
 FAIL utf8-invalid-encoding
+PASS address
 PASS align
+PASS block
+PASS const
 PASS forward
+PASS i32
+PASS i64
 PASS int_exprs
+PASS load
+PASS memory_trap
+PASS nop
 PASS store
 PASS traps
 PASS type
