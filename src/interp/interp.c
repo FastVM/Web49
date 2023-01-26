@@ -4,7 +4,11 @@
 
 #include "../tables.h"
 
+#if defined(WEB49_USE_SWITCH)
+#define OPCODE(n) (n)
+#else
 #define OPCODE(n) ({size_t x = (n); if (ptrs[x] == NULL) {__builtin_trap();} ptrs[x]; })
+#endif
 
 uint32_t *web49_interp_link_box(void) {
     return web49_malloc(sizeof(uint32_t));
@@ -397,14 +401,14 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     }
     if (cur.opcode == WEB49_OPCODE_CALL0) {
         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL);
-        build->code[build->ncode++].opcode = &state->interp->funcs[cur.immediate.varint32];
+        build->code[build->ncode++].block = &state->interp->funcs[cur.immediate.varint32];
         build->code[build->ncode++].data.i32_u = UINT32_MAX;
         build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
         return UINT32_MAX;
     }
     if (cur.opcode == WEB49_OPCODE_CALL1) {
         build->code[build->ncode++].opcode = OPCODE(WEB49_OPCODE_CALL);
-        build->code[build->ncode++].opcode = &state->interp->funcs[cur.immediate.varint32];
+        build->code[build->ncode++].block = &state->interp->funcs[cur.immediate.varint32];
         build->code[build->ncode++].data.i32_u = UINT32_MAX;
         build->code[build->ncode++].data.i32_u = state->depth + state->nlocals;
         if (local != UINT32_MAX && local != state->depth + state->nlocals) {
@@ -487,35 +491,6 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     return ret;
 }
 
-#if defined(WEB49_PRINT_INSTR)
-#if defined(WEB49_PRINT_INSTR_DEPTH)
-#define DPRINT(name)                     \
-    for (size_t p = 0; p < depth; p++) { \
-        fprintf(stderr, "| ");           \
-    }                                    \
-    fprintf(stderr, name "\n")
-#else
-#define DPRINT(name) fprintf(stderr, name "\n")
-#endif
-#else
-#define DPRINT(name)
-#endif
-
-#if 0
-#define LABEL(name)          \
-    __builtin_unreachable(); \
-    DO_##name:;              \
-    DPRINT(#name);           \
-    head += 1;
-#define NEXT() goto * head->opcode
-#else
-#define LABEL(name)          \
-    __builtin_unreachable(); \
-    DO_##name:;              \
-    DPRINT(#name);
-#define NEXT() goto *head++->opcode
-#endif
-
 static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs, web49_interp_t interp) {
     if (block->code == NULL) {
         if (block->is_code) {
@@ -542,7 +517,7 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
             state.build.code[state.build.ncode++].opcode = OPCODE(WEB49_OPCODE_RETURN0);
             for (size_t i = 0; i < state.nlinks; i++) {
                 web49_interp_link_t link = state.links[i];
-                state.build.code[link.out].opcode = &state.build.code[*link.box];
+                state.build.code[link.out].opcodes = &state.build.code[*link.box];
             }
             for (size_t i = 0; i < state.nlinks; i++) {
                 state.links[i].box[0] = 0;
@@ -575,7 +550,7 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
                 __builtin_trap();
             }
             instrs[1].func = interp.import_func(interp.import_state, block->module_str, block->field_str);
-            if (instrs[1].opcode == NULL) {
+            if (instrs[1].opcodes == NULL) {
                 fprintf(stderr, "not implemented: %s.%s\n", block->module_str, block->field_str);
                 __builtin_trap();
             }
@@ -588,8 +563,43 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
     }
 }
 
+#if defined(WEB49_PRINT_INSTR)
+#if defined(WEB49_PRINT_INSTR_DEPTH)
+#define DPRINT(name)                     \
+    for (size_t p = 0; p < depth; p++) { \
+        fprintf(stderr, "| ");           \
+    }                                    \
+    fprintf(stderr, name "\n")
+#else
+#define DPRINT(name) fprintf(stderr, name "\n")
+#endif
+#else
+#define DPRINT(name)
+#endif
+
+#if defined(WEB49_USE_SWITCH)
+#define LABEL(op) case op:; DPRINT(#op);
+#define NEXT() switch_case = head++->opcode; goto next;
+#else
+#define LABEL(op) DO_##op:; DPRINT(#op);
+#define NEXT() goto *head++->opcode;
+#endif
+
+#if defined(WEB49_USE_SWITCH)
+#define USE_R(name) name
+#define USE_C0(name) name+WEB49_OPCODE_WITH_CONST0
+#define USE_C1(name) name+WEB49_OPCODE_WITH_CONST1
+#define USE_C01(name) name+WEB49_OPCODE_WITH_CONST0+WEB49_OPCODE_WITH_CONST1
+#else
+#define DO_USE_R(name) DO_##name##_R
+#define DO_USE_C0(name) DO_##name##_C0
+#define DO_USE_C1(name) DO_##name##_C1
+#define DO_USE_C01(name) DO_##name##_C01
+#endif
+
 web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_interp_block_t *block) {
     web49_interp_t interp = *ptr_interp;
+#if !defined(WEB49_USE_SWITCH)
     static void *ptrs[WEB49_MAX_OPCODE_INTERP_NUM] = {
 #define TABLE_PUTV(n, v) [n] = &&DO_##v
 #if defined(WEB49_OPT_CONST0)
@@ -601,6 +611,7 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
 #define TABLE_PUT1(x) TABLE_PUTV(x, x##_R)
 #define TABLE_PUT2(x) TABLE_PUTV(x, x##_R), TABLE_PUTV(x + WEB49_OPCODE_WITH_CONST1, x##_C1)
 #endif
+         
         TABLE_PUT1(WEB49_OPCODE_IF),
         TABLE_PUT0(WEB49_OPCODE_BR),
         TABLE_PUT1(WEB49_OPCODE_BR_TABLE),
@@ -782,6 +793,19 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
 #undef TABLE_PUTV
 #undef TABLE_PUT1
 #undef TABLE_PUT2
+        [WEB49_OPCODE_CALL_DONE0] = &&DO_WEB49_OPCODE_CALL_DONE0,
+        [WEB49_OPCODE_CALL_DONE1] = &&DO_WEB49_OPCODE_CALL_DONE1,
+        [WEB49_OPCODE_CALL_DONE2] = &&DO_WEB49_OPCODE_CALL_DONE2,
+        [WEB49_OPCODE_CALL_DONE4] = &&DO_WEB49_OPCODE_CALL_DONE4,
+        [WEB49_OPCODE_CALL_DONE8] = &&DO_WEB49_OPCODE_CALL_DONE8,
+        [WEB49_OPCODE_CALL_DONE16] = &&DO_WEB49_OPCODE_CALL_DONE16,
+        [WEB49_OPCODE_CALL_DONE32] = &&DO_WEB49_OPCODE_CALL_DONE32,
+        [WEB49_OPCODE_CALL_DONE64] = &&DO_WEB49_OPCODE_CALL_DONE64,
+        [WEB49_OPCODE_CALL_DONE128] = &&DO_WEB49_OPCODE_CALL_DONE128,
+        [WEB49_OPCODE_CALL_DONE256] = &&DO_WEB49_OPCODE_CALL_DONE256,
+        [WEB49_OPCODE_CALL_DONE512] = &&DO_WEB49_OPCODE_CALL_DONE512,
+        [WEB49_OPCODE_CALL_DONE1024] = &&DO_WEB49_OPCODE_CALL_DONE1024,
+        [WEB49_OPCODE_EXIT] = &&DO_WEB49_OPCODE_EXIT,
         [WEB49_OPCODE_MEMORY_INIT] = &&DO_WEB49_OPCODE_MEMORY_INIT,
         [WEB49_OPCODE_DATA_DROP] = &&DO_WEB49_OPCODE_DATA_DROP,
         [WEB49_OPCODE_TABLE_INIT] = &&DO_WEB49_OPCODE_TABLE_INIT,
@@ -790,15 +814,18 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
         [WEB49_OPCODE_FFI_CALL0] = &&DO_WEB49_OPCODE_FFI_CALL0,
         [WEB49_OPCODE_FFI_CALL1] = &&DO_WEB49_OPCODE_FFI_CALL1,
     };
+#else
+    void *ptrs[1] = {NULL};
+#endif
     web49_interp_block_run_comp(block, ptrs, interp);
     web49_interp_data_t **restrict stacks = interp.stacks;
     web49_interp_opcode_t **restrict returns = interp.returns;
     web49_interp_opcode_t r0[2] = {
         (web49_interp_opcode_t){
-            .opcode = &&exitv,
+            .opcode = OPCODE(WEB49_OPCODE_EXIT),
         },
         (web49_interp_opcode_t){
-            .opcode = &&exitv,
+            .opcode = OPCODE(WEB49_OPCODE_EXIT),
         },
     };
     *returns++ = r0;
@@ -806,22 +833,30 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
     web49_interp_data_t *yield_ptr = interp.yield_base;
     web49_interp_opcode_t *restrict head = block->code;
     web49_interp_data_t *restrict locals = interp.locals;
-#if defined(WEB49_PRINT_INSTR)
+#if defined(WEB49_PRINT_INSTR_DEPTH)
     size_t depth = 1;
 #endif
+#if defined(WEB49_USE_SWITCH)
+    size_t switch_case;
     NEXT();
-exitv:
+    next:; switch (switch_case) {
+    default: __builtin_unreachable();
+#else
+    NEXT();
+#endif
+LABEL(WEB49_OPCODE_EXIT) {
     *ptr_interp = interp;
     return &locals[0];
+}
 #if defined(WEB49_OPT_CONST0)
 #define LOCAL0 head[0].data
-#define NAME(x) LABEL(x##_C0)
+#define NAME(x) LABEL(USE_C0(x))
 #include "interp1.inc"
 #undef LOCAL0
 #undef NAME
 #define LOCAL0 head[0].data
 #define LOCAL1 locals[head[1].data.i32_u]
-#define NAME(x) LABEL(x##_C0)
+#define NAME(x) LABEL(USE_C0(x))
 #include "interp2.inc"
 #undef LOCAL0
 #undef LOCAL1
@@ -831,20 +866,20 @@ exitv:
 #include "interp0.inc"
 #undef NAME
 #define LOCAL0 locals[head[0].data.i32_u]
-#define NAME(x) LABEL(x##_R)
+#define NAME(x) LABEL(USE_R(x))
 #include "interp1.inc"
 #undef LOCAL0
 #undef NAME
 #define LOCAL0 locals[head[0].data.i32_u]
 #define LOCAL1 head[1].data
-#define NAME(x) LABEL(x##_C1)
+#define NAME(x) LABEL(USE_C1(x))
 #include "interp2.inc"
 #undef LOCAL0
 #undef LOCAL1
 #undef NAME
 #define LOCAL0 locals[head[0].data.i32_u]
 #define LOCAL1 locals[head[1].data.i32_u]
-#define NAME(x) LABEL(x##_R)
+#define NAME(x) LABEL(USE_R(x))
 #include "interp2.inc"
 #undef LOCAL0
 #undef LOCAL1
@@ -852,7 +887,7 @@ exitv:
 #if defined(WEB49_OPT_CONST0)
 #define LOCAL0 head[0].data
 #define LOCAL1 head[1].data
-#define NAME(x) LABEL(x##_C01)
+#define NAME(x) LABEL(USE_C01(x))
 #include "interp2.inc"
 #undef LOCAL0
 #undef LOCAL1
@@ -903,6 +938,9 @@ exitv:
         locals = *--stacks;
         NEXT();
     }
+#if defined(WEB49_USE_SWITCH)
+    }
+#endif
 }
 
 web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {

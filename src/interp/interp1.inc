@@ -25,10 +25,10 @@ NAME(WEB49_OPCODE_CALL_INDIRECT) {
 }
 NAME(WEB49_OPCODE_IF) {
     if (LOCAL0.i32_u != 0) {
-        head = head[1].opcode;
+        head = head[1].opcodes;
         NEXT();
     } else {
-        head = head[2].opcode;
+        head = head[2].opcodes;
         NEXT();
     }
 }
@@ -39,7 +39,7 @@ NAME(WEB49_OPCODE_BR_TABLE) {
     if (brvalue >= maxvalue) {
         brvalue = maxvalue;
     }
-    head = head[brvalue].opcode;
+    head = head[brvalue].opcodes;
     NEXT();
 }
 NAME(WEB49_OPCODE_SET_GLOBAL) {

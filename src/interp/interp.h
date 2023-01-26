@@ -7,6 +7,7 @@ typedef uint64_t web49_interp_instr_t;
 
 enum web49_interp_instr_enum_t {
     WEB49_MIN_OPCODE_INTERP = WEB49_MAX_OPCODE_NUM,
+    WEB49_OPCODE_EXIT,
     WEB49_OPCODE_FFI_CALL0,
     WEB49_OPCODE_FFI_CALL1,
     WEB49_OPCODE_IF_I32_EQ,
@@ -19,6 +20,18 @@ enum web49_interp_instr_enum_t {
     WEB49_OPCODE_IF_I64_LT_U,
     WEB49_OPCODE_IF_I64_GT_S,
     WEB49_OPCODE_IF_I64_GT_U,
+    WEB49_OPCODE_CALL_DONE0,
+    WEB49_OPCODE_CALL_DONE1,
+    WEB49_OPCODE_CALL_DONE2,
+    WEB49_OPCODE_CALL_DONE4,
+    WEB49_OPCODE_CALL_DONE8,
+    WEB49_OPCODE_CALL_DONE16,
+    WEB49_OPCODE_CALL_DONE32,
+    WEB49_OPCODE_CALL_DONE64,
+    WEB49_OPCODE_CALL_DONE128,
+    WEB49_OPCODE_CALL_DONE256,
+    WEB49_OPCODE_CALL_DONE512,
+    WEB49_OPCODE_CALL_DONE1024,
     WEB49_MAX_OPCODE_INTERP = WEB49_OPCODE_IF_I64_GT_U + 1,
 #if defined(WEB49_OPT_CONST0)
     WEB49_OPCODE_WITH_CONST0 = WEB49_MAX_OPCODE_INTERP * 1,
@@ -97,7 +110,12 @@ struct web49_interp_t {
 };
 
 union web49_interp_opcode_t {
+#if defined(WEB49_USE_SWITCH)
+    size_t opcode;
+#else
     void *opcode;
+#endif
+    web49_interp_opcode_t *opcodes;
     web49_env_func_t func;
     web49_interp_data_t data;
     web49_interp_block_t *block;

@@ -221,81 +221,81 @@ NAME(WEB49_OPCODE_F64_GE) {
 }
 NAME(WEB49_OPCODE_IF_I32_EQ) {
     if (LOCAL0.i32_u == LOCAL1.i32_u) {
-        head = head[2].opcode;
+        head = head[2].opcodes;
     } else {
-        head = head[3].opcode;
+        head = head[3].opcodes;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I32_LT_S) {
     if (LOCAL0.i32_s < LOCAL1.i32_s) {
-        head = head[2].opcode;
+        head = head[2].opcodes;
     } else {
-        head = head[3].opcode;
+        head = head[3].opcodes;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I32_LT_U) {
     if (LOCAL0.i32_u < LOCAL1.i32_u) {
-        head = head[2].opcode;
+        head = head[2].opcodes;
     } else {
-        head = head[3].opcode;
+        head = head[3].opcodes;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I32_GT_S) {
     if (LOCAL0.i32_s > LOCAL1.i32_s) {
-        head = head[2].opcode;
+        head = head[2].opcodes;
     } else {
-        head = head[3].opcode;
+        head = head[3].opcodes;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I32_GT_U) {
     if (LOCAL0.i32_u > LOCAL1.i32_u) {
-        head = head[2].opcode;
+        head = head[2].opcodes;
     } else {
-        head = head[3].opcode;
+        head = head[3].opcodes;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I64_EQ) {
     if (LOCAL0.i64_u == LOCAL1.i64_u) {
-        head = head[2].opcode;
+        head = head[2].opcodes;
     } else {
-        head = head[3].opcode;
+        head = head[3].opcodes;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I64_LT_S) {
     if (LOCAL0.i64_s < LOCAL1.i64_s) {
-        head = head[2].opcode;
+        head = head[2].opcodes;
     } else {
-        head = head[3].opcode;
+        head = head[3].opcodes;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I64_LT_U) {
     if (LOCAL0.i64_u < LOCAL1.i64_u) {
-        head = head[2].opcode;
+        head = head[2].opcodes;
     } else {
-        head = head[3].opcode;
+        head = head[3].opcodes;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I64_GT_S) {
     if (LOCAL0.i64_s > LOCAL1.i64_s) {
-        head = head[2].opcode;
+        head = head[2].opcodes;
     } else {
-        head = head[3].opcode;
+        head = head[3].opcodes;
     }
     NEXT();
 }
 NAME(WEB49_OPCODE_IF_I64_GT_U) {
     if (LOCAL0.i64_u > LOCAL1.i64_u) {
-        head = head[2].opcode;
+        head = head[2].opcodes;
     } else {
-        head = head[3].opcode;
+        head = head[3].opcodes;
     }
     NEXT();
 }
