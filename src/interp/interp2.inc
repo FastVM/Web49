@@ -335,6 +335,7 @@ NAME(WEB49_OPCODE_I32_REM_U) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_AND) {
+    // fprintf(stderr, "i32.and 0x%"PRIx32" & 0x%"PRIx32"\n", LOCAL0.i32_u, LOCAL1.i32_u);
     locals[head[2].data.i32_u].i32_u = LOCAL0.i32_u & LOCAL1.i32_u;
     head += 3;
     NEXT();

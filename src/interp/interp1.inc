@@ -4,26 +4,30 @@ NAME(WEB49_OPCODE_YIELD_PUSH) {
     NEXT();
 }
 NAME(WEB49_OPCODE_RETURN1) {
-#if defined(WEB49_PRINT_INSTR)
+#if defined(WEB49_PRINT_INSTR_DEPTH)
     depth -= 1;
 #endif
     web49_interp_data_t reg = LOCAL0;
+    // fprintf(stderr, "r%"PRIu32" = 0x%016"PRIx64"\n", head[0].data.i32_u, reg.i64_u);
     locals[0] = reg;
     head = *--returns;
     locals = *--stacks;
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_INDIRECT) {
+    // fprintf(stderr, "locals[%"PRIu32"] = %"PRIu32"\n", head[0].data.i32_u, LOCAL0.i32_u);
     web49_interp_block_t *fblock = interp.table[LOCAL0.i32_u];
     web49_interp_block_run_comp(fblock, ptrs, interp);
     *returns++ = head + 2;
     *stacks++ = locals;
+    // fprintf(stderr, "n = %zu\n", (size_t) head[1].data.i32_u);
     locals += head[1].data.i32_u;
     memset(locals + fblock->nparams, 0, sizeof(web49_interp_data_t) * fblock->nlocals);
     head = fblock->code;
     NEXT();
 }
 NAME(WEB49_OPCODE_IF) {
+    // fprintf(stderr, "IF %s %zi %zi\n", LOCAL0.i32_u ? "TRUE" : "FALSE", head[1].opcodes-head, head[2].opcodes-head);
     if (LOCAL0.i32_u != 0) {
         head = head[1].opcodes;
         NEXT();

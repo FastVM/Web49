@@ -563,6 +563,22 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
     }
 }
 
+#if defined(WEB49_USE_SWITCH)
+#define USE_R(name) name
+#define USE_C0(name) name+WEB49_OPCODE_WITH_CONST0
+#define USE_C1(name) name+WEB49_OPCODE_WITH_CONST1
+#define USE_C01(name) name+WEB49_OPCODE_WITH_CONST0+WEB49_OPCODE_WITH_CONST1
+#else
+#define USE_R(name) name
+#define USE_C0(name) name
+#define USE_C1(name) name
+#define USE_C01(name) name
+#define DO_USE_R(name) DO_##name##_R
+#define DO_USE_C0(name) DO_##name##_C0
+#define DO_USE_C1(name) DO_##name##_C1
+#define DO_USE_C01(name) DO_##name##_C01
+#endif
+
 #if defined(WEB49_PRINT_INSTR)
 #if defined(WEB49_PRINT_INSTR_DEPTH)
 #define DPRINT(name)                     \
@@ -583,18 +599,6 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
 #else
 #define LABEL(op) DO_##op:; DPRINT(#op);
 #define NEXT() goto *head++->opcode;
-#endif
-
-#if defined(WEB49_USE_SWITCH)
-#define USE_R(name) name
-#define USE_C0(name) name+WEB49_OPCODE_WITH_CONST0
-#define USE_C1(name) name+WEB49_OPCODE_WITH_CONST1
-#define USE_C01(name) name+WEB49_OPCODE_WITH_CONST0+WEB49_OPCODE_WITH_CONST1
-#else
-#define DO_USE_R(name) DO_##name##_R
-#define DO_USE_C0(name) DO_##name##_C0
-#define DO_USE_C1(name) DO_##name##_C1
-#define DO_USE_C01(name) DO_##name##_C01
 #endif
 
 web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_interp_block_t *block) {
@@ -917,7 +921,7 @@ LABEL(WEB49_OPCODE_EXIT) {
         NEXT();
     }
     LABEL(WEB49_OPCODE_FFI_CALL1) {
-#if defined(WEB49_PRINT_INSTR)
+#if defined(WEB49_PRINT_INSTR_DEPTH)
         depth -= 1;
 #endif
         interp.locals = locals;
@@ -928,7 +932,7 @@ LABEL(WEB49_OPCODE_EXIT) {
         NEXT();
     }
     LABEL(WEB49_OPCODE_FFI_CALL0) {
-#if defined(WEB49_PRINT_INSTR)
+#if defined(WEB49_PRINT_INSTR_DEPTH)
         depth -= 1;
 #endif
         interp.locals = locals;
