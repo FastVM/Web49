@@ -15,12 +15,10 @@ NAME(WEB49_OPCODE_RETURN1) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_INDIRECT) {
-    // fprintf(stderr, "locals[%"PRIu32"] = %"PRIu32"\n", head[0].data.i32_u, LOCAL0.i32_u);
     web49_interp_block_t *fblock = interp.table[LOCAL0.i32_u];
     web49_interp_block_run_comp(fblock, ptrs, interp);
     *returns++ = head + 2;
     *stacks++ = locals;
-    // fprintf(stderr, "n = %zu\n", (size_t) head[1].data.i32_u);
     locals += head[1].data.i32_u;
     memset(locals + fblock->nparams, 0, sizeof(web49_interp_data_t) * fblock->nlocals);
     head = fblock->code;
@@ -141,32 +139,32 @@ NAME(WEB49_OPCODE_I64_EQZ) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_CLZ) {
-    locals[head[1].data.i32_u].i32_u = LOCAL0.i32_s == 0 ? 32 : (uint32_t) __builtin_clz((unsigned int) LOCAL0.i32_s);
+    locals[head[1].data.i32_u].i32_u = LOCAL0.i32_s == 0 ? 32 : (uint32_t)__builtin_clz((unsigned int)LOCAL0.i32_s);
     head += 2;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_CTZ) {
-    locals[head[1].data.i32_u].i32_u = LOCAL0.i32_s == 0 ? 32 : (uint32_t) __builtin_ctz((unsigned int) LOCAL0.i32_u);
+    locals[head[1].data.i32_u].i32_u = LOCAL0.i32_s == 0 ? 32 : (uint32_t)__builtin_ctz((unsigned int)LOCAL0.i32_u);
     head += 2;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_POPCNT) {
-    locals[head[1].data.i32_u].i32_u = (uint32_t) __builtin_popcount((unsigned int) LOCAL0.i32_u);
+    locals[head[1].data.i32_u].i32_u = (uint32_t)__builtin_popcount((unsigned int)LOCAL0.i32_u);
     head += 2;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_CLZ) {
-    locals[head[1].data.i32_u].i64_u = LOCAL0.i64_s == 0 ? 64 : (uint64_t) __builtin_clzll((unsigned long long) LOCAL0.i64_s);
+    locals[head[1].data.i32_u].i64_u = LOCAL0.i64_s == 0 ? 64 : (uint64_t)__builtin_clzll((unsigned long long)LOCAL0.i64_s);
     head += 2;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_CTZ) {
-    locals[head[1].data.i32_u].i64_u = LOCAL0.i64_s == 0 ? 64 : (uint64_t) __builtin_ctzll((unsigned long long) LOCAL0.i64_u);
+    locals[head[1].data.i32_u].i64_u = LOCAL0.i64_s == 0 ? 64 : (uint64_t)__builtin_ctzll((unsigned long long)LOCAL0.i64_u);
     head += 2;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_POPCNT) {
-    locals[head[1].data.i32_u].i64_u = (uint64_t) __builtin_popcountll((unsigned long long) LOCAL0.i64_u);
+    locals[head[1].data.i32_u].i64_u = (uint64_t)__builtin_popcountll((unsigned long long)LOCAL0.i64_u);
     head += 2;
     NEXT();
 }

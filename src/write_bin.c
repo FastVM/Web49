@@ -214,7 +214,7 @@ void web49_writebin_section_import(web49_writebin_buf_t *out, web49_section_t se
 }
 void web49_writebin_section_function(web49_writebin_buf_t *out, web49_section_t section) {
     web49_writebin_uleb(out, section.function_section.num_entries);
-    for (uint64_t i = 0; i < section.import_section.num_entries; i++) {
+    for (uint64_t i = 0; i < section.function_section.num_entries; i++) {
         web49_writebin_uleb(out, section.function_section.entries[i]);
     }
 }

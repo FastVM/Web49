@@ -264,7 +264,6 @@ enum web49_opcode_enum_t {
 
     // for the interpreter
     WEB49_OPCODE_BEGIN0,
-    WEB49_OPCODE_NOP1,
     WEB49_OPCODE_YIELD_PUSH,
     WEB49_OPCODE_YIELD_POP,
     WEB49_OPCODE_RETURN0,

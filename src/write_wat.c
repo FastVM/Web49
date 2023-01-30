@@ -84,10 +84,10 @@ void web49_wat_print_instr_depth(web49_io_output_t *out, web49_instr_t instr, ui
             web49_io_output_fprintf(out, " %" PRIi64, instr.immediate.varint64);
             break;
         case WEB49_IMMEDIATE_UINT32:
-            web49_io_output_fprintf(out, " %" PRIu32, instr.immediate.uint32);
+            web49_io_output_fprintf(out, " %a (;=%g;)", *(float *)&instr.immediate.uint32, *(float *)&instr.immediate.uint32);
             break;
         case WEB49_IMMEDIATE_UINT64:
-            web49_io_output_fprintf(out, " %" PRIu64, instr.immediate.uint64);
+            web49_io_output_fprintf(out, " %la (;=%lg;)", *(double *)&instr.immediate.uint64, *(double *)&instr.immediate.uint64);
             break;
         case WEB49_IMMEDIATE_BR_TABLE:
             for (uint64_t i = 0; i < instr.immediate.br_table.num_targets; i++) {

@@ -99,7 +99,7 @@ static int web49_file_main(const char *inarg, const char **args) {
                                 fprintf(stderr, "wasm spec test: invoke %s\n", entry.field_str);
                             } else {
                                 for (size_t k = 1; k < todo.fun_nargs; k++) {
-                                    size_t n = k-1;
+                                    size_t n = k - 1;
                                     web49_readwat_expr_t wants = todo.fun_args[k];
                                     if (wants.tag != WEB49_READWAT_EXPR_TAG_FUN) {
                                     } else if (!strcmp(wants.fun_fun, "i32.const")) {
@@ -124,9 +124,9 @@ static int web49_file_main(const char *inarg, const char **args) {
                                         float expected;
                                         sscanf(wants.fun_args[0].sym, "%f", &expected);
                                         if (data[n].f32 == expected || (isnan(expected) && isnan(data[n].f32))) {
-                                            fprintf(stderr, "wasm spec test: invoke %s pass: %f == %f\n", entry.field_str, (double) data[n].f32, (double) expected);
+                                            fprintf(stderr, "wasm spec test: invoke %s pass: %f == %f\n", entry.field_str, data[n].f32, expected);
                                         } else {
-                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %f != %f (expected return value)\n", entry.field_str, (double) data[n].f32, (double) expected);
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %f != %f (expected return value)\n", entry.field_str, (double)data[n].f32, (double)expected);
                                             ret = 1;
                                             goto next_test;
                                         }
@@ -136,7 +136,7 @@ static int web49_file_main(const char *inarg, const char **args) {
                                         if (data[n].f64 == expected || (isnan(expected) && isnan(data[n].f64))) {
                                             fprintf(stderr, "wasm spec test: invoke %s pass: %lf == %lf\n", entry.field_str, data[n].f64, expected);
                                         } else {
-                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %f != %f (expected return value)\n", entry.field_str, data[n].f64, expected);
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %lf != %lf (expected return value)\n", entry.field_str, data[n].f64, expected);
                                             ret = 1;
                                             goto next_test;
                                         }

@@ -52,6 +52,8 @@ struct web49_readwat_state_t {
     web49_readwat_table_t local_table;
     web49_readwat_table_t branch_table;
     web49_readwat_table_t global_table;
+    web49_readwat_table_t table_table;
+    web49_readwat_table_t memory_table;
 
     uint64_t alloc_type;
     uint64_t alloc_import;

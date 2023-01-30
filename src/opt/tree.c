@@ -52,7 +52,7 @@ static web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_
             begin0.args = web49_malloc(sizeof(web49_instr_t) * 2);
             if (ret.nargs == 0) {
                 begin0.args[0] = (web49_instr_t){
-                    .opcode = WEB49_OPCODE_NOP1,
+                    .opcode = WEB49_OPCODE_NOP,
                     .immediate = (web49_instr_immediate_t){
                         .id = WEB49_IMMEDIATE_NONE,
                     },
@@ -87,7 +87,7 @@ static web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_
             begin0.args = web49_malloc(sizeof(web49_instr_t) * 2);
             if (ret.nargs == 0) {
                 begin0.args[0] = (web49_instr_t){
-                    .opcode = WEB49_OPCODE_NOP1,
+                    .opcode = WEB49_OPCODE_NOP,
                     .immediate = (web49_instr_immediate_t){
                         .id = WEB49_IMMEDIATE_NONE,
                     },
@@ -156,7 +156,7 @@ static web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_
                 ret.args = web49_realloc(ret.args, sizeof(web49_instr_t) * nalloc);
             }
             ret.args[ret.nargs++] = (web49_instr_t){
-                .opcode = WEB49_OPCODE_NOP1,
+                .opcode = WEB49_OPCODE_NOP,
                 .immediate = (web49_instr_immediate_t){
                     .id = WEB49_IMMEDIATE_NONE,
                 },

@@ -524,15 +524,17 @@ web49_instr_immediate_t web49_readbin_instr_immediate(web49_io_input_t *in, web4
         };
     }
     if (id == WEB49_IMMEDIATE_UINT32) {
+        uint32_t n = web49_readbin_uint32(in);
         return (web49_instr_immediate_t){
             .id = WEB49_IMMEDIATE_UINT32,
-            .uint32 = web49_readbin_uint32(in),
+            .uint32 = n,
         };
     }
     if (id == WEB49_IMMEDIATE_UINT64) {
+        uint64_t n = web49_readbin_uint64(in);
         return (web49_instr_immediate_t){
             .id = WEB49_IMMEDIATE_UINT64,
-            .uint64 = web49_readbin_uint64(in),
+            .uint64 = n,
         };
     }
     if (id == WEB49_IMMEDIATE_BR_TABLE) {
@@ -699,14 +701,15 @@ web49_module_t web49_readbin_module(web49_io_input_t *in) {
         sections[num_sections] = web49_readbin_section(in, header);
         size_t b = web49_io_input_ftell(in);
         if (header.size != b - a) {
-            fprintf(stderr, "read wrong number of bytes (read: %zu) (section size: %zu)\n", (size_t)header.size, b - a);
+            fprintf(stderr, "read wrong number of bytes (read: %zu) (wanted to read: %zu) (id: %zu)\n", (size_t)header.size, b - a, (size_t)header.id);
             exit(1);
         }
         num_sections += 1;
     }
-    return (web49_module_t){
+    web49_module_t ret = (web49_module_t){
         .preamble = preamble,
         .num_sections = num_sections,
         .sections = sections,
     };
+    return ret;
 }

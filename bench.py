@@ -44,11 +44,11 @@ if len(args.test) == 0:
             'args': [],
             'memory': 256,
         },
-        # 'coremark': {
-        #     'runs': 1,
-        #     'args': ['3000'],
-        #     'memory': 256,
-        # },
+        'coremark': {
+            'runs': 1,
+            'args': ['3000'],
+            'memory': 256,
+        },
         'fib_f32': {
             'runs': 1,
             'args': ['40'],
@@ -141,7 +141,7 @@ for i in range(1, runs+1):
         keys = [key.replace(cur, '.').replace('./bin/', '') for key in keys]
 
         for i,key in enumerate(keys):
-            rgb = colorsys.hsv_to_rgb(i / (len(keys) * (5/4)), 0.4, 0.9)
+            rgb = colorsys.hsv_to_rgb(i / (len(keys) * (5/4)) + 0.25, 0.25, 0.85)
 
             ax.bar(key, values[i], color=(*rgb, 1.0))
 
