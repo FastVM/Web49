@@ -1444,7 +1444,7 @@ void web49_readwat_state_memory_entry(web49_readwat_state_t *out, web49_readwat_
     size_t pos = 0;
     web49_type_memory_t entry;
     entry.initial = 256;
-    entry.maximum = 256;
+    entry.maximum = 0;
     for (size_t i = 0; i < expr.fun_nargs; i++) {
         if (expr.fun_args[i].tag != WEB49_READWAT_EXPR_TAG_SYM) {
             fprintf(stderr, "error in: (memory ...) expected a word but got something else\n");
@@ -1467,6 +1467,9 @@ void web49_readwat_state_memory_entry(web49_readwat_state_t *out, web49_readwat_
                     exit(1);
             }
         }
+    }
+    if (entry.initial > entry.maximum) {
+        entry.maximum = entry.initial;
     }
     if (out->smemory.num_entries + 2 >= out->alloc_memory) {
         out->alloc_memory = (out->smemory.num_entries + 2) * 2;

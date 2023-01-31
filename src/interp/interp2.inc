@@ -525,16 +525,18 @@ NAME(WEB49_OPCODE_F64_COPYSIGN) {
     NEXT();
 }
 NAME(WEB49_OPCODE_MEMORY_FILL) {
-    uint32_t size = LOCAL0.i32_u;
+    uint32_t dest = LOCAL0.i32_u;
     uint32_t byte = LOCAL1.i32_u;
-    uint32_t dest = locals[head[2].data.i32_u].i32_u;
+    uint32_t size = locals[head[2].data.i32_u].i32_u;
     memset(WEB49_INTERP_ADDR(void *, interp, dest, size), (int)byte, size);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_MEMORY_COPY) {
-    size_t size = (size_t)locals[head[2].data.i32_u].i32_u;
-    memmove(WEB49_INTERP_ADDR(void *, interp, LOCAL0.i32_u, size), WEB49_INTERP_ADDR(void *, interp, LOCAL0.i32_u, size), size);
+    uint32_t dest = LOCAL0.i32_u;
+    uint32_t src = LOCAL1.i32_u;
+    uint32_t size = locals[head[2].data.i32_u].i32_u;
+    memmove(WEB49_INTERP_ADDR(void *, interp, dest, size), WEB49_INTERP_ADDR(void *, interp, src, size), (size_t) size);
     head += 3;
     NEXT();
 }

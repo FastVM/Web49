@@ -1,3 +1,49 @@
+
+LABEL(WEB49_OPCODE_MEMORY_INIT) {
+    fprintf(stderr, "memory init? you wish\n");
+    __builtin_trap();
+    NEXT();
+}
+LABEL(WEB49_OPCODE_DATA_DROP) {
+    NEXT();
+}
+LABEL(WEB49_OPCODE_TABLE_INIT) {
+    fprintf(stderr, "table init? you wish!\n");
+    __builtin_trap();
+    NEXT();
+}
+LABEL(WEB49_OPCODE_ELEM_DROP) {
+    fprintf(stderr, "elem drop? you wish!\n");
+    __builtin_trap();
+    NEXT();
+}
+LABEL(WEB49_OPCODE_TABLE_COPY) {
+    fprintf(stderr, "table copy? you wish!\n");
+    __builtin_trap();
+    NEXT();
+}
+LABEL(WEB49_OPCODE_FFI_CALL1) {
+#if defined(WEB49_PRINT_INSTR_DEPTH)
+    depth -= 1;
+#endif
+    interp.locals = locals;
+    web49_env_func_t func = head[0].func;
+    locals[0] = func(interp);
+    head = *--returns;
+    locals = *--stacks;
+    NEXT();
+}
+LABEL(WEB49_OPCODE_FFI_CALL0) {
+#if defined(WEB49_PRINT_INSTR_DEPTH)
+    depth -= 1;
+#endif
+    interp.locals = locals;
+    web49_env_func_t func = head[0].func;
+    func(interp);
+    head = *--returns;
+    locals = *--stacks;
+    NEXT();
+}
 NAME(WEB49_OPCODE_YIELD_POP) {
     locals[head[0].data.i32_u] = *--yield_ptr;
     head += 1;

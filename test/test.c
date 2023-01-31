@@ -1,19 +1,11 @@
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-
-uint64_t fib(uint64_t n) {
-    if (n < 2) {
-        return n;
-    } else {
-        return fib(n - 2) + fib(n - 1);
-    }
-}
+#include <string.h>
 
 int main(int argc, char **argv) {
-    uint64_t n = 5;
-    uint64_t fibn = fib(n);
-    return fibn;
+    printf("argc = %i\n", argc);
+    for (int i = 0; i < argc; i++) {
+        printf("strlen(argv[%i]) = %i\n", i, (int) strlen(argv[i]));
+    }
+    printf("argv[%i] = %p\n", argc, argv[argc]);
 }

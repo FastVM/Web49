@@ -109,7 +109,7 @@ void web49_free_module(web49_module_t mod) {
                 break;
             }
             case WEB49_SECTION_ID_DATA_COUNT: {
-                __builtin_trap();
+                break;
             }
         }
     }

@@ -1472,23 +1472,17 @@ web49_opcode_t web49_bytes_to_opcode(uint8_t *bytes) {
                 case 0x08:
                     return WEB49_OPCODE_MEMORY_INIT;
                 case 0x09:
-                    return WEB49_OPCODE_MEMORY_COPY;
-                case 0x0A:
-                    return WEB49_OPCODE_MEMORY_FILL;
-                case 0x0B:
                     return WEB49_OPCODE_DATA_DROP;
+                case 0x0A:
+                    return WEB49_OPCODE_MEMORY_COPY;
+                case 0x0B:
+                    return WEB49_OPCODE_MEMORY_FILL;
                 case 0x0C:
                     return WEB49_OPCODE_TABLE_INIT;
                 case 0x0D:
                     return WEB49_OPCODE_ELEM_DROP;
                 case 0x0E:
                     return WEB49_OPCODE_TABLE_COPY;
-                case 0x0F:
-                    return WEB49_OPCODE_TABLE_GROW;
-                case 0x10:
-                    return WEB49_OPCODE_TABLE_SIZE;
-                case 0x11:
-                    return WEB49_OPCODE_TABLE_FILL;
                 default:
                     web49_error("unknown opcode sequence: 0xFC 0x%" PRIu8 "\n", bytes[1]);
             }
