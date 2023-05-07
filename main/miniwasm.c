@@ -26,6 +26,10 @@ static web49_interp_data_t web49_main_expr_to_data(web49_readwat_expr_t expr) {
         }
     } else if (!strcmp(expr.fun_fun, "i64.const")) {
         ret.i64_s = web49_readwat_expr_to_i64(expr.fun_args[0]);
+    } else if (!strcmp(expr.fun_fun, "f32.const")) {
+        sscanf(expr.fun_args[0].sym, "%f", &ret.f32);
+    } else if (!strcmp(expr.fun_fun, "f64.const")) {
+        sscanf(expr.fun_args[0].sym, "%lf", &ret.f64);
     } else {
         fprintf(stderr, "dont know how to handle: (%s ...), in that context\n", expr.fun_fun);
         __builtin_trap();
@@ -147,16 +151,17 @@ static int web49_file_main(const char *inarg, const char **args) {
                                     }
                                 }
                             }
-                            goto test_found;
                         }
+                        goto next_test;
                     }
                     fprintf(stderr, "wasm spec test: cannot find export: %s\n", str);
                     return 1;
-                test_found:;
-                    continue;
                 } else if (!strcmp(todo.fun_fun, "assert_trap")) {
+                    continue;
                 } else if (!strcmp(todo.fun_fun, "assert_invalid")) {
+                    continue;
                 } else if (!strcmp(todo.fun_fun, "assert_malformed")) {
+                    continue;
                 } else {
                     // printf("%zu %zu\n", (size_t) todo.start, (size_t) todo.end);
                     fprintf(stderr, "wasm spec test: dont know how to handle: (%s ...)\n", todo.fun_fun);

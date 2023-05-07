@@ -25,6 +25,7 @@ const char *web49_readwat_sym_to_str(web49_readwat_expr_t expr);
 web49_instr_t web49_readwat_instr(web49_readwat_state_t *out, web49_readwat_expr_t code);
 uint64_t web49_readwat_expr_to_u64(web49_readwat_table_t *table, web49_readwat_expr_t expr);
 int64_t web49_readwat_expr_to_i64(web49_readwat_expr_t expr);
+web49_readwat_expr_t web49_readwat_expr_base(web49_io_input_t *in);
 web49_readwat_expr_t web49_readwat_expr(web49_io_input_t *in);
 void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);
 void web49_readwat_state_import_entry(web49_readwat_state_t *out, web49_readwat_expr_t expr);

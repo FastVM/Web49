@@ -22,6 +22,7 @@ void web49_opt_tee_code(web49_section_code_entry_t *entry) {
                 .immediate = instr.immediate,
             };
             web49_free_instr(instr);
+        } else if (instr.opcode == WEB49_OPCODE_NOP) {
         } else {
             next[len++] = instr;
         }

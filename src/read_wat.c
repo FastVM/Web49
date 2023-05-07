@@ -92,6 +92,12 @@ void web49_readwat_skip(web49_io_input_t *in) {
 
 web49_readwat_expr_t web49_readwat_expr(web49_io_input_t *in) {
     web49_readwat_skip(in);
+    web49_readwat_expr_t expr = web49_readwat_expr_base(in);
+    web49_readwat_skip(in);
+    return expr;
+}
+
+web49_readwat_expr_t web49_readwat_expr_base(web49_io_input_t *in) {
     char first = web49_io_input_fgetc(in);
     uint64_t start = web49_io_input_ftell(in);
     if (first == '(') {
@@ -967,12 +973,10 @@ void web49_readwat_state_table_entry(web49_readwat_state_t *out, web49_readwat_e
                 eentry.num_elems = 0;
                 eentry.elems = web49_malloc(sizeof(uint32_t) * arg.fun_nargs);
                 for (uint64_t j = 0; j < arg.fun_nargs; j++) {
-                    if (arg.fun_args[j].tag == WEB49_READWAT_EXPR_TAG_SYM && arg.fun_args[j].sym[0] == '$') {
-                        continue;
-                    }
-                    entry.limits.initial += 1;
+                    eentry.elems[eentry.num_elems] = (uint32_t)web49_readwat_expr_to_u64(&out->func_table, arg.fun_args[j]);
                     ent += 1;
-                    eentry.elems[eentry.num_elems++] = (uint32_t)web49_readwat_expr_to_u64(&out->func_table, arg.fun_args[j]);
+                    eentry.num_elems += 1;
+                    entry.limits.initial += 1;
                 }
                 if (out->selement.num_entries + 2 >= out->alloc_element) {
                     out->alloc_element = (out->selement.num_entries + 2) * 2;
