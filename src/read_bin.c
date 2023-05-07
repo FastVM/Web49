@@ -11,7 +11,7 @@ uint64_t web49_readbin_uleb(web49_io_input_t *in) {
     size_t shift = 0;
     while (web49_io_input_fread(in, 1, &buf)) {
         x |= (uint64_t)(buf & 0x7f) << shift;
-        if (!(buf & 0x80)) {
+        if (buf < 0x80) {
             break;
         }
         shift += 7;
@@ -26,7 +26,7 @@ int64_t web49_readbin_sleb(web49_io_input_t *in) {
     while (web49_io_input_fread(in, 1, &buf)) {
         x += (__int128)(buf & 0x7f) << shift;
         shift += 7;
-        if (!(buf & 0x80)) {
+        if (buf < 0x80) {
             break;
         }
     }
@@ -459,26 +459,32 @@ web49_section_code_t web49_readbin_section_code(web49_io_input_t *in) {
 
 web49_section_data_t web49_readbin_section_data(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
+    printf("%"PRIu64"\n", num_entries);
     web49_section_data_entry_t *entries = web49_malloc(sizeof(web49_section_data_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
-        uint64_t tag = web49_readbin_byte(in);
+        uint8_t tag = web49_readbin_byte(in);
         web49_instr_t offset = web49_readbin_init_expr(in);
-        if (tag == 1) {
+        if (tag == 0) {
+            uint64_t size = web49_readbin_uleb(in);
+            printf("  .len = %zu\n", (size_t) size);
+            uint8_t *data = web49_malloc(sizeof(uint8_t) * size);
+            web49_io_input_fread(in, (size), data);
+            printf("     ...\n");
+            entries[i] = (web49_section_data_entry_t){
+                .offset = offset,
+                .size = size,
+                .data = data,
+            };
+        } else if (tag == 1) {
             fprintf(stderr, "passive data mode not yet implemented\n");
             exit(1);
-        }
-        if (tag == 2) {
+        } else if (tag == 2) {
             fprintf(stderr, "multiple memories for data not yet implemented\n");
             exit(1);
+        } else {
+            fprintf(stderr, "unknown data tag %"PRIu8"\n", tag);
+            exit(1);
         }
-        uint64_t size = web49_readbin_uleb(in);
-        uint8_t *data = web49_malloc(sizeof(uint8_t) * size);
-        web49_io_input_fread(in, (size), data);
-        entries[i] = (web49_section_data_entry_t){
-            .offset = offset,
-            .size = size,
-            .data = data,
-        };
     }
     return (web49_section_data_t){
         .num_entries = num_entries,
@@ -568,7 +574,11 @@ web49_instr_immediate_t web49_readbin_instr_immediate(web49_io_input_t *in, web4
 
 web49_instr_t web49_readbin_init_expr(web49_io_input_t *in) {
     web49_instr_t ret = web49_readbin_instr(in);
-    web49_readbin_byte(in);
+    web49_instr_t end = web49_readbin_instr(in);
+    if (end.opcode != WEB49_OPCODE_END) {
+        fprintf(stderr, "expected end opcode, got %s\n", web49_opcode_to_name(end.opcode));
+        exit(1);
+    }
     return ret;
 }
 
@@ -701,7 +711,7 @@ web49_module_t web49_readbin_module(web49_io_input_t *in) {
         sections[num_sections] = web49_readbin_section(in, header);
         size_t b = web49_io_input_ftell(in);
         if (header.size != b - a) {
-            fprintf(stderr, "read wrong number of bytes (read: %zu) (wanted to read: %zu) (id: %zu)\n", (size_t)header.size, b - a, (size_t)header.id);
+            fprintf(stderr, "read wrong number of bytes (wanted to read: %zu) (read: %zu) (id: %zu)\n", (size_t)header.size, b - a, (size_t)header.id);
             exit(1);
         }
         num_sections += 1;

@@ -8,7 +8,7 @@ miniwasm.exe
 out.*
 raylib/examples
 test/bench/results.json
-test/core
+test/core/*
 test/*.wasm
 *.core
 *.exe

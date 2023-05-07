@@ -138,7 +138,16 @@ web49_readwat_expr_t web49_readwat_expr_base(web49_io_input_t *in) {
         first = web49_io_input_fgetc(in);
         while (true) {
             if (first == '"') {
-                break;
+                web49_readwat_skip(in);
+                if (web49_io_input_is_empty(in)) {
+                    break;
+                }
+                first = web49_io_input_fgetc(in);
+                if (first != '"') {
+                    web49_io_input_rewind(in);
+                    break;
+                }
+                first = web49_io_input_fgetc(in);
             }
             if (len + 2 >= alloc) {
                 alloc *= 2;

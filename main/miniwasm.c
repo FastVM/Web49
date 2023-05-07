@@ -55,10 +55,18 @@ static int web49_file_main(const char *inarg, const char **args) {
                 fprintf(stderr, "wasm spec test: expected (module ...) not (%s ...)\n", expr.fun_fun);
                 return 1;
             }
-            if (expr.fun_nargs == 2 && expr.fun_args[0].tag == WEB49_READWAT_EXPR_TAG_SYM && !strcmp(expr.fun_args[0].sym, "quote")) {
-                web49_io_input_t subinfile = web49_io_input_open_str(expr.fun_args[1].len_str, expr.fun_args[1].str);
-                expr = web49_readwat_expr(&subinfile);
-                mod = web49_readwat_to_module(expr);
+            if (expr.fun_nargs >= 2 && expr.fun_args[0].tag == WEB49_READWAT_EXPR_TAG_SYM) {
+                if (!strcmp(expr.fun_args[0].sym, "quote")) {
+                    web49_io_input_t subinfile = web49_io_input_open_str(expr.fun_args[1].len_str, expr.fun_args[1].str);
+                    expr = web49_readwat_expr(&subinfile);
+                    mod = web49_readwat_to_module(expr);
+                } else if (!strcmp(expr.fun_args[0].sym, "binary")) {
+                    web49_readwat_expr_t str = expr.fun_args[1];
+                    web49_io_input_t mod_bin = web49_io_input_open_str(str.len_str, str.str);
+                    mod = web49_readbin_module(&mod_bin);
+                } else {
+                    mod = web49_readwat_to_module(expr);
+                }
             } else {
                 mod = web49_readwat_to_module(expr);
             }

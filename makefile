@@ -39,13 +39,11 @@ RGLFW_OBJS = $(RGLFW_NAME:%.$(RGLFW_EXT)=%.o)
 RAYLIB_SRCS := src/api/raylib.c raylib/src/raudio.c raylib/src/rcore.c raylib/src/rmodels.c raylib/src/rshapes.c raylib/src/rtext.c raylib/src/rtextures.c raylib/src/utils.c
 RAYLIB_OBJS := $(RAYLIB_SRCS:%.c=%.o)
 
-TEST_NAMES = address align binary-leb128 binary block br br_if br_table bulk call call_indirect comments const conversions custom data elem endianness exports f32 f32_bitwise f32_cmp f64 f64_bitwise f64_cmp fac float_exprs float_literals float_memory float_misc forward func func_ptrs global i32 i64 if imports inline-module int_exprs int_literals labels left-to-right linking load local_get local_set local_tee loop memory memory_copy memory_fill memory_grow memory_init memory_redundancy memory_size memory_trap names nop ref_func ref_is_null ref_null return select skip-stack-guard-page stack start store switch table-sub table table_copy table_fill table_get table_grow table_init table_set table_size token tokens traps type unreachable unreached-invalid unreached-valid unwind utf8-custom-section-id utf8-import-field utf8-import-module utf8-invalid-encoding
-TEST_NAMES = address align binary-leb128 binary block br br_if br_table bulk call call_indirect comments const conversions custom data elem endianness exports f32 f32_bitwise f32_cmp f64 f64_bitwise f64_cmp fac float_exprs float_literals float_memory float_misc forward func func_ptrs global i32 i64 if imports inline-module int_exprs int_literals labels left-to-right linking load local_get local_set local_tee loop memory memory_copy memory_fill memory_grow memory_init memory_redundancy memory_size memory_trap names nop ref_func ref_is_null ref_null return select skip-stack-guard-page stack start store switch table-sub table table_copy table_fill table_get table_grow table_init table_set table_size token tokens traps type unreachable unreached-invalid unreached-valid unwind utf8-custom-section-id utf8-import-field utf8-import-module utf8-invalid-encoding
-
 TEST_PREFIX = test/core
 
-TEST_FILES = $(TEST_NAMES:%=$(TEST_PREFIX)/%.wast)
-TEST_OUTPUTS = $(TEST_NAMES:%=$(TEST_PREFIX)/%.txt)
+# TEST_FILES = $(TEST_NAMES:%=$(TEST_PREFIX)/%.wast)
+TEST_FILES != find $(TEST_PREFIX) -name '*.wast'
+TEST_OUTPUTS = $(TEST_FILES:%.wast=%.txt)
 
 default: all
 
@@ -76,21 +74,23 @@ raylib/lib: raylib/src
 
 # tests
 
-####
-##
- ##
-###
+test: results.txt
 
+results.txt: $(TEST_OUTPUTS)
+	@cat /dev/null $(TEST_OUTPUTS) | sort > results.txt
 
-test: $(TEST_OUTPUTS)
-	@cat $(TEST_OUTPUTS) | sort > results.txt
-
-$(TEST_OUTPUTS): ./bin/miniwasm $(@:%.txt=%.wast)
+$(TEST_OUTPUTS): bin/miniwasm $(@:%.txt=%.wast) | $(TEST_PREFIX)
 	@./bin/miniwasm $(@:%.txt=%.wast) 2>>/dev/null; \
 		if test $$? -eq 0; \
 		then echo "PASS $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
 		else echo "FAIL $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
 		fi
+
+test/core:
+	test -d spec || git clone https://github.com/WebAssembly/spec/ --depth 1
+	rm -fr test/core
+	cp -r spec/test/core test/core
+	rm -r test/core/simd/meta
 
 # raylib
 
