@@ -72,7 +72,7 @@ static int web49_file_main(const char *inarg, const char **args) {
             while (true) {
                 web49_readwat_expr_t todo = web49_readwat_expr(&infile);
                 if (todo.start == todo.end) {
-                    return 0;
+                    return ret;
                 }
                 if (todo.tag == WEB49_READWAT_EXPR_TAG_SYM) {
                     if (todo.sym[0] == '\0') {

@@ -19,9 +19,9 @@ web49_env_t *web49_env_new(void *state, web49_env_func_t func) {
 
 void web49_interp_add_import_func(web49_interp_t *ptr_interp, void *env_state, web49_env_table_t env_func) {
     if (ptr_interp->env_alloc <= ptr_interp->num_env + 2) {
-        ptr_interp->env_alloc += ptr_interp->num_env * 2;
-        ptr_interp->env_states = realloc(ptr_interp->env_states, ptr_interp->env_alloc * sizeof(void *));
-        ptr_interp->env_funcs = realloc(ptr_interp->env_funcs, ptr_interp->env_alloc * sizeof(web49_env_table_t));
+        ptr_interp->env_alloc += ptr_interp->num_env + 2;
+        ptr_interp->env_states = realloc(ptr_interp->env_states, sizeof(void *) * ptr_interp->env_alloc);
+        ptr_interp->env_funcs = realloc(ptr_interp->env_funcs, sizeof(web49_env_table_t) * ptr_interp->env_alloc);
     }
     ptr_interp->env_states[ptr_interp->num_env] = env_state;
     ptr_interp->env_funcs[ptr_interp->num_env] = env_func;
@@ -974,7 +974,6 @@ web49_interp_t web49_interp_module(web49_module_t mod) {
     web49_interp_t interp = (web49_interp_t){
         .locals = locals,
         .memory = web49_alloc0(memsize),
-        .table = NULL,
         .funcs = web49_malloc(sizeof(web49_interp_block_t) * num_funcs),
         .globals = web49_alloc0(sizeof(web49_interp_data_t) * (global_section.num_entries)),
         .locals_base = locals,
