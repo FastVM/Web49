@@ -18,7 +18,7 @@ NAME(WEB49_OPCODE_CALL_INDIRECT) {
     web49_interp_block_t *fblock = interp.table[LOCAL0.i32_u];
 #if defined(WEB49_CHECKS)
     if (fblock == NULL) {
-        __builtin_trap
+        __builtin_trap();
     }
 #endif
     web49_interp_block_run_comp(fblock, ptrs, interp);
