@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-
-emcc -O2 "$@" $(dirname $0)/raylib/lib/*o -I$(dirname $0)/raylib/include -s WARN_ON_UNDEFINED_SYMBOLS=0

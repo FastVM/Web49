@@ -14,14 +14,6 @@ WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
 
 OBJS := $(WEB49_OBJS)
 
-LDFLAGS_RAYLIB_Windows := -lgdi32 -lwinmm
-LDFLAGS_RAYLIB_FreeBSD := 
-LDFLAGS_RAYLIB_Linux := 
-LDFLAGS_RAYLIB_Darwin := -framework OpenGL -framework Foundation -framework AppKit -framework IOKit
-
-CFLAGS_RAYLIB_FreeBSD := -I/usr/local/include
-CFLAGS_RAYLIB_Darwin := -I/usr/local/include -framework Foundation
-
 UNAME_S_CMD != uname -s
 
 UNAME_S ?= $(UNAME_S_CMD)
@@ -31,17 +23,8 @@ RGLFW_M_OR_C_FreeBSD = c
 RGLFW_M_OR_C_Linux = c
 RGLFW_M_OR_C_Darwin = m
 
-RGLFW_EXT = $(RGLFW_M_OR_C_$(UNAME_S))
-
-RGLFW_NAME = raylib/src/rglfw.$(RGLFW_EXT)
-RGLFW_OBJS = $(RGLFW_NAME:%.$(RGLFW_EXT)=%.o)
-
-RAYLIB_SRCS := src/api/raylib.c raylib/src/raudio.c raylib/src/rcore.c raylib/src/rmodels.c raylib/src/rshapes.c raylib/src/rtext.c raylib/src/rtextures.c raylib/src/utils.c
-RAYLIB_OBJS := $(RAYLIB_SRCS:%.c=%.o)
-
 TEST_PREFIX = test/core
 
-# TEST_FILES = $(TEST_NAMES:%=$(TEST_PREFIX)/%.wast)
 TEST_FILES != find $(TEST_PREFIX) -name '*.wast'
 TEST_OUTPUTS = $(TEST_FILES:%.wast=%.txt)
 
@@ -51,26 +34,9 @@ all: bins
 
 # install web49
 
-install: bins bin/raywasm raylib/lib raylib/lib
-	mkdir -p $(INSTALL)
-	mkdir -p $(INSTALL)/raylib
-	mkdir -p $(INSTALL)/raylib/lib
-	mkdir -p $(INSTALL)/raylib/include
-	cp bin/raywasm bin/miniwasm web49 emraylib $(INSTALL)
-	ls raylib/lib/*.o | xargs -I{} cp -r {} $(INSTALL)/raylib/lib
-	ls raylib/include/*.h | xargs -I{} cp -r {} $(INSTALL)/raylib/include
-	cp -r raylib/lib $(INSTALL)/raylib
-	cp -r raylib/include $(INSTALL)/raylib
-	chmod +x $(INSTALL)/raywasm $(INSTALL)/miniwasm $(INSTALL)/web49 $(INSTALL)/emraylib
-
-raylib/lib: raylib/src
-	mkdir -p raylib/lib
-	$(EMCC) -Iraylib/include -O2 -c raylib/src/raudio.c -o raylib/lib/raudio.o
-	$(EMCC) -Iraylib/include -O2 -c raylib/src/rmodels.c -o raylib/lib/rmodels.o
-	$(EMCC) -Iraylib/include -O2 -c raylib/src/rshapes.c -o raylib/lib/rshapes.o
-	$(EMCC) -Iraylib/include -O2 -c raylib/src/rtext.c -o raylib/lib/rtext.o
-	$(EMCC) -Iraylib/include -O2 -c raylib/src/rtextures.c -o raylib/lib/rtextures.o
-	$(EMCC) -Iraylib/include -O2 -c raylib/src/utils.c -o raylib/lib/utils.o
+install: bins
+	cp bin/miniwasm $(INSTALL)
+	chmod $(INSTALL)/miniwasm
 
 # tests
 
@@ -86,20 +52,15 @@ $(TEST_OUTPUTS): bin/miniwasm $(@:%.txt=%.wast) | $(TEST_PREFIX)
 		else echo "FAIL $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
 		fi
 
+# test/wasi:
+# 	test -d wasi-testsuite || git clone https://github.com/WebAssembly/wasi-testsuite spec --depth 1
+# 	rm -fr test/wasi 
+
 test/core:
-	test -d spec || git clone https://github.com/WebAssembly/spec/ --depth 1
+	test -d spec || git clone https://github.com/WebAssembly/spec/ spec --depth 1
 	rm -fr test/core
 	cp -r spec/test/core test/core
 	rm -r test/core/simd/meta
-
-# raylib
-
-src/api/raylib.c: src/api/raylib.py src/api/raylib.json
-	$(PYTHON) src/api/raylib.py
-
-bin/raywasm: main/raywasm.o $(OBJS) $(RGLFW_OBJS) $(RAYLIB_OBJS)
-	@mkdir -p bin
-	$(CC) $(OPT) main/raywasm.o $(RGLFW_OBJS) $(RAYLIB_OBJS) -L/usr/local/lib $(OBJS) -o $(@) -lm -pthread -ldl $(LDFLAGS_RAYLIB_$(UNAME_S)) $(LDFLAGS)
 
 # bin
 
@@ -129,17 +90,11 @@ format: .dummy
 	find src main -name '*.inc' | xargs -I FILENAME clang-format -style=file -i FILENAME
 
 clean: .dummy
-	find src main raylib/src raylib/lib -name '*.o' | xargs rm
+	find src main -name '*.o' | xargs rm
 	find bin -type f | xargs rm
 	find test/core -name '*.txt' | xargs rm
 
 # intermediate files
-
-$(RGLFW_OBJS): $(@:%.o=%.$(RGLFW_EXT))
-	$(CC) -c $(OPT) $(@:%.o=%.$(RGLFW_EXT)) -o $(@) -w -DPLATFORM_DESKTOP -Iraylib/include $(CFLAGS_RAYLIB_$(UNAME_S)) $(CFLAGS)
-
-$(RAYLIB_OBJS): $(@:%.o=%.c)
-	$(CC) -c $(OPT) $(@:%.o=%.c) -o $(@) -w -DPLATFORM_DESKTOP -Iraylib/include $(CFLAGS_RAYLIB_$(UNAME_S)) $(CFLAGS)
 
 $(PROG_OBJS) $(WEB49_OBJS): $(@:%.o=%.c)
 	$(CC) -c $(OPT) $(@:%.o=%.c) -o $(@) $(CFLAGS)

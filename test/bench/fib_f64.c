@@ -10,10 +10,6 @@ double fib(double n) {
 }
 
 int main(int argc, const char **argv) {
-    double n = 35;
-    if (argc > 1) {
-        sscanf(argv[1], "%lf", &n);
-    }
-    printf("%lf\n", fib(n));
+    printf("%lf\n", fib(40));
     return 0;
 }

@@ -10,6 +10,25 @@
 #define OPCODE(n) ({size_t x = (n); if (ptrs[x] == NULL) {__builtin_trap();} ptrs[x]; })
 #endif
 
+web49_env_t *web49_env_new(void *state, web49_env_func_t func) {
+    web49_env_t *env = malloc(sizeof(web49_env_t));
+    env->state = state;
+    env->func = func;
+    return env;
+}
+
+void web49_interp_add_import_func(web49_interp_t *ptr_interp, void *env_state, web49_env_table_t env_func) {
+    if (ptr_interp->env_alloc <= ptr_interp->num_env + 2) {
+        ptr_interp->env_alloc += ptr_interp->num_env * 2;
+        ptr_interp->env_states = realloc(ptr_interp->env_states, ptr_interp->env_alloc * sizeof(void *));
+        ptr_interp->env_funcs = realloc(ptr_interp->env_funcs, ptr_interp->env_alloc * sizeof(web49_env_table_t));
+    }
+    ptr_interp->env_states[ptr_interp->num_env] = env_state;
+    ptr_interp->env_funcs[ptr_interp->num_env] = env_func;
+    ptr_interp->num_env += 1;
+}
+
+
 uint32_t *web49_interp_link_box(void) {
     return web49_malloc(sizeof(uint32_t));
 }
@@ -564,11 +583,21 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
                 fprintf(stderr, "error: import returns too many things\n");
                 __builtin_trap();
             }
-            instrs[1].func = interp.import_func(interp.import_state, block->module_str, block->field_str);
-            if (instrs[1].opcodes == NULL) {
+            web49_env_t *env = NULL;
+            for (size_t nimport = 0; nimport < interp.num_env; nimport++) {
+                void *state = interp.env_states[nimport];
+                web49_env_table_t func = interp.env_funcs[nimport];
+                web49_env_t *check = func(state, block->module_str, block->field_str);
+                if (check != NULL) {
+                    env = check;
+                    break;
+                }
+            }
+            if (env == NULL) {
                 fprintf(stderr, "not implemented: %s.%s\n", block->module_str, block->field_str);
                 __builtin_trap();
             }
+            instrs[1].func = env;
             web49_free(block->module_str);
             block->module_str = NULL;
             web49_free(block->field_str);
@@ -925,7 +954,7 @@ next:;
 #endif
 }
 
-web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
+web49_interp_t web49_interp_module(web49_module_t mod) {
     web49_section_code_t code_section = web49_module_get_section(mod, WEB49_SECTION_ID_CODE).code_section;
     web49_section_type_t type_section = web49_module_get_section(mod, WEB49_SECTION_ID_TYPE).type_section;
     web49_section_table_t table_section = web49_module_get_section(mod, WEB49_SECTION_ID_TABLE).table_section;
@@ -948,7 +977,6 @@ web49_interp_t web49_interp_module(web49_module_t mod, const char **args) {
         .table = NULL,
         .funcs = web49_malloc(sizeof(web49_interp_block_t) * num_funcs),
         .globals = web49_alloc0(sizeof(web49_interp_data_t) * (global_section.num_entries)),
-        .args = args,
         .locals_base = locals,
         .memsize = memsize,
         .stacks = web49_malloc(sizeof(web49_interp_data_t *) * (1 << 12)),

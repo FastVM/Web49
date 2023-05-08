@@ -459,17 +459,14 @@ web49_section_code_t web49_readbin_section_code(web49_io_input_t *in) {
 
 web49_section_data_t web49_readbin_section_data(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
-    printf("%"PRIu64"\n", num_entries);
     web49_section_data_entry_t *entries = web49_malloc(sizeof(web49_section_data_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
         uint8_t tag = web49_readbin_byte(in);
         web49_instr_t offset = web49_readbin_init_expr(in);
         if (tag == 0) {
             uint64_t size = web49_readbin_uleb(in);
-            printf("  .len = %zu\n", (size_t) size);
             uint8_t *data = web49_malloc(sizeof(uint8_t) * size);
             web49_io_input_fread(in, (size), data);
-            printf("     ...\n");
             entries[i] = (web49_section_data_entry_t){
                 .offset = offset,
                 .size = size,

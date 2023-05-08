@@ -6,7 +6,6 @@ install
 miniwasm
 miniwasm.exe
 out.*
-raylib/examples
 test/bench/results.json
 test/core/*
 test/*.wasm
@@ -22,3 +21,4 @@ test/*.wasm
 *.wasm
 *.wat
 *.profdata
+spec

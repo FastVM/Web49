@@ -6,13 +6,15 @@
 
 #include "api.h"
 
-static web49_interp_data_t web49_api_import_wasi_random_get(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_random_get(void *wasi_untyped, web49_interp_t interp) {
+    web49_wasi_t *wasi = wasi_untyped;
     uint32_t ptr = interp.locals[0].i32_u;
     uint32_t len = interp.locals[1].i32_u;
     getentropy(&interp.memory[ptr], len);
     return (web49_interp_data_t){.i32_u = 0};
 }
-static web49_interp_data_t web49_api_import_wasi_fd_seek(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_fd_seek(void *wasi_untyped, web49_interp_t interp) {
+    web49_wasi_t *wasi = wasi_untyped;
     int whence = -1;
     switch (interp.locals[2].i32_u) {
         case 0:
@@ -35,35 +37,38 @@ static web49_interp_data_t web49_api_import_wasi_fd_seek(web49_interp_t interp) 
     }
     return (web49_interp_data_t){.i32_u = 0};
 }
-static web49_interp_data_t web49_api_import_wasi_args_get(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_args_get(void *wasi_untyped, web49_interp_t interp) {
+    web49_wasi_t *wasi = wasi_untyped;
     uint32_t argv = interp.locals[0].i32_u;
     uint32_t buf = interp.locals[1].i32_u;
     uint32_t argc = 0;
     uint32_t head2 = buf;
-    for (size_t i = 0; interp.args[i] != NULL; i++) {
+    for (size_t i = 0; wasi->argv[i] != NULL; i++) {
         WEB49_INTERP_WRITE(uint32_t, interp, argv + argc * 4, head2);
-        size_t memlen = strlen(interp.args[i]) + 1;
-        memcpy(WEB49_INTERP_ADDR(void *, interp, head2, memlen), interp.args[i], memlen);
+        size_t memlen = strlen(wasi->argv[i]) + 1;
+        memcpy(WEB49_INTERP_ADDR(void *, interp, head2, memlen), wasi->argv[i], memlen);
         head2 += memlen;
         argc += 1;
     }
     WEB49_INTERP_WRITE(uint32_t, interp, argv + argc * 4, 0);
     return (web49_interp_data_t){.i32_u = 0};
 }
-static web49_interp_data_t web49_api_import_wasi_args_sizes_get(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_args_sizes_get(void *wasi_untyped, web49_interp_t interp) {
+    web49_wasi_t *wasi = wasi_untyped;
     uint32_t argc = interp.locals[0].i32_u;
     uint32_t buf_size = interp.locals[1].i32_u;
     uint32_t buf_len = 0;
     uint32_t i = 0;
-    while (interp.args[i] != NULL) {
-        buf_len += strlen(interp.args[i]) + 1;
+    while (wasi->argv[i] != NULL) {
+        buf_len += strlen(wasi->argv[i]) + 1;
         i += 1;
     }
     WEB49_INTERP_WRITE(uint32_t, interp, argc, i);
     WEB49_INTERP_WRITE(uint32_t, interp, buf_size, buf_len);
     return (web49_interp_data_t){.i32_u = 0};
 }
-static web49_interp_data_t web49_api_import_wasi_clock_time_get(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_clock_time_get(void *wasi_untyped, web49_interp_t interp) {
+    web49_wasi_t *wasi = wasi_untyped;
     uint32_t wasi_clock_id = interp.locals[0].i32_u;
     // uint64_t precision = interp.locals[1].i64_u;
     uint32_t time = interp.locals[2].i32_u;
@@ -84,12 +89,14 @@ static web49_interp_data_t web49_api_import_wasi_clock_time_get(web49_interp_t i
     WEB49_INTERP_WRITE(uint64_t, interp, time, (uint64_t)ts.tv_sec * 1000000000 + (uint64_t)ts.tv_nsec);
     return (web49_interp_data_t){.i32_u = 0};
 }
-static web49_interp_data_t web49_api_import_wasi_fd_close(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_fd_close(void *wasi_untyped, web49_interp_t interp) {
+    web49_wasi_t *wasi = wasi_untyped;
     uint32_t fd = interp.locals[0].i32_u;
     close((int)fd);
     return (web49_interp_data_t){.i32_u = 0};
 }
-static web49_interp_data_t web49_api_import_wasi_fd_fdstat_get(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_fd_fdstat_get(void *wasi_untyped, web49_interp_t interp) {
+    web49_wasi_t *wasi = wasi_untyped;
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t fdstat = interp.locals[1].i32_u;
 
@@ -111,7 +118,8 @@ static web49_interp_data_t web49_api_import_wasi_fd_fdstat_get(web49_interp_t in
     WEB49_INTERP_WRITE(uint64_t, interp, fdstat + 16, fs_rights_inheriting);
     return (web49_interp_data_t){.i32_u = 0};
 }
-static web49_interp_data_t web49_api_import_wasi_fd_prestat_get(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_fd_prestat_get(void *wasi_untyped, web49_interp_t interp) {
+    web49_wasi_t *wasi = wasi_untyped;
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t buf = interp.locals[1].i32_u;
     WEB49_INTERP_WRITE(uint8_t, interp, buf, 0);
@@ -124,7 +132,8 @@ static web49_interp_data_t web49_api_import_wasi_fd_prestat_get(web49_interp_t i
     }
     return (web49_interp_data_t){.i32_u = 0};
 }
-static web49_interp_data_t web49_api_import_wasi_path_open(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_path_open(void *wasi_untyped, web49_interp_t interp) {
+    web49_wasi_t *wasi = wasi_untyped;
     uint32_t wdirfd = interp.locals[0].i32_u;
     // uint32_t dirflags = interp.locals[1].i32_u;
     uint32_t path = interp.locals[2].i32_u;
@@ -179,7 +188,8 @@ static web49_interp_data_t web49_api_import_wasi_path_open(web49_interp_t interp
     WEB49_INTERP_WRITE(uint32_t, interp, pfd, (uint32_t)hostfd);
     return (web49_interp_data_t){.i32_u = 0};
 }
-static web49_interp_data_t web49_api_import_wasi_fd_read(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_fd_read(void *wasi_untyped, web49_interp_t interp) {
+    web49_wasi_t *wasi = wasi_untyped;
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t iovs = interp.locals[1].i32_u;
     uint32_t iovs_len = interp.locals[2].i32_u;
@@ -192,7 +202,8 @@ static web49_interp_data_t web49_api_import_wasi_fd_read(web49_interp_t interp) 
     WEB49_INTERP_WRITE(uint32_t, interp, interp.locals[3].i32_u, nread);
     return (web49_interp_data_t){.i32_u = 0};
 }
-static web49_interp_data_t web49_api_import_wasi_fd_write(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_fd_write(void *wasi_untyped, web49_interp_t interp) {
+    web49_wasi_t *wasi = wasi_untyped;
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t iovs = interp.locals[1].i32_u;
     uint32_t iovs_len = interp.locals[2].i32_u;
@@ -205,10 +216,11 @@ static web49_interp_data_t web49_api_import_wasi_fd_write(web49_interp_t interp)
     WEB49_INTERP_WRITE(uint32_t, interp, interp.locals[3].i32_u, nwritten);
     return (web49_interp_data_t){.i32_u = 0};
 }
-static web49_interp_data_t web49_api_import_wasi_proc_exit(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_proc_exit(void *wasi_untyped, web49_interp_t interp) {
     exit((int)interp.locals[0].i32_u);
 }
-static web49_interp_data_t web49_api_import_wasi_fd_prestat_dir_name(web49_interp_t interp) {
+static web49_interp_data_t web49_api_wasi_fd_prestat_dir_name(void *wasi_untyped, web49_interp_t interp) {
+    web49_wasi_t *wasi = wasi_untyped;
     const char *name;
     switch (interp.locals[0].i32_u) {
         case 3:
@@ -229,34 +241,46 @@ static web49_interp_data_t web49_api_import_wasi_fd_prestat_dir_name(web49_inter
     return (web49_interp_data_t){.i32_u = 0};
 }
 
-web49_env_func_t web49_api_import_wasi(const char *func) {
-    if (!strcmp(func, "random_get")) {
-        return &web49_api_import_wasi_random_get;
-    } else if (!strcmp(func, "fd_seek")) {
-        return &web49_api_import_wasi_fd_seek;
-    } else if (!strcmp(func, "args_get")) {
-        return &web49_api_import_wasi_args_get;
-    } else if (!strcmp(func, "args_sizes_get")) {
-        return &web49_api_import_wasi_args_sizes_get;
-    } else if (!strcmp(func, "clock_time_get")) {
-        return &web49_api_import_wasi_clock_time_get;
-    } else if (!strcmp(func, "fd_close")) {
-        return &web49_api_import_wasi_fd_close;
-    } else if (!strcmp(func, "fd_prestat_get")) {
-        return &web49_api_import_wasi_fd_prestat_get;
-    } else if (!strcmp(func, "fd_prestat_dir_name")) {
-        return &web49_api_import_wasi_fd_prestat_dir_name;
-    } else if (!strcmp(func, "fd_fdstat_get")) {
-        return &web49_api_import_wasi_fd_fdstat_get;
-    } else if (!strcmp(func, "path_open")) {
-        return &web49_api_import_wasi_path_open;
-    } else if (!strcmp(func, "fd_read")) {
-        return &web49_api_import_wasi_fd_read;
-    } else if (!strcmp(func, "fd_write")) {
-        return &web49_api_import_wasi_fd_write;
-    } else if (!strcmp(func, "proc_exit")) {
-        return &web49_api_import_wasi_proc_exit;
-    } else {
+web49_wasi_t *web49_wasi_new(const char **argv, const char **envp) {
+    web49_wasi_t *wasi = malloc(sizeof(web49_wasi_t));
+    wasi->argv = argv;
+    wasi->envp = envp;
+    return wasi;
+}
+
+web49_env_t *web49_api_wasi(void *state, const char *module, const char *func) {
+    web49_env_func_t ret = NULL;
+    if (!strcmp(module, "wasi_unstable") || !strcmp(module, "wasi_snapshot_preview1")) {
+        if (!strcmp(func, "random_get")) {
+            ret = &web49_api_wasi_random_get;
+        } else if (!strcmp(func, "fd_seek")) {
+            ret = &web49_api_wasi_fd_seek;
+        } else if (!strcmp(func, "args_get")) {
+            ret = &web49_api_wasi_args_get;
+        } else if (!strcmp(func, "args_sizes_get")) {
+            ret = &web49_api_wasi_args_sizes_get;
+        } else if (!strcmp(func, "clock_time_get")) {
+            ret = &web49_api_wasi_clock_time_get;
+        } else if (!strcmp(func, "fd_close")) {
+            ret = &web49_api_wasi_fd_close;
+        } else if (!strcmp(func, "fd_prestat_get")) {
+            ret = &web49_api_wasi_fd_prestat_get;
+        } else if (!strcmp(func, "fd_prestat_dir_name")) {
+            ret = &web49_api_wasi_fd_prestat_dir_name;
+        } else if (!strcmp(func, "fd_fdstat_get")) {
+            ret = &web49_api_wasi_fd_fdstat_get;
+        } else if (!strcmp(func, "path_open")) {
+            ret = &web49_api_wasi_path_open;
+        } else if (!strcmp(func, "fd_read")) {
+            ret = &web49_api_wasi_fd_read;
+        } else if (!strcmp(func, "fd_write")) {
+            ret = &web49_api_wasi_fd_write;
+        } else if (!strcmp(func, "proc_exit")) {
+            ret = &web49_api_wasi_proc_exit;
+        }
+    }
+    if (ret == NULL) {
         return NULL;
     }
+    return web49_env_new(state, ret);
 }

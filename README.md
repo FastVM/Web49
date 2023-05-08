@@ -17,7 +17,6 @@ Web49 contains a few tools for working with WebAssembly.
         * includes a custom [WASI](https://github.com/webassembly/wasi) [implementation](src/api/wasi.c)
     * raywasm
         * wasm interpreter based on miniwasm
-        * includes [raylib](https://github.com/raysan5/raylib) [bindings](src/api/raylib.c) [generated from](src/api/raylib.py) [json](src/api/raylib.json)
 * wasm binary tools rewrite
     * much simpler than WABT's tools
     * much smaller than Binaryen's tools

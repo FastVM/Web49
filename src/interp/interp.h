@@ -67,6 +67,17 @@ typedef struct web49_interp_build_t web49_interp_build_t;
 struct web49_interp_link_t;
 typedef struct web49_interp_link_t web49_interp_link_t;
 
+struct web49_env_t;
+typedef struct web49_env_t web49_env_t;
+
+typedef web49_interp_data_t (*web49_env_func_t)(void *state, web49_interp_t interp);
+typedef web49_env_t *(*web49_env_table_t)(void *state, const char *mod, const char *sym);
+
+struct web49_env_t {
+    void *state;
+    web49_env_func_t func;
+};
+
 struct web49_interp_link_t {
     uint32_t *box;
     uint32_t out;
@@ -89,18 +100,17 @@ union web49_interp_data_t {
     double f64;
 };
 
-typedef web49_interp_data_t (*web49_env_func_t)(web49_interp_t interp);
-typedef web49_env_func_t (*web49_env_table_t)(void *state, const char *mod, const char *sym);
-
 struct web49_interp_t {
     web49_interp_data_t *restrict locals;
     uint8_t *restrict memory;
     web49_interp_data_t *restrict globals;
     web49_interp_block_t **table;
     web49_interp_block_t *funcs;
-    const char **args;
     void *import_state;
-    web49_env_table_t import_func;
+    size_t num_env;
+    void **env_states;
+    web49_env_table_t *env_funcs;
+    size_t env_alloc;
     void *locals_base;
     web49_interp_data_t **restrict stacks;
     web49_interp_opcode_t **restrict returns;
@@ -116,7 +126,7 @@ union web49_interp_opcode_t {
     void *opcode;
 #endif
     web49_interp_opcode_t *opcodes;
-    web49_env_func_t func;
+    web49_env_t *func;
     web49_interp_data_t data;
     web49_interp_block_t *block;
     size_t link;
@@ -154,9 +164,11 @@ struct web49_read_block_state_t {
     uint32_t nlinks;
 };
 
+web49_env_t *web49_env_new(void *state, web49_env_func_t func);
 uint32_t *web49_interp_link_box(void);
 void web49_interp_link_get(web49_read_block_state_t *state, uint32_t out, uint32_t *from);
-web49_interp_t web49_interp_module(web49_module_t mod, const char **args);
+web49_interp_t web49_interp_module(web49_module_t mod);
+void web49_interp_add_import_func(web49_interp_t *ptr_interp, void *env_state, web49_env_table_t env_func);
 web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_interp_block_t *block);
 uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t cur, uint32_t local);
 

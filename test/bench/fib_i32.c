@@ -13,12 +13,7 @@ uint64_t fib(uint64_t n) {
 }
 
 int main(int argc, char **argv) {
-    uint32_t n = 0;
-    for (char *head = argv[1]; *head != '\0'; head += 1) {
-        n *= 10;
-        n += *head - '0';
-    }
-    uint32_t fibn = fib(n);
-    printf("fib(%"PRIu32") = %"PRIu32"\n", n, fibn);
+    uint32_t fibn = fib(40);
+    printf("fib(40) = %"PRIu32"\n", fibn);
     return 0;
 }

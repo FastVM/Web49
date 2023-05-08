@@ -3,7 +3,16 @@
 
 #include "../interp/interp.h"
 
-web49_env_func_t web49_api_import_wasi(const char *func);
-web49_env_func_t web49_api_import_raylib(const char *func);
+struct web49_wasi_t;
+typedef struct web49_wasi_t web49_wasi_t;
+
+struct web49_wasi_t {
+    const char **argv;
+    const char **envp;
+};
+
+
+web49_wasi_t *web49_wasi_new(const char **argv, const char **envp);
+web49_env_t *web49_api_wasi(void *state, const char *module, const char *func);
 
 #endif

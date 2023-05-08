@@ -27,8 +27,8 @@ LABEL(WEB49_OPCODE_FFI_CALL1) {
     depth -= 1;
 #endif
     interp.locals = locals;
-    web49_env_func_t func = head[0].func;
-    locals[0] = func(interp);
+    web49_env_t *func = head[0].func;
+    locals[0] = func->func(func->state, interp);
     head = *--returns;
     locals = *--stacks;
     NEXT();
@@ -38,8 +38,8 @@ LABEL(WEB49_OPCODE_FFI_CALL0) {
     depth -= 1;
 #endif
     interp.locals = locals;
-    web49_env_func_t func = head[0].func;
-    func(interp);
+    web49_env_t *func = head[0].func;
+    func->func(func->state, interp);
     head = *--returns;
     locals = *--stacks;
     NEXT();

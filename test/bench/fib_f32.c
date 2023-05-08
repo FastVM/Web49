@@ -10,10 +10,6 @@ float fib(float n) {
 }
 
 int main(int argc, const char **argv) {
-    float n = 35;
-    if (argc > 1) {
-        sscanf(argv[1], "%f", &n);
-    }
-    printf("%f\n", fib(n));
+    printf("%f\n", fib(40));
     return 0;
 }

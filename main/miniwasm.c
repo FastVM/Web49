@@ -7,14 +7,7 @@
 #include "../src/read_bin.h"
 #include "../src/read_wat.h"
 
-static web49_env_func_t web49_main_import_func(void *state, const char *mod, const char *func) {
-    (void)state;
-    if (!strcmp(mod, "wasi_snapshot_preview1")) {
-        return web49_api_import_wasi(func);
-    } else {
-        return NULL;
-    }
-}
+extern const char ** environ;
 
 static web49_interp_data_t web49_main_expr_to_data(web49_readwat_expr_t expr) {
     web49_interp_data_t ret;
@@ -72,7 +65,9 @@ static int web49_file_main(const char *inarg, const char **args) {
             }
             web49_opt_tee_module(&mod);
             web49_opt_tree_module(&mod);
-            web49_interp_t interp = web49_interp_module(mod, args);
+            web49_interp_t interp = web49_interp_module(mod);
+            web49_wasi_t *wasi = web49_wasi_new(args, environ);
+            web49_interp_add_import_func(&interp, wasi, &web49_api_wasi);
             int ret = 0;
             while (true) {
                 web49_readwat_expr_t todo = web49_readwat_expr(&infile);
@@ -193,9 +188,9 @@ static int web49_file_main(const char *inarg, const char **args) {
             break;
         }
     }
-    web49_interp_t interp = web49_interp_module(mod, args);
-    interp.import_func = web49_main_import_func;
-    interp.import_state = NULL;
+    web49_interp_t interp = web49_interp_module(mod);
+    web49_wasi_t *wasi = web49_wasi_new(args, environ);
+    web49_interp_add_import_func(&interp, wasi, web49_api_wasi);
     web49_interp_block_run(&interp, &interp.funcs[start]);
     web49_free_interp(interp);
     web49_free_module(mod);

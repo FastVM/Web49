@@ -44,11 +44,11 @@ if len(args.test) == 0:
             'args': [],
             'memory': 256,
         },
-        'coremark': {
-            'runs': 1,
-            'args': ['3000'],
-            'memory': 256,
-        },
+        # 'coremark': {
+        #     'runs': 1,
+        #     'args': ['3000'],
+        #     'memory': 256,
+        # },
         'fib_f32': {
             'runs': 1,
             'args': ['40'],
