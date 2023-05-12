@@ -93,6 +93,7 @@ clean: .dummy
 	find src main -name '*.o' | xargs rm
 	find bin -type f | xargs rm
 	find test/core -name '*.txt' | xargs rm
+	find test/core -name '*.log' | xargs rm
 
 # intermediate files
 

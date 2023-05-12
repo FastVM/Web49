@@ -207,6 +207,43 @@ uint64_t web49_readwat_expr_to_u64f(web49_readwat_expr_t expr) {
             return *(uint64_t *)&n;
         }
     }
+    bool negate = false;
+    if (*str == '-') {
+        negate = true;
+        str += 1;
+    } else if (*str == '+') {
+        negate = false;
+        str += 1;
+    }
+    uint64_t base = 0;
+    if (!strcmp(str, "inf")) {
+        if (negate) {
+            return 0xFFF0000000000000;
+        } else {
+            return 0x7FF0000000000000;
+        }
+    }
+    if (str[0] == 'n' && str[1] == 'a' && str[2] == 'n') {
+        str += 3;
+        if (!strcmp(str, ":canonical") || *str == '\0') {
+            if (negate) {
+                return 0xFFF0000000000000;
+            } else {
+                return 0x7FF8000000000000;
+            }
+        }
+        if (!strcmp(str, ":arithmetic")) {
+            return 0x7FF8000000000000;
+        }
+        if (*str == ':') {
+            str += 1;
+            if (negate) {
+                base = 0xFFFFFFFFFFFFFFFF;
+            } else {
+                base = 0x7FF0000000000000;
+            }
+        }
+    }
     if (str[0] == '0' && str[1] == 'x') {
         uint64_t x = 0;
         for (const char *arg = str + 2; *arg != '\0'; arg += 1) {
@@ -221,14 +258,22 @@ uint64_t web49_readwat_expr_to_u64f(web49_readwat_expr_t expr) {
                 x += (uint64_t) (*arg - 'A' + 10);
             }
         }
-        return x;
+        if (negate) {
+            return base-x;
+        } else {
+            return base+x;
+        }
     } else {
         uint64_t x = 0;
         for (const char *arg = str; *arg != '\0'; arg += 1) {
             x *= 10;
             x += (uint64_t)(*arg - '0');
         }
-        return x;
+        if (negate) {
+            return base-x;
+        } else {
+            return base+x;
+        }
     }
 }
 
