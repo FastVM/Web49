@@ -16,6 +16,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define web49_parse_float_to(str, ptr) (sscanf((str), "%f", (ptr)))
+#define web49_parse_double_to(str, ptr) (sscanf((str), "%lf", (ptr)))
+
 #if defined(_WIN32)
 #define getentropy(buf, len) ((int)0)
 #else

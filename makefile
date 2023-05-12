@@ -46,10 +46,10 @@ results.txt: $(TEST_OUTPUTS)
 	@cat /dev/null $(TEST_OUTPUTS) | sort > results.txt
 
 $(TEST_OUTPUTS): bin/miniwasm $(@:%.txt=%.wast) | $(TEST_PREFIX)
-	@./bin/miniwasm $(@:%.txt=%.wast) 2>>/dev/null; \
+	@./bin/miniwasm $(@:%.txt=%.wast) 2>$(@:%.txt=%.log); \
 		if test $$? -eq 0; \
-		then echo "PASS $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
-		else echo "FAIL $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
+		then mv $(@:%.txt=%.log) $(@:%.txt=%.pass.log) && echo "PASS $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
+		else mv $(@:%.txt=%.log) $(@:%.txt=%.fail.log) && echo "FAIL $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
 		fi
 
 # test/wasi:

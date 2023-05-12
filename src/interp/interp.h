@@ -179,7 +179,17 @@ void web49_free_interp(web49_interp_t interp);
 #else
 #define WEB49_INTERP_BOUNDS(low, add) ({ fprintf(stderr, "memmory access 0x%zx of size 0x%zx out of bounds\n", (size_t) (low), (size_t) (add)); __builtin_trap(); })
 #endif
-#define WEB49_INTERP_ADDR(ptrtype, interp, dest, size) ({uint32_t xptr_ = (uint32_t) (dest); web49_interp_t sub_ = (interp); if (sub_.memsize < xptr_ + size) { WEB49_INTERP_BOUNDS(xptr_, size); }; (ptrtype) &sub_.memory[xptr_]; })
+#define WEB49_INTERP_ADDR(ptrtype, interp, dest, size) \
+    ({\
+        uint32_t xptr_ = (uint32_t) (dest); \
+        uint32_t xsize_ = (uint32_t) (size); \
+        web49_interp_t sub_ = (interp); \
+        /* printf("%"PRIu32":%"PRIu32"\n", xptr_, xptr_+xsize_); */ \
+        if (sub_.memsize < xptr_ + xsize_) { \
+            WEB49_INTERP_BOUNDS(xptr_, xsize_); \
+        }; \
+        (ptrtype) &sub_.memory[xptr_]; \
+    })
 #define WEB49_INTERP_READ(elemtype, interp, dest) (*WEB49_INTERP_ADDR(elemtype *, interp, dest, sizeof(elemtype)))
 #define WEB49_INTERP_WRITE(elemtype, interp, dest, src) (*WEB49_INTERP_ADDR(elemtype *, interp, dest, sizeof(elemtype)) = (src))
 

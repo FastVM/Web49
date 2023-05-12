@@ -329,7 +329,6 @@ NAME(WEB49_OPCODE_F64_CONVERT_S_I32) {
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_CONVERT_U_I32) {
-    // fprintf(stderr, "%"PRIu32" => %lf\n", LOCAL0.i32_u, (double)LOCAL0.i32_u);
     locals[head[1].data.i32_u].f64 = (double)LOCAL0.i32_u;
     head += 2;
     NEXT();

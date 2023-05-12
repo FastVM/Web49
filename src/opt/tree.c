@@ -1,7 +1,5 @@
 #include "tree.h"
 
-#include <stdio.h>
-
 #include "../tables.h"
 
 #define MAX_LOCAL 2048
@@ -265,21 +263,34 @@ static void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_
             head -= cur.immediate.varuint32;
         }
         if (head->ret) {
-            fprintf(stderr, "br.as.ret\n");
-            __builtin_trap();
-        }
-        for (size_t i = 0; i < nargs; i++) {
-            web49_opt_untree(mod, func_nreturns, pblocks, cur.args[i], len, out, alloc);
-        }
-        if (cur.opcode == WEB49_OPCODE_BR || head->nreturns == 0) {
-            web49_opt_untree_emit_counting(WEB49_OPCODE_YIELD_PUSH, head->nreturns, len, out, alloc);
-            web49_opt_untree_emit_push(cur, len, out, alloc);
+            for (size_t i = 0; i < nargs; i++) {
+                web49_opt_untree(mod, func_nreturns, pblocks, cur.args[i], len, out, alloc);
+            }
+            if (func_nreturns == 1) {
+                web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_RETURN1}, len, out, alloc);
+            } else {
+                for (size_t i = 0; i < func_nreturns; i++) {
+                    web49_opt_untree_emit_push((web49_instr_t){
+                                                .opcode = WEB49_OPCODE_YIELD_PUSH,
+                                            },
+                                            len, out, alloc);
+                }
+                web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_RETURN0}, len, out, alloc);
+            }
         } else {
-            web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_SET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = head->nreturns + MAX_LOCAL}, len, out, alloc);
-            web49_opt_untree_emit_counting(WEB49_OPCODE_YIELD_PUSH, head->nreturns, len, out, alloc);
-            web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_GET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = head->nreturns + MAX_LOCAL}, len, out, alloc);
-            web49_opt_untree_emit_push(cur, len, out, alloc);
-            web49_opt_untree_emit_counting(WEB49_OPCODE_YIELD_POP, head->nreturns, len, out, alloc);
+            for (size_t i = 0; i < nargs; i++) {
+                web49_opt_untree(mod, func_nreturns, pblocks, cur.args[i], len, out, alloc);
+            }
+            if (cur.opcode == WEB49_OPCODE_BR || head->nreturns == 0) {
+                web49_opt_untree_emit_counting(WEB49_OPCODE_YIELD_PUSH, head->nreturns, len, out, alloc);
+                web49_opt_untree_emit_push(cur, len, out, alloc);
+            } else {
+                web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_SET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = head->nreturns + MAX_LOCAL}, len, out, alloc);
+                web49_opt_untree_emit_counting(WEB49_OPCODE_YIELD_PUSH, head->nreturns, len, out, alloc);
+                web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_GET_LOCAL, .immediate.id = WEB49_IMMEDIATE_VARUINT32, .immediate.varuint32 = head->nreturns + MAX_LOCAL}, len, out, alloc);
+                web49_opt_untree_emit_push(cur, len, out, alloc);
+                web49_opt_untree_emit_counting(WEB49_OPCODE_YIELD_POP, head->nreturns, len, out, alloc);
+            }
         }
     } else if (cur.opcode == WEB49_OPCODE_BLOCK || cur.opcode == WEB49_OPCODE_LOOP) {
         web49_block_list_t list = (web49_block_list_t){

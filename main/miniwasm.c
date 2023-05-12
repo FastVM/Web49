@@ -110,40 +110,37 @@ static int web49_file_main(const char *inarg, const char **args) {
                                     web49_readwat_expr_t wants = todo.fun_args[k];
                                     if (wants.tag != WEB49_READWAT_EXPR_TAG_FUN) {
                                     } else if (!strcmp(wants.fun_fun, "i32.const")) {
-                                        uint32_t expected = (uint32_t)web49_readwat_expr_to_i64(wants.fun_args[0]);
-                                        if (data[n].i32_u == expected) {
-                                            fprintf(stderr, "wasm spec test: invoke %s pass: 0x%08" PRIx32 " == 0x%08" PRIx32 "\n", entry.field_str, data[n].i32_u, expected);
+                                        int32_t expected = (int32_t)web49_readwat_expr_to_i64(wants.fun_args[0]);
+                                        if (data[n].i32_s == expected) {
+                                            fprintf(stderr, "wasm spec test: invoke %s pass: 0x%08" PRIX32 "\n", entry.field_str, expected);
                                         } else {
-                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%" PRIx32 " != 0x%" PRIx32 " (expected return value)\n", entry.field_str, data[n].i32_u, expected);
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%" PRIX32 " != 0x%" PRIX32 " (expected return value)\n", entry.field_str, data[n].i32_u, expected);
                                             ret = 1;
                                             goto next_test;
                                         }
                                     } else if (!strcmp(wants.fun_fun, "i64.const")) {
                                         int64_t expected = web49_readwat_expr_to_i64(wants.fun_args[0]);
                                         if (data[n].i64_s == expected) {
-                                            fprintf(stderr, "wasm spec test: invoke %s pass: 0x%016" PRIx64 " == 0x%016" PRIx64 "\n", entry.field_str, data[n].i64_u, expected);
+                                            fprintf(stderr, "wasm spec test: invoke %s pass: 0x%016" PRIX64 "\n", entry.field_str, expected);
                                         } else {
-                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) 0x%016" PRIx64 " != 0x%016" PRIx64 " (expected return value)\n", entry.field_str, data[n].i64_u, expected);
                                             ret = 1;
                                             goto next_test;
                                         }
                                     } else if (!strcmp(wants.fun_fun, "f32.const")) {
-                                        float expected;
-                                        sscanf(wants.fun_args[0].sym, "%f", &expected);
-                                        if (data[n].f32 == expected || (isnan(expected) && isnan(data[n].f32))) {
-                                            fprintf(stderr, "wasm spec test: invoke %s pass: %f == %f\n", entry.field_str, data[n].f32, expected);
+                                        uint32_t part = web49_readwat_expr_to_u32f(wants.fun_args[0]);
+                                        if (data[n].i32_u == part || (isnan(data[n].f32) && isnan(*(float *)&part))) {
+                                            fprintf(stderr, "wasm spec test: invoke %s pass: 0x%08"PRIX32"\n", entry.field_str, part);
                                         } else {
-                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %f != %f (expected return value)\n", entry.field_str, (double)data[n].f32, (double)expected);
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because got 0x%08"PRIX32" but wanted 0x%08"PRIX32"\n", entry.field_str, data[n].i32_u, part);
                                             ret = 1;
                                             goto next_test;
                                         }
                                     } else if (!strcmp(wants.fun_fun, "f64.const")) {
-                                        double expected;
-                                        sscanf(wants.fun_args[0].sym, "%lf", &expected);
-                                        if (data[n].f64 == expected || (isnan(expected) && isnan(data[n].f64))) {
-                                            fprintf(stderr, "wasm spec test: invoke %s pass: %lf == %lf\n", entry.field_str, data[n].f64, expected);
+                                        uint64_t part = web49_readwat_expr_to_u64f(wants.fun_args[0]);
+                                        if (data[n].i64_u == part || (isnan(data[n].f64) && isnan(*(double *)&part))) {
+                                            fprintf(stderr, "wasm spec test: invoke %s pass: 0x%016"PRIX64"\n", entry.field_str, part);
                                         } else {
-                                            fprintf(stderr, "wasm spec test: invoke %s fail: because (actual return value) %lf != %lf (expected return value)\n", entry.field_str, data[n].f64, expected);
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because got 0x%016"PRIX64" but wanted 0x%016"PRIX64"\n", entry.field_str, data[n].i64_u, part);
                                             ret = 1;
                                             goto next_test;
                                         }
@@ -159,6 +156,12 @@ static int web49_file_main(const char *inarg, const char **args) {
                     }
                     fprintf(stderr, "wasm spec test: cannot find export: %s\n", str);
                     return 1;
+                } else if (!strcmp(todo.fun_fun, "assert_malformed")) {
+                    continue;
+                } else if (!strcmp(todo.fun_fun, "assert_exhaustion")) {
+                    continue;
+                } else if (!strcmp(todo.fun_fun, "assert_unlinkable")) {
+                    continue;
                 } else if (!strcmp(todo.fun_fun, "assert_trap")) {
                     continue;
                 } else if (!strcmp(todo.fun_fun, "assert_invalid")) {

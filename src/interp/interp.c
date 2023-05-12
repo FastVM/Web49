@@ -1,7 +1,4 @@
 #include "interp.h"
-
-#include <stdio.h>
-
 #include "../tables.h"
 
 #if defined(WEB49_USE_SWITCH)
@@ -874,16 +871,25 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
     web49_interp_block_run_comp(block, ptrs, interp);
     web49_interp_data_t **restrict stacks = interp.stacks;
     web49_interp_opcode_t **restrict returns = interp.returns;
-    web49_interp_opcode_t r0[2] = {
-        (web49_interp_opcode_t){
+    {
+        size_t head = 0;
+        web49_interp_opcode_t *r0 = web49_malloc(sizeof(web49_interp_opcode_t) * (block->nreturns * 2 + 1));
+        if (block->nreturns != 1) {
+            for (size_t i = 1; i <= block->nreturns; i++) {
+                r0[head++] = (web49_interp_opcode_t) {
+                    .opcode = OPCODE(WEB49_OPCODE_YIELD_POP),
+                };
+                r0[head++] = (web49_interp_opcode_t) {
+                    .data.i32_u = block->nreturns - i,
+                };
+            }
+        }
+        r0[head++] = (web49_interp_opcode_t){
             .opcode = OPCODE(WEB49_OPCODE_EXIT),
-        },
-        (web49_interp_opcode_t){
-            .opcode = OPCODE(WEB49_OPCODE_EXIT),
-        },
-    };
-    *returns++ = r0;
-    *stacks++ = &interp.locals[0];
+        };
+        *returns++ = r0;
+        *stacks++ = &interp.locals[0];
+    }
     web49_interp_data_t *yield_ptr = interp.yield_base;
     web49_interp_opcode_t *restrict head = block->code;
     web49_interp_data_t *restrict locals = interp.locals;
@@ -1015,7 +1021,7 @@ web49_interp_t web49_interp_module(web49_module_t mod) {
     }
     for (size_t j = 0; j < data_section.num_entries; j++) {
         web49_section_data_entry_t entry = data_section.entries[j];
-        memcpy(&interp.memory[entry.offset.immediate.varint32], entry.data, entry.size);
+        memcpy(WEB49_INTERP_ADDR(void *, interp, entry.offset.immediate.varuint32, entry.size), entry.data, entry.size);
     }
     for (size_t j = 0; j < code_section.num_entries; j++) {
         web49_section_code_entry_t *entry = &code_section.entries[j];
