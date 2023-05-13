@@ -176,8 +176,11 @@ web49_type_function_t web49_readbin_type_function(web49_io_input_t *in) {
 
 web49_type_table_t web49_readbin_type_table(web49_io_input_t *in) {
     return (web49_type_table_t){
+        .limits = (web49_type_memory_t) {
+            .initial = web49_readbin_uleb(in),
+            .maximum = web49_readbin_uleb(in),
+        },
         .element_type = web49_readbin_byte(in),
-        .limits = web49_readbin_type_memory(in),
     };
 }
 
@@ -564,9 +567,28 @@ web49_instr_immediate_t web49_readbin_instr_immediate(web49_io_input_t *in, web4
             .data_index = web49_readbin_varint32(in),
         };
     }
-    return (web49_instr_immediate_t){
-        .id = WEB49_IMMEDIATE_NONE,
-    };
+    if (id == WEB49_IMMEDIATE_NONE) {
+        return (web49_instr_immediate_t){
+            .id = WEB49_IMMEDIATE_NONE,
+        };
+    }
+    if (id == WEB49_IMMEDIATE_LANE) {
+        return (web49_instr_immediate_t){
+            .id = WEB49_IMMEDIATE_LANE,
+            .lane = web49_readbin_byte(in),
+        };
+    }
+    if (id == WEB49_IMMEDIATE_V128) {
+        web49_instr_immediate_t ret = (web49_instr_immediate_t) {
+            .id = WEB49_IMMEDIATE_V128,
+        };
+        for (size_t i = 0; i < 16; i++) {
+            ret.u8s[i] = web49_readbin_byte(in);
+        }
+        return ret;
+    }
+    fprintf(stderr, "unknown internal immediate id %zu\n", (size_t) id);
+    __builtin_trap();
 }
 
 web49_instr_t web49_readbin_init_expr(web49_io_input_t *in) {
@@ -580,14 +602,22 @@ web49_instr_t web49_readbin_init_expr(web49_io_input_t *in) {
 }
 
 web49_instr_t web49_readbin_instr(web49_io_input_t *in) {
-    uint8_t first_byte = web49_readbin_byte(in);
-    uint8_t bytes[2] = {
-        first_byte,
+    uint8_t first = web49_readbin_byte(in);
+    uint8_t bytes[4] = {
+        first
     };
-    if (web49_opcode_is_multibyte(first_byte)) {
-        bytes[1] = web49_readbin_byte(in);
+    if (first == 0xFD) {
+        uint64_t simd_opcode = web49_readbin_uleb(in);
+        bytes[1] = (uint8_t) (simd_opcode);
+        bytes[2] = (uint8_t) (simd_opcode >> 8);
+        bytes[3] = (uint8_t) (simd_opcode >> 16);
+    } else {
+        size_t max = web49_opcode_byte_count(first);
+        for (size_t i = 1; i < max; i++) {
+            bytes[i] = web49_readbin_byte(in);
+        }
     }
-    web49_opcode_t opcode = web49_bytes_to_opcode(&bytes[0]);
+    web49_opcode_t opcode = web49_bytes_to_opcode(bytes);
     uint8_t skip = web49_opcode_skip(opcode);
     web49_immediate_id_t immediate_id = web49_opcode_immediate[opcode];
     web49_instr_immediate_t immediate = web49_readbin_instr_immediate(in, immediate_id);

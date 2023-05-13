@@ -1,27 +1,27 @@
-LABEL(WEB49_OPCODE_MEMORY_INIT) {
-    fprintf(stderr, "memory init? you wish\n");
+NAME(WEB49_OPCODE_MEMORY_INIT) {
+    fprintf(stderr, "memory init?\n");
     __builtin_trap();
     NEXT();
 }
-LABEL(WEB49_OPCODE_DATA_DROP) {
+NAME(WEB49_OPCODE_DATA_DROP) {
     NEXT();
 }
-LABEL(WEB49_OPCODE_TABLE_INIT) {
-    fprintf(stderr, "table init? you wish!\n");
+NAME(WEB49_OPCODE_TABLE_INIT) {
+    fprintf(stderr, "table init? \n");
     __builtin_trap();
     NEXT();
 }
-LABEL(WEB49_OPCODE_ELEM_DROP) {
-    fprintf(stderr, "elem drop? you wish!\n");
+NAME(WEB49_OPCODE_ELEM_DROP) {
+    fprintf(stderr, "elem drop?\n");
     __builtin_trap();
     NEXT();
 }
-LABEL(WEB49_OPCODE_TABLE_COPY) {
-    fprintf(stderr, "table copy? you wish!\n");
+NAME(WEB49_OPCODE_TABLE_COPY) {
+    fprintf(stderr, "table copy?\n");
     __builtin_trap();
     NEXT();
 }
-LABEL(WEB49_OPCODE_FFI_CALL1) {
+NAME(WEB49_OPCODE_FFI_CALL1) {
 #if defined(WEB49_PRINT_INSTR_DEPTH)
     depth -= 1;
 #endif
@@ -32,7 +32,7 @@ LABEL(WEB49_OPCODE_FFI_CALL1) {
     locals = *--stacks;
     NEXT();
 }
-LABEL(WEB49_OPCODE_FFI_CALL0) {
+NAME(WEB49_OPCODE_FFI_CALL0) {
 #if defined(WEB49_PRINT_INSTR_DEPTH)
     depth -= 1;
 #endif

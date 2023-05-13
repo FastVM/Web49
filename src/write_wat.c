@@ -20,6 +20,10 @@ void web49_wat_print_lang_type(web49_io_output_t *out, web49_lang_type_t ltype) 
             web49_io_output_write_str(out, "f64");
             break;
         }
+        case WEB49_TYPE_FUNC: {
+            web49_io_output_write_str(out, "func");
+            break;
+        }
         case WEB49_TYPE_FUNCREF: {
             web49_io_output_write_str(out, "funcref");
             break;
@@ -30,6 +34,10 @@ void web49_wat_print_lang_type(web49_io_output_t *out, web49_lang_type_t ltype) 
         }
         case WEB49_TYPE_BLOCK_TYPE: {
             web49_io_output_write_str(out, "block_type");
+            break;
+        }
+        case WEB49_TYPE_VEC: {
+            web49_io_output_write_str(out, "v128");
             break;
         }
         default: {
@@ -110,6 +118,15 @@ void web49_wat_print_instr_depth(web49_io_output_t *out, web49_instr_t instr, ui
             break;
         case WEB49_IMMEDIATE_TABLE_INDEX:
             break;
+        case WEB49_IMMEDIATE_LANE:
+            web49_io_output_fprintf(out, " %zu", instr.immediate.lane);
+            break;
+        case WEB49_IMMEDIATE_V128:
+            web49_io_output_fprintf(out, " i32x4", instr.immediate.memory_immediate.offset);
+            for (size_t i = 0; i < 4; i++) {
+                web49_io_output_fprintf(out, " 0x%08" PRIx32, instr.immediate.u32s[i]);
+            }
+            break;
     }
 }
 
@@ -120,7 +137,7 @@ void web49_wat_print_section_type(web49_io_output_t *out, web49_module_t mod, we
         web49_io_output_write_str(out, " ");
         web49_section_type_entry_t entry = stype.entries[i];
         web49_io_output_fprintf(out, "(;%" PRIi64 ";) ", i);
-        if (entry.type == WEB49_TYPE_FUNCREF) {
+        if (entry.type == WEB49_TYPE_FUNCREF || entry.type == WEB49_TYPE_FUNC) {
             web49_io_output_write_str(out, "(func");
             if (entry.num_params != 0) {
                 web49_io_output_write_str(out, " (param");

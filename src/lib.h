@@ -25,7 +25,7 @@
 int getentropy(void *buffer, size_t length);
 #endif
 
-#if defined(WEB49_COUNT_ALLOC)
+#if WEB49_COUNT_ALLOC
 extern size_t web49_total_alloc;
 #define web49_req_mem(size) (web49_total_alloc += (size))
 #else

@@ -17,6 +17,7 @@ enum web49_lang_type_enum_t {
     WEB49_TYPE_F32 = 0x7d,
     WEB49_TYPE_F64 = 0x7c,
     WEB49_TYPE_VEC = 0x7B,
+    WEB49_TYPE_FUNC = 0x60,
     WEB49_TYPE_FUNCREF = 0x70,
     WEB49_TYPE_EXTERNREF = 0x6F,
     WEB49_TYPE_BLOCK_TYPE = 0x40,
@@ -524,7 +525,7 @@ enum web49_opcode_enum_t {
     WEB49_MAX_OPCODE_NUM,
 };
 
-enum web49_memory_immediate_id_enum_t {
+enum web49_immediate_id_enum_t {
     WEB49_IMMEDIATE_NONE,
     WEB49_IMMEDIATE_BLOCK_TYPE,
     WEB49_IMMEDIATE_VARUINT1,
@@ -540,6 +541,8 @@ enum web49_memory_immediate_id_enum_t {
     WEB49_IMMEDIATE_DATA_INDEX,
     WEB49_IMMEDIATE_TABLE_INDEX,
     WEB49_IMMEDIATE_ELEM_INDEX,
+    WEB49_IMMEDIATE_V128,
+    WEB49_IMMEDIATE_LANE,
 };
 
 struct web49_preamble_t;
@@ -787,6 +790,14 @@ struct web49_instr_immediate_t {
         web49_call_indirect_t call_indirect;
         web49_memory_immediate_t memory_immediate;
         uint32_t data_index;
+        uint8_t lane;
+        union {
+            uint8_t u8s[16];
+            uint16_t u16s[8];
+            uint32_t u32s[4];
+            uint64_t u64s[2];
+            __uint128_t u128;
+        };
     };
     web49_immediate_id_t id;
 };
