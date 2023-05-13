@@ -468,7 +468,7 @@ void web49_readwat_state_type_entry(web49_readwat_state_t *out, web49_readwat_ex
             fprintf(stderr, "expected (func ...) type, not (%s ...)\n", func.fun_fun);
             exit(1);
         }
-        type = WEB49_TYPE_FUNC;
+        type = WEB49_TYPE_FUNCREF;
         for (uint64_t j = 0; j < func.fun_nargs; j++) {
             web49_readwat_expr_t arg = func.fun_args[j];
             if (arg.tag != WEB49_READWAT_EXPR_TAG_FUN) {
@@ -575,7 +575,7 @@ uint32_t web49_readwat_expr_to_type_entry_index(web49_readwat_state_t *out, size
         if (!strcmp(args[i].fun_fun, "type")) { 
             web49_free(params);
             web49_free(results);
-            if (args[0].fun_nargs == 0) {
+            if (args[i].fun_nargs == 0) {
                 fprintf(stderr, "expected (type $name) or (type XYZ), not just (type)\n");
                 exit(1);
             }
@@ -637,7 +637,7 @@ uint32_t web49_readwat_expr_to_type_entry_index(web49_readwat_state_t *out, size
     }
     uint32_t entry = out->stype.num_entries++;
     out->stype.entries[entry] = (web49_section_type_entry_t){
-        .type = WEB49_TYPE_FUNC,
+        .type = WEB49_TYPE_FUNCREF,
         .num_params = nparams,
         .params = params,
         .num_returns = nresults,
@@ -753,8 +753,9 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
             }
         }
         if (num_locals != out->stype.entries[entry].num_params) {
-            printf("%zu != %zu\n", (size_t) num_locals, max);
-            exit(1);
+            // printf("%zu != %zu\n", (size_t) num_locals, max);
+            // exit(1);
+            num_locals = out->stype.entries[entry].num_params;
         }
         if (out->sfunction.num_entries + 1 >= out->alloc_function) {
             out->alloc_function = (out->sfunction.num_entries + 1) * 2;
@@ -903,7 +904,9 @@ void web49_readwat_state_table_entry(web49_readwat_state_t *out, web49_readwat_e
         } else if (!strcmp(arg.sym, "f64")) {
             entry.element_type = WEB49_TYPE_F64;
         } else if (!strcmp(arg.sym, "funcref")) {
-            entry.element_type = WEB49_TYPE_ANYFUNC;
+            entry.element_type = WEB49_TYPE_FUNCREF;
+        } else if (!strcmp(arg.sym, "externref")) {
+            entry.element_type = WEB49_TYPE_EXTERNREF;
         } else if (arg.sym[0] == '$') {
             web49_readwat_table_set(&out->table_table, arg.sym, out->stable.num_entries);
         } else {
@@ -1131,7 +1134,7 @@ void web49_readwat_state_global_entry(web49_readwat_state_t *out, web49_readwat_
             } else if (!strcmp(arg.sym, "f64")) {
                 entry.global.content_type = WEB49_TYPE_F64;
             } else if (!strcmp(arg.sym, "funcref")) {
-                entry.global.content_type = WEB49_TYPE_ANYFUNC;
+                entry.global.content_type = WEB49_TYPE_FUNCREF;
             } else if (arg.sym[0] == '$') {
                 web49_readwat_table_set(&out->global_table, arg.sym, out->sglobal.num_entries);
                 continue;
@@ -1155,7 +1158,7 @@ void web49_readwat_state_global_entry(web49_readwat_state_t *out, web49_readwat_
                 } else if (!strcmp(arg.fun_args[0].sym, "f64")) {
                     entry.global.content_type = WEB49_TYPE_F64;
                 } else if (!strcmp(arg.fun_args[0].sym, "funcref")) {
-                    entry.global.content_type = WEB49_TYPE_ANYFUNC;
+                    entry.global.content_type = WEB49_TYPE_FUNCREF;
                 } else {
                     fprintf(stderr, "expected a global (mut typename), not (mut %s)\n", arg.sym);
                     exit(1);

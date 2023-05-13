@@ -122,12 +122,12 @@ web49_block_type_t web49_readbin_block_type(web49_io_input_t *in) {
             bt.type_value = WEB49_TYPE_F64;
             bt.is_type_index = false;
             break;
-        case WEB49_TYPE_ANYFUNC:
-            bt.type_value = WEB49_TYPE_ANYFUNC;
+        case WEB49_TYPE_FUNCREF:
+            bt.type_value = WEB49_TYPE_FUNCREF;
             bt.is_type_index = false;
             break;
-        case WEB49_TYPE_FUNC:
-            bt.type_value = WEB49_TYPE_FUNC;
+        case WEB49_TYPE_EXTERNREF:
+            bt.type_value = WEB49_TYPE_EXTERNREF;
             bt.is_type_index = false;
             break;
         default: {
@@ -157,7 +157,7 @@ web49_br_table_t web49_readbin_br_table(web49_io_input_t *in) {
 web49_call_indirect_t web49_readbin_call_indirect(web49_io_input_t *in) {
     return (web49_call_indirect_t){
         .index = web49_readbin_uleb(in),
-        .reserved = web49_readbin_byte(in),
+        .table = web49_readbin_uleb(in),
     };
 }
 

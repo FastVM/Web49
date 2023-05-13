@@ -20,12 +20,12 @@ void web49_wat_print_lang_type(web49_io_output_t *out, web49_lang_type_t ltype) 
             web49_io_output_write_str(out, "f64");
             break;
         }
-        case WEB49_TYPE_ANYFUNC: {
-            web49_io_output_write_str(out, "anyfunc");
+        case WEB49_TYPE_FUNCREF: {
+            web49_io_output_write_str(out, "funcref");
             break;
         }
-        case WEB49_TYPE_FUNC: {
-            web49_io_output_write_str(out, "func");
+        case WEB49_TYPE_EXTERNREF: {
+            web49_io_output_write_str(out, "externref");
             break;
         }
         case WEB49_TYPE_BLOCK_TYPE: {
@@ -108,6 +108,8 @@ void web49_wat_print_instr_depth(web49_io_output_t *out, web49_instr_t instr, ui
                 web49_io_output_fprintf(out, " align=%zu", size);
             }
             break;
+        case WEB49_IMMEDIATE_TABLE_INDEX:
+            break;
     }
 }
 
@@ -118,7 +120,7 @@ void web49_wat_print_section_type(web49_io_output_t *out, web49_module_t mod, we
         web49_io_output_write_str(out, " ");
         web49_section_type_entry_t entry = stype.entries[i];
         web49_io_output_fprintf(out, "(;%" PRIi64 ";) ", i);
-        if (entry.type == WEB49_TYPE_FUNC) {
+        if (entry.type == WEB49_TYPE_FUNCREF) {
             web49_io_output_write_str(out, "(func");
             if (entry.num_params != 0) {
                 web49_io_output_write_str(out, " (param");
@@ -259,7 +261,7 @@ void web49_wat_print_section_table(web49_io_output_t *out, web49_module_t mod, w
             web49_io_output_fprintf(out, " %zu", (size_t)table.limits.maximum);
         }
         web49_io_output_write_str(out, " ");
-        if (table.element_type == WEB49_TYPE_ANYFUNC) {
+        if (table.element_type == WEB49_TYPE_FUNCREF) {
             web49_io_output_write_str(out, "funcref");
         } else {
             web49_wat_print_lang_type(out, table.element_type);

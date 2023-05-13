@@ -12,12 +12,10 @@ FAIL exports
 FAIL float_exprs
 FAIL float_literals
 FAIL float_memory
-FAIL func
 FAIL func_ptrs
 FAIL global
 FAIL imports
 FAIL inline-module
-FAIL left-to-right
 FAIL linking
 FAIL memory
 FAIL memory_copy
@@ -103,7 +101,6 @@ FAIL table_size
 FAIL token
 FAIL tokens
 FAIL unreached-invalid
-FAIL unreached-valid
 FAIL utf8-custom-section-id
 FAIL utf8-import-field
 FAIL utf8-import-module
@@ -125,12 +122,14 @@ PASS f64_cmp
 PASS fac
 PASS float_misc
 PASS forward
+PASS func
 PASS i32
 PASS i64
 PASS if
 PASS int_exprs
 PASS int_literals
 PASS labels
+PASS left-to-right
 PASS load
 PASS local_get
 PASS local_set
@@ -144,4 +143,5 @@ PASS switch
 PASS traps
 PASS type
 PASS unreachable
+PASS unreached-valid
 PASS unwind

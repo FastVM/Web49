@@ -1,4 +1,3 @@
-
 LABEL(WEB49_OPCODE_MEMORY_INIT) {
     fprintf(stderr, "memory init? you wish\n");
     __builtin_trap();

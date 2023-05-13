@@ -15,14 +15,14 @@ NAME(WEB49_OPCODE_RETURN1) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_INDIRECT) {
-    web49_interp_block_t *fblock = interp.table[LOCAL0.i32_u];
+    web49_interp_block_t *fblock = interp.tables[head[1].data.i32_u].elems[LOCAL0.i32_u];
 #if defined(WEB49_CHECKS)
     if (fblock == NULL) {
         __builtin_trap();
     }
 #endif
     web49_interp_block_run_comp(fblock, ptrs, interp);
-    *returns++ = head + 2;
+    *returns++ = head + 3;
     *stacks++ = locals;
     locals += head[1].data.i32_u;
     memset(locals + fblock->nparams, 0, sizeof(web49_interp_data_t) * fblock->nlocals);

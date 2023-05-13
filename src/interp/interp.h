@@ -70,6 +70,9 @@ typedef struct web49_interp_link_t web49_interp_link_t;
 struct web49_env_t;
 typedef struct web49_env_t web49_env_t;
 
+struct web49_interp_table_t;
+typedef struct web49_interp_table_t web49_interp_table_t;
+
 typedef web49_interp_data_t (*web49_env_func_t)(void *state, web49_interp_t interp);
 typedef web49_env_t *(*web49_env_table_t)(void *state, const char *mod, const char *sym);
 
@@ -100,11 +103,17 @@ union web49_interp_data_t {
     double f64;
 };
 
+struct web49_interp_table_t {
+    void **restrict elems;
+    size_t size;
+};
+
 struct web49_interp_t {
     web49_interp_data_t *restrict locals;
     uint8_t *restrict memory;
     web49_interp_data_t *restrict globals;
-    web49_interp_block_t **table;
+    web49_interp_table_t *restrict tables;
+    size_t num_tables;
     web49_interp_block_t *funcs;
     void *import_state;
     size_t num_env;
