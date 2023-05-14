@@ -2,8 +2,8 @@
 #if !defined(WEB49_HEADER_READWAT)
 #define WEB49_HEADER_READWAT
 
-#include "ast.h"
-#include "io.h"
+#include "./ast.h"
+#include "./io.h"
 enum {
     WEB49_READWAT_EXPR_TAG_INIT,
     WEB49_READWAT_EXPR_TAG_FUN,

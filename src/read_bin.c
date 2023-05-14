@@ -1,9 +1,9 @@
 
 #include "./read_bin.h"
 
-#include "ast.h"
-#include "io.h"
-#include "tables.h"
+#include "./ast.h"
+#include "./io.h"
+#include "./tables.h"
 
 uint64_t web49_readbin_uleb(web49_io_input_t *in) {
     uint8_t buf;
@@ -100,7 +100,7 @@ uint64_t web49_readbin_uint64(web49_io_input_t *in) {
 
 web49_block_type_t web49_readbin_block_type(web49_io_input_t *in) {
     web49_block_type_t bt;
-    web49_lang_type_t type = web49_readbin_byte(in);
+    web49_tag_t type = web49_readbin_byte(in);
     switch (type) {
         case WEB49_TYPE_BLOCK_TYPE:
             bt.type_value = WEB49_TYPE_BLOCK_TYPE;
@@ -120,6 +120,10 @@ web49_block_type_t web49_readbin_block_type(web49_io_input_t *in) {
             break;
         case WEB49_TYPE_F64:
             bt.type_value = WEB49_TYPE_F64;
+            bt.is_type_index = false;
+            break;
+        case WEB49_TYPE_FUNC:
+            bt.type_value = WEB49_TYPE_FUNC;
             bt.is_type_index = false;
             break;
         case WEB49_TYPE_FUNCREF:
@@ -175,12 +179,11 @@ web49_type_function_t web49_readbin_type_function(web49_io_input_t *in) {
 }
 
 web49_type_table_t web49_readbin_type_table(web49_io_input_t *in) {
+    web49_tag_t element_type = web49_readbin_byte(in);
+    web49_limits_t limits = web49_readbin_limits(in);
     return (web49_type_table_t){
-        .limits = (web49_type_memory_t) {
-            .initial = web49_readbin_uleb(in),
-            .maximum = web49_readbin_uleb(in),
-        },
-        .element_type = web49_readbin_byte(in),
+        .element_type = element_type,
+        .limits = limits,
     };
 }
 
@@ -191,12 +194,29 @@ web49_type_global_t web49_readbin_type_global(web49_io_input_t *in) {
     };
 }
 
-web49_type_memory_t web49_readbin_type_memory(web49_io_input_t *in) {
-    uint64_t flags = web49_readbin_uleb(in);
-    return (web49_type_memory_t){
-        .initial = web49_readbin_uleb(in),
-        .maximum = (flags == 1) ? web49_readbin_uleb(in) : UINT32_MAX,
-    };
+web49_limits_t web49_readbin_limits(web49_io_input_t *in) {
+    uint8_t byte = web49_readbin_byte(in);
+    switch (byte) {
+    case 0: {
+        uint64_t initial = web49_readbin_uleb(in);
+        return (web49_limits_t) {
+            .initial = initial,
+            .maximum = UINT32_MAX,
+        };
+    }
+    case 1: {
+        uint64_t initial = web49_readbin_uleb(in);
+        uint64_t maximum = web49_readbin_uleb(in);
+        return (web49_limits_t) {
+            .initial = initial,
+            .maximum = maximum,
+        };
+    }
+    default: {
+        fprintf(stderr, "error in binary type, need either 0x00 or 0x01, got 0x%02zx\n", (size_t) byte);
+        exit(1);
+    }
+    }
 }
 
 web49_type_t web49_readbin_type(web49_io_input_t *in, web49_external_kind_t tag) {
@@ -220,7 +240,7 @@ web49_type_t web49_readbin_type(web49_io_input_t *in, web49_external_kind_t tag)
     }
     if (tag == WEB49_EXTERNAL_KIND_MEMORY) {
         return (web49_type_t){
-            .memory = web49_readbin_type_memory(in),
+            .memory = web49_readbin_limits(in),
             .tag = tag,
         };
     }
@@ -249,14 +269,14 @@ web49_section_type_t web49_readbin_section_type(web49_io_input_t *in) {
     uint64_t num = web49_readbin_uleb(in);
     web49_section_type_entry_t *entries = web49_malloc(sizeof(web49_section_type_entry_t) * num);
     for (uint64_t i = 0; i < num; i++) {
-        web49_lang_type_t type = web49_readbin_byte(in);
+        web49_tag_t type = web49_readbin_byte(in);
         uint64_t num_params = web49_readbin_uleb(in);
-        web49_lang_type_t *params = web49_malloc(sizeof(web49_lang_type_t) * num_params);
+        web49_tag_t *params = web49_malloc(sizeof(web49_tag_t) * num_params);
         for (uint64_t j = 0; j < num_params; j++) {
             params[j] = web49_readbin_byte(in);
         }
         uint64_t num_returns = web49_readbin_uleb(in);
-        web49_lang_type_t *return_types = web49_malloc(sizeof(web49_lang_type_t) * num_returns);
+        web49_tag_t *return_types = web49_malloc(sizeof(web49_tag_t) * num_returns);
         for (size_t n = 0; n < num_returns; n++) {
             return_types[n] = web49_readbin_byte(in);
         }
@@ -302,7 +322,7 @@ web49_section_import_t web49_readbin_section_import(web49_io_input_t *in) {
                 break;
             }
             case WEB49_EXTERNAL_KIND_MEMORY: {
-                entries[i].memory_type = web49_readbin_type_memory(in);
+                entries[i].memory_type = web49_readbin_limits(in);
                 break;
             }
             case WEB49_EXTERNAL_KIND_GLOBAL: {
@@ -343,9 +363,9 @@ web49_section_table_t web49_readbin_section_table(web49_io_input_t *in) {
 
 web49_section_memory_t web49_readbin_section_memory(web49_io_input_t *in) {
     uint64_t num_entries = web49_readbin_uleb(in);
-    web49_type_memory_t *entries = web49_malloc(sizeof(web49_section_global_entry_t) * num_entries);
+    web49_limits_t *entries = web49_malloc(sizeof(web49_section_global_entry_t) * num_entries);
     for (uint64_t i = 0; i < num_entries; i++) {
-        entries[i] = web49_readbin_type_memory(in);
+        entries[i] = web49_readbin_limits(in);
     }
     return (web49_section_memory_t){
         .num_entries = num_entries,
@@ -430,7 +450,7 @@ web49_section_code_t web49_readbin_section_code(web49_io_input_t *in) {
         web49_section_code_entry_local_t *locals = web49_malloc(sizeof(web49_section_code_entry_local_t) * num_locals);
         for (uint64_t j = 0; j < num_locals; j++) {
             uint64_t count = web49_readbin_uleb(in);
-            web49_lang_type_t type = web49_readbin_byte(in);
+            web49_tag_t type = web49_readbin_byte(in);
             locals[j] = (web49_section_code_entry_local_t){
                 .count = count,
                 .type = type,
@@ -603,15 +623,16 @@ web49_instr_t web49_readbin_init_expr(web49_io_input_t *in) {
 
 web49_instr_t web49_readbin_instr(web49_io_input_t *in) {
     uint8_t first = web49_readbin_byte(in);
-    uint8_t bytes[4] = {
-        first
-    };
+    uint8_t bytes[4];
     if (first == 0xFD) {
         uint64_t simd_opcode = web49_readbin_uleb(in);
-        bytes[1] = (uint8_t) (simd_opcode);
-        bytes[2] = (uint8_t) (simd_opcode >> 8);
-        bytes[3] = (uint8_t) (simd_opcode >> 16);
+        // printf("%zu\n", simd_opcode);
+        bytes[0] = first;
+        bytes[1] = 0x7F & (simd_opcode);
+        bytes[2] = 0x7F & (simd_opcode >> 7);
+        bytes[3] = 0x7F & (simd_opcode >> 14);
     } else {
+        bytes[0] = first;
         size_t max = web49_opcode_byte_count(first);
         for (size_t i = 1; i < max; i++) {
             bytes[i] = web49_readbin_byte(in);

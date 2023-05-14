@@ -1,4 +1,4 @@
-#include "tee.h"
+#include "./tee.h"
 
 #include "../tables.h"
 

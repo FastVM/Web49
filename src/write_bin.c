@@ -1,7 +1,7 @@
 
-#include "write_bin.h"
+#include "./write_bin.h"
 
-#include "tables.h"
+#include "./tables.h"
 
 static void web49_writebin_byte(web49_writebin_buf_t *out, uint8_t u8) {
     if (out->len + 1 >= out->alloc) {
@@ -23,7 +23,7 @@ void web49_writebin_type_table(web49_writebin_buf_t *out, web49_type_table_t typ
     web49_writebin_byte(out, type.element_type);
     web49_writebin_type_memory(out, type.limits);
 }
-void web49_writebin_type_memory(web49_writebin_buf_t *out, web49_type_memory_t type) {
+void web49_writebin_type_memory(web49_writebin_buf_t *out, web49_limits_t type) {
     uint8_t flags = type.maximum != UINT32_MAX ? 1 : 0;
     web49_writebin_byte(out, flags);
     web49_writebin_uleb(out, type.initial);
@@ -228,7 +228,7 @@ void web49_writebin_section_table(web49_writebin_buf_t *out, web49_section_t sec
 void web49_writebin_section_memory(web49_writebin_buf_t *out, web49_section_t section) {
     web49_writebin_uleb(out, section.memory_section.num_entries);
     for (uint64_t i = 0; i < section.memory_section.num_entries; i++) {
-        web49_type_memory_t entry = section.memory_section.entries[i];
+        web49_limits_t entry = section.memory_section.entries[i];
         web49_writebin_type_memory(out, entry);
     }
 }

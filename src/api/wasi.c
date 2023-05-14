@@ -4,7 +4,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "api.h"
+#include "./api.h"
 
 static web49_interp_data_t web49_api_wasi_random_get(void *wasi_untyped, web49_interp_t interp) {
     (void) wasi_untyped;

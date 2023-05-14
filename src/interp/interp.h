@@ -33,7 +33,7 @@ enum web49_interp_instr_enum_t {
     WEB49_OPCODE_CALL_DONE512,
     WEB49_OPCODE_CALL_DONE1024,
     WEB49_MAX_OPCODE_INTERP,
-#if defined(WEB49_OPT_CONST0)
+#if WEB49_OPT_CONST
     WEB49_OPCODE_WITH_CONST0 = WEB49_MAX_OPCODE_INTERP * 1,
     WEB49_OPCODE_WITH_CONST1 = WEB49_MAX_OPCODE_INTERP * 2,
     WEB49_MAX_OPCODE_INTERP_NUM = WEB49_MAX_OPCODE_INTERP * 4,
@@ -129,7 +129,7 @@ struct web49_interp_t {
 };
 
 union web49_interp_opcode_t {
-#if defined(WEB49_USE_SWITCH)
+#if WEB49_USE_SWTICH
     size_t opcode;
 #else
     void *opcode;
@@ -183,17 +183,16 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
 
 void web49_free_interp(web49_interp_t interp);
 
-#if defined(WEB49_NO_BOUNDS)
-#define WEB49_INTERP_BOUNDS(low, add) (__builtin_unreachable())
-#else
+#if WEB49_CHECK_BOUNDS
 #define WEB49_INTERP_BOUNDS(low, add) ({ fprintf(stderr, "memmory access 0x%zx of size 0x%zx out of bounds\n", (size_t) (low), (size_t) (add)); __builtin_trap(); })
+#else
+#define WEB49_INTERP_BOUNDS(low, add) (__builtin_unreachable())
 #endif
 #define WEB49_INTERP_ADDR(ptrtype, interp, dest, size) \
     ({\
         uint32_t xptr_ = (uint32_t) (dest); \
         uint32_t xsize_ = (uint32_t) (size); \
         web49_interp_t sub_ = (interp); \
-        /* printf("%"PRIu32":%"PRIu32"\n", xptr_, xptr_+xsize_); */ \
         if (sub_.memsize < xptr_ + xsize_) { \
             WEB49_INTERP_BOUNDS(xptr_, xsize_); \
         }; \

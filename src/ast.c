@@ -1,6 +1,6 @@
-#include "ast.h"
+#include "./ast.h"
 
-#include "tables.h"
+#include "./tables.h"
 
 void web49_free_instr(web49_instr_t instr) {
     for (size_t i = 0; i < instr.nargs; i++) {

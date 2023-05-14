@@ -1,7 +1,7 @@
 #if !defined(WEB49_HEADER_IO)
 #define WEB49_HEADER_IO
 
-#include "lib.h"
+#include "./lib.h"
 
 struct web49_io_input_t;
 typedef struct web49_io_input_t web49_io_input_t;

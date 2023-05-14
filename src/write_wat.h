@@ -5,7 +5,7 @@
 #include "./ast.h"
 #include "./io.h"
 
-void web49_wat_print_lang_type(web49_io_output_t *out, web49_lang_type_t ltype);
+void web49_wat_print_lang_type(web49_io_output_t *out, web49_tag_t ltype);
 void web49_wat_print_instr(web49_io_output_t *out, web49_instr_t instr);
 void web49_wat_print_instr_depth(web49_io_output_t *out, web49_instr_t instr, uint64_t indent);
 void web49_wat_print_section_custom(web49_io_output_t *out, web49_module_t mod, web49_section_custom_t scustom);

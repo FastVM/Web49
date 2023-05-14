@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "./config.h"
+
 #define web49_parse_float_to(str, ptr) (sscanf((str), "%f", (ptr)))
 #define web49_parse_double_to(str, ptr) (sscanf((str), "%lf", (ptr)))
 

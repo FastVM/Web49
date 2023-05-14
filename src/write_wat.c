@@ -1,8 +1,8 @@
 #include "./write_wat.h"
 
-#include "tables.h"
+#include "./tables.h"
 
-void web49_wat_print_lang_type(web49_io_output_t *out, web49_lang_type_t ltype) {
+void web49_wat_print_lang_type(web49_io_output_t *out, web49_tag_t ltype) {
     switch (ltype) {
         case WEB49_TYPE_I32: {
             web49_io_output_write_str(out, "i32");
@@ -36,7 +36,7 @@ void web49_wat_print_lang_type(web49_io_output_t *out, web49_lang_type_t ltype) 
             web49_io_output_write_str(out, "block_type");
             break;
         }
-        case WEB49_TYPE_VEC: {
+        case WEB49_TYPE_V128: {
             web49_io_output_write_str(out, "v128");
             break;
         }
@@ -273,16 +273,12 @@ void web49_wat_print_section_table(web49_io_output_t *out, web49_module_t mod, w
     (void)mod;
     for (uint64_t i = 0; i < stable.num_entries; i++) {
         web49_type_table_t table = stable.entries[i];
-        web49_io_output_fprintf(out, "\n  (table (;%zu;) %" PRIu64, (size_t)i, table.limits.initial);
+        web49_io_output_fprintf(out, "\n  (table (;%zu;) %" PRIu32, (size_t)i, table.limits.initial);
         if (table.limits.maximum != UINT32_MAX) {
-            web49_io_output_fprintf(out, " %zu", (size_t)table.limits.maximum);
+            web49_io_output_fprintf(out, " %" PRIu32,table.limits.maximum);
         }
         web49_io_output_write_str(out, " ");
-        if (table.element_type == WEB49_TYPE_FUNCREF) {
-            web49_io_output_write_str(out, "funcref");
-        } else {
-            web49_wat_print_lang_type(out, table.element_type);
-        }
+        web49_wat_print_lang_type(out, table.element_type);
         web49_io_output_write_str(out, ")");
     }
 }
@@ -290,7 +286,7 @@ void web49_wat_print_section_table(web49_io_output_t *out, web49_module_t mod, w
 void web49_wat_print_section_memory(web49_io_output_t *out, web49_module_t mod, web49_section_memory_t smemory) {
     (void)mod;
     for (uint64_t i = 0; i < smemory.num_entries; i++) {
-        web49_type_memory_t mem = smemory.entries[i];
+        web49_limits_t mem = smemory.entries[i];
         if (mem.maximum != UINT32_MAX) {
             web49_io_output_fprintf(out, "\n  (memory (;%zu;) %zu %zu)", (size_t)i, (size_t)mem.initial, (size_t)mem.maximum);
         } else {

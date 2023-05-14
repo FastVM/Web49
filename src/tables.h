@@ -2,7 +2,7 @@
 #if !defined(WEB49_HEADER_TABLES)
 #define WEB49_HEADER_TABLES
 
-#include "ast.h"
+#include "./ast.h"
 
 struct web49_table_stack_effect_t;
 typedef struct web49_table_stack_effect_t web49_table_stack_effect_t;

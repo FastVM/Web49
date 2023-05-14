@@ -1,5 +1,5 @@
 
-#include "io.h"
+#include "./io.h"
 
 web49_io_input_t web49_io_input_open_str(size_t len, uint8_t *str) {
     uint8_t *buf = web49_malloc(sizeof(uint8_t) * len);

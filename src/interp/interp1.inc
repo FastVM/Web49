@@ -4,11 +4,10 @@ NAME(WEB49_OPCODE_YIELD_PUSH) {
     NEXT();
 }
 NAME(WEB49_OPCODE_RETURN1) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth -= 1;
 #endif
     web49_interp_data_t reg = LOCAL0;
-    // fprintf(stderr, "r%"PRIu32" = 0x%016"PRIx64"\n", head[0].data.i32_u, reg.i64_u);
     locals[0] = reg;
     head = *--returns;
     locals = *--stacks;
@@ -16,11 +15,6 @@ NAME(WEB49_OPCODE_RETURN1) {
 }
 NAME(WEB49_OPCODE_CALL_INDIRECT) {
     web49_interp_block_t *fblock = interp.tables[head[1].data.i32_u].elems[LOCAL0.i32_u];
-#if defined(WEB49_CHECKS)
-    if (fblock == NULL) {
-        __builtin_trap();
-    }
-#endif
     web49_interp_block_run_comp(fblock, ptrs, interp);
     *returns++ = head + 3;
     *stacks++ = locals;

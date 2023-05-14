@@ -2,12 +2,12 @@
 #if !defined(WEB49_HEADER_AST)
 #define WEB49_HEADER_AST
 
-#include "lib.h"
+#include "./lib.h"
 
 typedef uint8_t web49_immediate_id_t;
 typedef uint16_t web49_opcode_t;
 typedef uint8_t web49_section_id_t;
-typedef uint8_t web49_lang_type_t;
+typedef uint8_t web49_tag_t;
 typedef uint8_t web49_external_kind_t;
 
 enum web49_lang_type_enum_t {
@@ -16,7 +16,7 @@ enum web49_lang_type_enum_t {
     WEB49_TYPE_I64 = 0x7e,
     WEB49_TYPE_F32 = 0x7d,
     WEB49_TYPE_F64 = 0x7c,
-    WEB49_TYPE_VEC = 0x7B,
+    WEB49_TYPE_V128 = 0x7B,
     WEB49_TYPE_FUNC = 0x60,
     WEB49_TYPE_FUNCREF = 0x70,
     WEB49_TYPE_EXTERNREF = 0x6F,
@@ -575,8 +575,8 @@ typedef struct web49_type_t web49_type_t;
 struct web49_type_global_t;
 typedef struct web49_type_global_t web49_type_global_t;
 
-struct web49_type_memory_t;
-typedef struct web49_type_memory_t web49_type_memory_t;
+struct web49_limits_t;
+typedef struct web49_limits_t web49_limits_t;
 
 struct web49_section_custom_t;
 typedef struct web49_section_custom_t web49_section_custom_t;
@@ -674,7 +674,7 @@ struct web49_call_indirect_t {
 
 struct web49_block_type_t {
     union {
-        web49_lang_type_t type_value;
+        web49_tag_t type_value;
         uint32_t type_index;
     };
     bool is_type_index;
@@ -690,28 +690,28 @@ struct web49_type_function_t {
 };
 
 struct web49_type_global_t {
-    web49_lang_type_t content_type;
+    web49_tag_t content_type;
     uint8_t is_mutable;
 };
 
-struct web49_type_memory_t {
+struct web49_limits_t {
     uint32_t initial;
     uint32_t maximum;
 };
 
 struct web49_type_table_t {
-    web49_lang_type_t element_type;
-    web49_type_memory_t limits;
+    web49_tag_t element_type;
+    web49_limits_t limits;
 };
 
 struct web49_type_t {
     union {
         web49_type_function_t function;
         web49_type_global_t global;
-        web49_type_memory_t memory;
+        web49_limits_t memory;
         web49_type_table_t table;
     };
-    web49_lang_type_t tag;
+    web49_tag_t tag;
 };
 
 struct web49_section_custom_t {
@@ -720,11 +720,11 @@ struct web49_section_custom_t {
 };
 
 struct web49_section_type_entry_t {
-    web49_lang_type_t type;
+    web49_tag_t type;
     uint32_t num_params;
-    web49_lang_type_t *params;
+    web49_tag_t *params;
     uint32_t num_returns;
-    web49_lang_type_t *return_types;
+    web49_tag_t *return_types;
 };
 
 struct web49_section_type_t {
@@ -739,7 +739,7 @@ struct web49_section_import_entry_t {
     union {
         web49_type_function_t func_type;
         web49_type_table_t table_type;
-        web49_type_memory_t memory_type;
+        web49_limits_t memory_type;
         web49_type_global_t global_type;
     };
 };
@@ -773,7 +773,7 @@ struct web49_section_table_t {
 
 struct web49_section_memory_t {
     uint32_t num_entries;
-    web49_type_memory_t *entries;
+    web49_limits_t *entries;
 };
 
 struct web49_instr_immediate_t {
@@ -837,7 +837,7 @@ struct web49_section_element_t {
 
 struct web49_section_code_entry_local_t {
     uint32_t count;
-    web49_lang_type_t type;
+    web49_tag_t type;
 };
 
 struct web49_section_code_entry_t {

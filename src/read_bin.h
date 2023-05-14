@@ -2,8 +2,8 @@
 #if !defined(WEB49_HEADER_READBIN)
 #define WEB49_HEADER_READBIN
 
-#include "ast.h"
-#include "io.h"
+#include "./ast.h"
+#include "./io.h"
 
 uint64_t web49_readbin_uleb(web49_io_input_t *in);
 int64_t web49_readbin_sleb(web49_io_input_t *in);
@@ -22,8 +22,8 @@ web49_memory_immediate_t web49_readbin_memory_immediate(web49_io_input_t *in);
 web49_type_function_t web49_readbin_type_function(web49_io_input_t *in);
 web49_type_table_t web49_readbin_type_table(web49_io_input_t *in);
 web49_type_global_t web49_readbin_type_global(web49_io_input_t *in);
-web49_type_memory_t web49_readbin_type_memory(web49_io_input_t *in);
-web49_type_t web49_readbin_type(web49_io_input_t *in, web49_lang_type_t tag);
+web49_limits_t web49_readbin_limits(web49_io_input_t *in);
+web49_type_t web49_readbin_type(web49_io_input_t *in, web49_tag_t tag);
 web49_section_custom_t web49_readbin_section_custom(web49_io_input_t *in, web49_section_header_t header);
 web49_section_type_t web49_readbin_section_type(web49_io_input_t *in);
 web49_section_import_t web49_readbin_section_import(web49_io_input_t *in);

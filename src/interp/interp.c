@@ -1,7 +1,7 @@
-#include "interp.h"
+#include "./interp.h"
 #include "../tables.h"
 
-#if defined(WEB49_USE_SWITCH)
+#if WEB49_USE_SWTICH
 #define OPCODE(n) (n)
 #else
 #define OPCODE(n) ({size_t x = (n); if (ptrs[x] == NULL) {__builtin_trap();} ptrs[x]; })
@@ -137,7 +137,7 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
             iff = tt;
         }
         uint32_t args[4];
-#if defined(WEB49_OPT_CONST0)
+#if WEB49_OPT_CONST
         bool const0 = false;
 #endif
         bool const1 = false;
@@ -145,7 +145,7 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
         for (uint64_t i = 0; i < cond.nargs; i++) {
 #if !defined(WEB49_NO_OPT)
             if (cond.args[i].opcode == WEB49_OPCODE_I32_CONST || cond.args[i].opcode == WEB49_OPCODE_I64_CONST || cond.args[i].opcode == WEB49_OPCODE_F32_CONST || cond.args[i].opcode == WEB49_OPCODE_F64_CONST) {
-#if defined(WEB49_OPT_CONST0)
+#if WEB49_OPT_CONST
                 if (i == 0) {
                     state->depth += 1;
                     const0 = true;
@@ -176,7 +176,7 @@ static void web49_interp_read_instr_branch(web49_read_block_state_t *state, web4
         }
         build->code[build->ncode++].opcode = OPCODE(op + add);
         for (uint64_t i = 0; i < cond.nargs; i++) {
-#if defined(WEB49_OPT_CONST0)
+#if WEB49_OPT_CONST
             if (i == 0 && const0) {
                 build->code[build->ncode++].data.i64_u = cond.args[i].immediate.uint64;
                 continue;
@@ -327,7 +327,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         }
         return UINT32_MAX;
     }
-#if defined(WEB49_OPT_CONST0)
+#if WEB49_OPT_CONST
     bool const0 = false;
 #endif
     bool const1 = false;
@@ -338,7 +338,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
 #if !defined(WEB49_NO_OPT)
         if (cur.opcode != WEB49_OPCODE_CALL0 && cur.opcode != WEB49_OPCODE_CALL1 && cur.opcode != WEB49_OPCODE_CALL_INDIRECT0 && cur.opcode != WEB49_OPCODE_CALL_INDIRECT1) {
             if (cur.args[i].opcode == WEB49_OPCODE_I32_CONST || cur.args[i].opcode == WEB49_OPCODE_I64_CONST || cur.args[i].opcode == WEB49_OPCODE_F32_CONST || cur.args[i].opcode == WEB49_OPCODE_F64_CONST) {
-#if defined(WEB49_OPT_CONST0)
+#if WEB49_OPT_CONST
                 if (i == 0) {
                     state->depth += 1;
                     const0 = true;
@@ -448,7 +448,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     }
     build->code[build->ncode++].opcode = OPCODE(cur.opcode + add);
     for (uint64_t i = 0; i < cur.nargs; i++) {
-#if defined(WEB49_OPT_CONST0)
+#if WEB49_OPT_CONST
         if (const0 && i == 0) {
             build->code[build->ncode++].data.i64_u = cur.args[i].immediate.uint64;
             continue;
@@ -535,7 +535,7 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
             state.depth = 0;
             state.nlocals = block->nparams + block->nlocals;
             for (uint64_t i = 0; i < block->num_instrs; i++) {
-#if defined(WEB49_PRINT_AST)
+#if WEB49_PRINT_AST
                 web49_debug_print_instr(stderr, block->instrs[i]);
 #endif
                 web49_interp_read_instr(&state, block->instrs[i], UINT32_MAX);
@@ -600,7 +600,7 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
     }
 }
 
-#if defined(WEB49_USE_SWITCH)
+#if WEB49_USE_SWTICH
 #define USE_R(name) name
 #define USE_C0(name) name + WEB49_OPCODE_WITH_CONST0
 #define USE_C1(name) name + WEB49_OPCODE_WITH_CONST1
@@ -616,8 +616,8 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
 #define DO_USE_C01(name) DO_##name##_C01
 #endif
 
-#if defined(WEB49_PRINT_INSTR)
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR
+#if WEB49_PRINT_INSTR_DEPTH
 #define DPRINT(name)                     \
     for (size_t p = 0; p < depth; p++) { \
         fprintf(stderr, "| ");           \
@@ -630,7 +630,7 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
 #define DPRINT(name)
 #endif
 
-#if defined(WEB49_USE_SWITCH)
+#if WEB49_USE_SWTICH
 #define LABEL(op) \
     case op:;     \
         DPRINT(#op);
@@ -649,7 +649,7 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
 #if !defined(WEB49_USE_SWITCH)
     static void *ptrs[WEB49_MAX_OPCODE_INTERP_NUM] = {
 #define TABLE_PUTV(n, v) [n] = &&DO_##v
-#if defined(WEB49_OPT_CONST0)
+#if WEB49_OPT_CONST
 #define TABLE_PUT0(x) TABLE_PUTV(x, x)
 #define TABLE_PUT1(x) TABLE_PUTV(x, x##_R), TABLE_PUTV(x + WEB49_OPCODE_WITH_CONST0, x##_C0)
 #define TABLE_PUT2(x) TABLE_PUTV(x, x##_R), TABLE_PUTV(x + WEB49_OPCODE_WITH_CONST0, x##_C0), TABLE_PUTV(x + WEB49_OPCODE_WITH_CONST1, x##_C1), TABLE_PUTV(x + WEB49_OPCODE_WITH_CONST0 + WEB49_OPCODE_WITH_CONST1, x##_C01)
@@ -1126,10 +1126,10 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
     web49_interp_data_t *yield_ptr = interp.yield_base;
     web49_interp_opcode_t *restrict head = block->code;
     web49_interp_data_t *restrict locals = interp.locals;
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     size_t depth = 1;
 #endif
-#if defined(WEB49_USE_SWITCH)
+#if WEB49_USE_SWTICH
     size_t switch_case;
     NEXT();
 next:;
@@ -1143,55 +1143,55 @@ next:;
                 *ptr_interp = interp;
                 return &locals[0];
             }
-#if defined(WEB49_OPT_CONST0)
+#if WEB49_OPT_CONST
 #define LOCAL0 head[0].data
 #define NAME(x) LABEL(USE_C0(x))
-#include "interp1.inc"
+#include "./interp1.inc"
 #undef LOCAL0
 #undef NAME
 #define LOCAL0 head[0].data
 #define LOCAL1 locals[head[1].data.i32_u]
 #define NAME(x) LABEL(USE_C0(x))
-#include "interp2.inc"
+#include "./interp2.inc"
 #undef LOCAL0
 #undef LOCAL1
 #undef NAME
 #endif
 #define NAME(x) LABEL(x)
-#include "interp_simd.inc"
+#include "./interp_simd.inc"
 #undef NAME
 #define NAME(x) LABEL(x)
-#include "interp0.inc"
+#include "./interp0.inc"
 #undef NAME
 #define LOCAL0 locals[head[0].data.i32_u]
 #define NAME(x) LABEL(USE_R(x))
-#include "interp1.inc"
+#include "./interp1.inc"
 #undef LOCAL0
 #undef NAME
 #define LOCAL0 locals[head[0].data.i32_u]
 #define LOCAL1 head[1].data
 #define NAME(x) LABEL(USE_C1(x))
-#include "interp2.inc"
+#include "./interp2.inc"
 #undef LOCAL0
 #undef LOCAL1
 #undef NAME
 #define LOCAL0 locals[head[0].data.i32_u]
 #define LOCAL1 locals[head[1].data.i32_u]
 #define NAME(x) LABEL(USE_R(x))
-#include "interp2.inc"
+#include "./interp2.inc"
 #undef LOCAL0
 #undef LOCAL1
 #undef NAME
-#if defined(WEB49_OPT_CONST0)
+#if WEB49_OPT_CONST
 #define LOCAL0 head[0].data
 #define LOCAL1 head[1].data
 #define NAME(x) LABEL(USE_C01(x))
-#include "interp2.inc"
+#include "./interp2.inc"
 #undef LOCAL0
 #undef LOCAL1
 #undef NAME
 #endif
-#if defined(WEB49_USE_SWITCH)
+#if WEB49_USE_SWTICH
     }
 #endif
 }

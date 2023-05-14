@@ -1,4 +1,4 @@
-#include "lib.h"
+#include "./lib.h"
 
 #if WEB49_COUNT_ALLOC
 size_t web49_total_alloc = 0;

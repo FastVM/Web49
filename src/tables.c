@@ -888,140 +888,140 @@ const web49_table_stack_effect_t web49_stack_effects[WEB49_MAX_OPCODE_NUM] = {
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_V128_LOAD8X8_S] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_V128_LOAD8X8_S] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_V128_LOAD8X8_U] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_V128_LOAD8X8_U] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_V128_LOAD16X4_S] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_V128_LOAD16X4_S] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_V128_LOAD16X4_U] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_V128_LOAD16X4_U] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_V128_LOAD32X2_S] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_V128_LOAD32X2_S] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_V128_LOAD32X2_U] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_V128_LOAD32X2_U] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_V128_LOAD8_SPLAT] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_V128_LOAD8_SPLAT] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_V128_LOAD16_SPLAT] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_V128_LOAD16_SPLAT] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_V128_LOAD32_SPLAT] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_V128_LOAD32_SPLAT] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_V128_LOAD64_SPLAT] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_V128_LOAD64_SPLAT] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_V128_STORE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_V128_STORE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .in[1] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_V128_CONST] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_V128_CONST] = (web49_table_stack_effect_t){
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_I8X16_SHUFFLE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I8X16_SHUFFLE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .in[1] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_I8X16_SWIZZLE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I8X16_SWIZZLE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .in[1] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_I8X16_SPLAT] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I8X16_SPLAT] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_I16X8_SPLAT] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I16X8_SPLAT] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_I32X4_SPLAT] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I32X4_SPLAT] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_I64X2_SPLAT] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I64X2_SPLAT] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_I64,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_F32X4_SPLAT] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_F32X4_SPLAT] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_F32,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_F64X2_SPLAT] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_F64X2_SPLAT] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_F64,
         .out[0] = WEB49_TABLE_STACK_EFFECT_V128,
     },
-    [WEB49_OPCODE_I8X16_EXTRACT_LANE_S] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I8X16_EXTRACT_LANE_S] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I8X16_EXTRACT_LANE_U] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I8X16_EXTRACT_LANE_U] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I8X16_REPLACE_LANE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I8X16_REPLACE_LANE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I16X8_EXTRACT_LANE_S] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I16X8_EXTRACT_LANE_S] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I16X8_EXTRACT_LANE_U] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I16X8_EXTRACT_LANE_U] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I16X8_REPLACE_LANE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I16X8_REPLACE_LANE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I32X4_EXTRACT_LANE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I32X4_EXTRACT_LANE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I32X4_REPLACE_LANE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I32X4_REPLACE_LANE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I32,
     },
-    [WEB49_OPCODE_I64X2_EXTRACT_LANE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I64X2_EXTRACT_LANE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
     },
-    [WEB49_OPCODE_I64X2_REPLACE_LANE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_I64X2_REPLACE_LANE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_I64,
     },
-    [WEB49_OPCODE_F32X4_EXTRACT_LANE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_F32X4_EXTRACT_LANE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_F32,
     },
-    [WEB49_OPCODE_F32X4_REPLACE_LANE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_F32X4_REPLACE_LANE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
     },
-    [WEB49_OPCODE_F64X2_EXTRACT_LANE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_F64X2_EXTRACT_LANE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
     },
-    [WEB49_OPCODE_F64X2_REPLACE_LANE] = (web49_table_stack_effect_t) {
+    [WEB49_OPCODE_F64X2_REPLACE_LANE] = (web49_table_stack_effect_t){
         .in[0] = WEB49_TABLE_STACK_EFFECT_V128,
         .out[0] = WEB49_TABLE_STACK_EFFECT_F64,
     },
@@ -1155,7 +1155,7 @@ bool web49_opcode_is_simd(web49_opcode_t opcode) {
 }
 
 size_t web49_opcode_byte_count(uint8_t first_byte) {
-    if (first_byte == 0xF8 || first_byte == 0xFB || first_byte == 0xFC  || first_byte == 0xFE) {
+    if (first_byte == 0xF8 || first_byte == 0xFB || first_byte == 0xFC || first_byte == 0xFE) {
         return 2;
     }
     return 1;
@@ -1664,7 +1664,7 @@ web49_opcode_t web49_bytes_to_opcode(uint8_t *bytes) {
         case 0xF7:
             web49_error("unknown opcode: staring with byte 0xF7\n");
         case 0xF8:
-            web49_error("unknown opcode: staring with byte 0xF8 0x%02"PRIX8"\n", bytes[1]);
+            web49_error("unknown opcode: staring with byte 0xF8 0x%02" PRIX8 "\n", bytes[1]);
         case 0xF9:
             web49_error("unknown opcode: staring with byte 0xF9\n");
         case 0xFA:
@@ -1716,7 +1716,8 @@ web49_opcode_t web49_bytes_to_opcode(uint8_t *bytes) {
                     web49_error("unknown opcode sequence: 0xFC 0x%" PRIu8 "\n", bytes[1]);
             }
         case 0xFD:
-            switch (bytes[1] + (bytes[2] << 8) + (bytes[3] << 16)) {
+            // printf("0x%02" PRIX8 " 0x%02" PRIX8 " 0x%02" PRIX8 " = %zu\n", bytes[1], bytes[2], bytes[3], (size_t) (bytes[1] + (bytes[2] << 7) + (bytes[3] << 14)));
+            switch (bytes[1] + (bytes[2] << 7) + (bytes[3] << 14)) {
                 case 0x00:
                     return WEB49_OPCODE_V128_LOAD;
                 case 0x01:
@@ -2190,12 +2191,12 @@ web49_opcode_t web49_bytes_to_opcode(uint8_t *bytes) {
                 case 0xFF:
                     return WEB49_OPCODE_F64X2_CONVERT_LOW_I32X4_U;
                 default:
-                    web49_error("unknown simd sequence: 0xFD 0x%" PRIX8 "\n", bytes[1]);
+                    web49_error("unknown simd sequence: 0xFD 0x%02" PRIX8 "\n", bytes[1]);
             }
         case 0xFE:
             switch (bytes[1]) {
                 default:
-                    web49_error("unknown threads sequence: 0xFE 0x%" PRIX8 "\n", bytes[1]);
+                    web49_error("unknown threads sequence: 0xFE 0x%02" PRIX8 "\n", bytes[1]);
             }
         case 0xFF:
             web49_error("unknown opcode: staring with byte 0xFF\n");
@@ -2796,6 +2797,1295 @@ void web49_opcode_to_bytes(web49_opcode_t opcode, size_t *len, uint8_t *buf) {
             buf[(*len)++] = 0xFC;
             buf[(*len)++] = 0x0E;
             break;
+
+        case WEB49_OPCODE_V128_LOAD: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x00;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD8X8_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD8X8_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x02;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD16X4_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x03;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD16X4_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x04;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD32X2_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x05;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD32X2_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x06;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD8_SPLAT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x07;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD16_SPLAT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x08;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD32_SPLAT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x09;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD64_SPLAT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x0A;
+            break;
+        }
+        case WEB49_OPCODE_V128_STORE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x0B;
+            break;
+        }
+        case WEB49_OPCODE_V128_CONST: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x0C;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_SHUFFLE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x0D;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_SWIZZLE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x0E;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_SPLAT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x0F;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_SPLAT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x10;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_SPLAT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x11;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_SPLAT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x12;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_SPLAT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x13;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_SPLAT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x14;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_EXTRACT_LANE_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x15;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_EXTRACT_LANE_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x16;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_REPLACE_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x17;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EXTRACT_LANE_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x18;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EXTRACT_LANE_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x19;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_REPLACE_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x1A;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_EXTRACT_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x1B;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_REPLACE_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x1C;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_EXTRACT_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x1D;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_REPLACE_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x1E;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_EXTRACT_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x1F;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_REPLACE_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x20;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_EXTRACT_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x21;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_REPLACE_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x22;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_EQ: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x23;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_NE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x24;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_LT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x25;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_LT_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x26;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_GT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x27;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_GT_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x28;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_LE_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x29;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_LE_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x2A;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_GE_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x2B;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_GE_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x2C;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EQ: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x2D;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_NE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x2E;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_LT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x2F;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_LT_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x30;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_GT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x31;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_GT_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x32;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_LE_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x33;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_LE_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x34;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_GE_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x35;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_GE_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x36;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_EQ: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x37;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_NE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x38;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_LT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x39;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_LT_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x3A;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_GT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x3B;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_GT_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x3C;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_LE_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x3D;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_LE_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x3E;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_GE_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x3F;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_GE_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x40;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_EQ: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x41;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_NE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x42;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_LT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x43;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_GT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x44;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_LE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x45;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_GE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x46;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_EQ: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x47;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_NE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x48;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_LT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x49;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_GT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x4A;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_LE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x4B;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_GE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x4C;
+            break;
+        }
+        case WEB49_OPCODE_V128_NOT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x4D;
+            break;
+        }
+        case WEB49_OPCODE_V128_AND: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x4E;
+            break;
+        }
+        case WEB49_OPCODE_V128_ANDNOT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x4F;
+            break;
+        }
+        case WEB49_OPCODE_V128_OR: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x50;
+            break;
+        }
+        case WEB49_OPCODE_V128_XOR: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x51;
+            break;
+        }
+        case WEB49_OPCODE_V128_BITSELECT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x52;
+            break;
+        }
+        case WEB49_OPCODE_V128_ANY_TRUE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x53;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD8_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x54;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD16_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x55;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD32_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x56;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD64_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x57;
+            break;
+        }
+        case WEB49_OPCODE_V128_STORE8_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x58;
+            break;
+        }
+        case WEB49_OPCODE_V128_STORE16_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x59;
+            break;
+        }
+        case WEB49_OPCODE_V128_STORE32_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x5A;
+            break;
+        }
+        case WEB49_OPCODE_V128_STORE64_LANE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x5B;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD32_ZERO: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x5C;
+            break;
+        }
+        case WEB49_OPCODE_V128_LOAD64_ZERO: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x5D;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_DEMOTE_F64X2_ZERO: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x5E;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_PROMOTE_LOW_F32X4: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x5F;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_ABS: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x60;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_NEG: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x61;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_POPCNT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x62;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_ALL_TRUE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x63;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_BITMASK: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x64;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_NARROW_I16X8_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x65;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_NARROW_I16X8_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x66;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_CEIL: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x67;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_FLOOR: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x68;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_TRUNC: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x69;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_NEAREST: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x6A;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_SHL: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x6B;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_SHR_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x6C;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_SHR_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x6D;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_ADD: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x6E;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_ADD_SAT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x6F;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_ADD_SAT_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x70;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_SUB: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x71;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_SUB_SAT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x72;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_SUB_SAT_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x73;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_CEIL: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x74;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_FLOOR: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x75;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_MIN_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x76;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_MIN_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x77;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_MAX_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x78;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_MAX_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x79;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_TRUNC: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x7A;
+            break;
+        }
+        case WEB49_OPCODE_I8X16_AVGR_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x7B;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EXTADD_PAIRWISE_I8X16_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x7C;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EXTADD_PAIRWISE_I8X16_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x7D;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_EXTADD_PAIRWISE_I16X8_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x7E;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_EXTADD_PAIRWISE_I16X8_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x7F;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_ABS: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x80;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_NEG: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x81;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_Q15MULR_SAT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x82;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_ALL_TRUE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x83;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_BITMASK: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x84;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_NARROW_I32X4_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x85;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_NARROW_I32X4_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x86;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EXTEND_LOW_I8X16_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x87;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EXTEND_HIGH_I8X16_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x88;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EXTEND_LOW_I8X16_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x89;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EXTEND_HIGH_I8X16_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x8A;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_SHL: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x8B;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_SHR_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x8C;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_SHR_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x8D;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_ADD: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x8E;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_ADD_SAT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x8F;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_ADD_SAT_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x90;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_SUB: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x91;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_SUB_SAT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x92;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_SUB_SAT_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x93;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_NEAREST: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x94;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_MUL: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x95;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_MIN_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x96;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_MIN_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x97;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_MAX_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x98;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_MAX_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x99;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_AVGR_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x9B;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EXTMUL_LOW_I8X16_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x9C;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EXTMUL_HIGH_I8X16_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x9D;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EXTMUL_LOW_I8X16_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x9E;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I16X8_EXTMUL_HIGH_I8X16_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x9F;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_ABS: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xA0;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_NEG: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xA1;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_ALL_TRUE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xA3;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_BITMASK: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xA4;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_EXTEND_LOW_I16X8_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xA7;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_EXTEND_HIGH_I16X8_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xA8;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_EXTEND_LOW_I16X8_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xA9;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_EXTEND_HIGH_I16X8_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xAA;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_SHL: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xAB;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_SHR_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xAC;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_SHR_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xAD;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_ADD: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xAE;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_SUB: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xB1;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_MUL: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xB5;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_MIN_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xB6;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_MIN_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xB7;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_MAX_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xB8;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_MAX_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xB9;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_DOT_I16X8_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xBA;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_EXTMUL_LOW_I16X8_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xBC;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_EXTMUL_HIGH_I16X8_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xBD;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_EXTMUL_LOW_I16X8_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xBE;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_EXTMUL_HIGH_I16X8_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xBF;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_ABS: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xC0;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_NEG: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xC1;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_ALL_TRUE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xC3;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_BITMASK: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xC4;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_EXTEND_LOW_I32X4_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xC7;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_EXTEND_HIGH_I32X4_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xC8;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_EXTEND_LOW_I32X4_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xC9;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_EXTEND_HIGH_I32X4_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xCA;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_SHL: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xCB;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_SHR_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xCC;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_SHR_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xCD;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_ADD: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xCE;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_SUB: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xD1;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_MUL: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xD5;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_EQ: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xD6;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_NE: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xD7;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_LT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xD8;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_GT_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xD9;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_LE_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xDA;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_GE_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xDB;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_EXTMUL_LOW_I32X4_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xDC;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_EXTMUL_HIGH_I32X4_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xDD;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_EXTMUL_LOW_I32X4_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xDE;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I64X2_EXTMUL_HIGH_I32X4_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xDF;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_ABS: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xE0;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_NEG: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xE1;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_SQRT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xE3;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_ADD: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xE4;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_SUB: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xE5;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_MUL: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xE6;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_DIV: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xE7;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_MIN: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xE8;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_MAX: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xE9;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_PMIN: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xEA;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_PMAX: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xEB;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_ABS: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xEC;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_NEG: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xED;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_SQRT: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xEF;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_ADD: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xF0;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_SUB: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xF1;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_MUL: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xF2;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_DIV: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xF3;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_MIN: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xF4;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_MAX: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xF5;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_PMIN: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xF6;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_PMAX: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xF7;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_TRUNC_SAT_F32X4_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xF8;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_TRUNC_SAT_F32X4_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xF9;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_CONVERT_I32X4_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xFA;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F32X4_CONVERT_I32X4_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xFB;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_TRUNC_SAT_F64X2_S_ZERO: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xFC;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_I32X4_TRUNC_SAT_F64X2_U_ZERO: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_CONVERT_LOW_I32X4_S: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xFE;
+            buf[(*len)++] = 0x01;
+            break;
+        }
+        case WEB49_OPCODE_F64X2_CONVERT_LOW_I32X4_U: {
+            buf[(*len)++] = 0xFD;
+            buf[(*len)++] = 0xFF;
+            buf[(*len)++] = 0x01;
+            break;
+        }
         default:
             web49_error("unknown opcode: %zu\n", (size_t)opcode);
     }
@@ -4975,6 +6265,6 @@ const char *web49_opcode_to_name(web49_opcode_t opcode) {
         case WEB49_OPCODE_F64X2_CONVERT_LOW_I32X4_U:
             return "f64x2.convert_low_i32x4_u";
         default:
-            web49_error("unknown opcode: %zu\ng", (size_t) opcode);
+            web49_error("unknown opcode: %zu\ng", (size_t)opcode);
     }
 }

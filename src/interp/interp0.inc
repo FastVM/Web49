@@ -22,7 +22,7 @@ NAME(WEB49_OPCODE_TABLE_COPY) {
     NEXT();
 }
 NAME(WEB49_OPCODE_FFI_CALL1) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth -= 1;
 #endif
     interp.locals = locals;
@@ -33,7 +33,7 @@ NAME(WEB49_OPCODE_FFI_CALL1) {
     NEXT();
 }
 NAME(WEB49_OPCODE_FFI_CALL0) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth -= 1;
 #endif
     interp.locals = locals;
@@ -49,7 +49,7 @@ NAME(WEB49_OPCODE_YIELD_POP) {
     NEXT();
 }
 NAME(WEB49_OPCODE_RETURN0) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth -= 1;
 #endif
     head = *--returns;
@@ -57,7 +57,7 @@ NAME(WEB49_OPCODE_RETURN0) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE0) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     *returns++ = head + 3;
@@ -67,7 +67,7 @@ NAME(WEB49_OPCODE_CALL_DONE0) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE1) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     *returns++ = head + 3;
@@ -78,7 +78,7 @@ NAME(WEB49_OPCODE_CALL_DONE1) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE2) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     *returns++ = head + 3;
@@ -90,7 +90,7 @@ NAME(WEB49_OPCODE_CALL_DONE2) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE4) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     *returns++ = head + 3;
@@ -101,7 +101,7 @@ NAME(WEB49_OPCODE_CALL_DONE4) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE8) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     *returns++ = head + 3;
@@ -112,7 +112,7 @@ NAME(WEB49_OPCODE_CALL_DONE8) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE16) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     *returns++ = head + 3;
@@ -123,7 +123,7 @@ NAME(WEB49_OPCODE_CALL_DONE16) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE32) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     *returns++ = head + 3;
@@ -134,7 +134,7 @@ NAME(WEB49_OPCODE_CALL_DONE32) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE64) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     *returns++ = head + 3;
@@ -145,7 +145,7 @@ NAME(WEB49_OPCODE_CALL_DONE64) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE128) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     *returns++ = head + 3;
@@ -156,7 +156,7 @@ NAME(WEB49_OPCODE_CALL_DONE128) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE256) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     *returns++ = head + 3;
@@ -167,7 +167,7 @@ NAME(WEB49_OPCODE_CALL_DONE256) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE512) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     *returns++ = head + 3;
@@ -178,7 +178,7 @@ NAME(WEB49_OPCODE_CALL_DONE512) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL_DONE1024) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     *returns++ = head + 3;
@@ -189,7 +189,7 @@ NAME(WEB49_OPCODE_CALL_DONE1024) {
     NEXT();
 }
 NAME(WEB49_OPCODE_CALL) {
-#if defined(WEB49_PRINT_INSTR_DEPTH)
+#if WEB49_PRINT_INSTR_DEPTH
     depth += 1;
 #endif
     web49_interp_block_t *fblock = head[0].block;
