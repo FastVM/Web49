@@ -1,10 +1,10 @@
 #include "../src/ast.h"
-#include "../src/read_bin.h"
+#include "../src/read_wat.h"
 #include "../src/write_wat.h"
 
 static int web49_file_main(const char *inarg, const char *outarg) {
     web49_io_input_t infile = web49_io_input_open(inarg);
-    web49_module_t mod = web49_readbin_module(&infile);
+    web49_module_t mod = web49_readwat_module(&infile);
     web49_io_output_t outfile = {0};
     web49_wat_print_module(&outfile, mod);
     if (outarg == NULL) {

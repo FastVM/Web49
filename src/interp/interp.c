@@ -1,4 +1,5 @@
 #include "./interp.h"
+
 #include "../tables.h"
 
 #if WEB49_USE_SWTICH
@@ -24,7 +25,6 @@ void web49_interp_add_import_func(web49_interp_t *ptr_interp, void *env_state, w
     ptr_interp->env_funcs[ptr_interp->num_env] = env_func;
     ptr_interp->num_env += 1;
 }
-
 
 uint32_t *web49_interp_link_box(void) {
     return web49_malloc(sizeof(uint32_t));
@@ -646,7 +646,7 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
 
 web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_interp_block_t *block) {
     web49_interp_t interp = *ptr_interp;
-#if !defined(WEB49_USE_SWITCH)
+#if !WEB49_USE_SWITCH
     static void *ptrs[WEB49_MAX_OPCODE_INTERP_NUM] = {
 #define TABLE_PUTV(n, v) [n] = &&DO_##v
 #if WEB49_OPT_CONST
@@ -1109,10 +1109,10 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
         web49_interp_opcode_t *r0 = web49_malloc(sizeof(web49_interp_opcode_t) * (block->nreturns * 2 + 1));
         if (block->nreturns != 1) {
             for (size_t i = 1; i <= block->nreturns; i++) {
-                r0[head++] = (web49_interp_opcode_t) {
+                r0[head++] = (web49_interp_opcode_t){
                     .opcode = OPCODE(WEB49_OPCODE_YIELD_POP),
                 };
-                r0[head++] = (web49_interp_opcode_t) {
+                r0[head++] = (web49_interp_opcode_t){
                     .data.i32_u = block->nreturns - i,
                 };
             }

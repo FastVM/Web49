@@ -6,7 +6,7 @@ INSTALL ?= install
 
 EMCC ?= emcc
 
-PROG_SRCS := main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c main/miniwasm.c main/raywasm.c main/runtime/rlruntime.c
+PROG_SRCS := main/wat2wat.c main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c main/miniwasm.c main/raywasm.c main/runtime/rlruntime.c
 PROG_OBJS := $(PROG_SRCS:%.c=%.o)
 
 WEB49_SRCS := src/lib.c src/read_bin.c src/read_wat.c src/write_wat.c src/write_bin.c src/io.c src/tables.c src/interp/interp.c src/opt/tree.c src/opt/tee.c src/ast.c src/api/wasi.c
@@ -64,7 +64,7 @@ test/core:
 
 # bin
 
-bins: bin/wasm2wat bin/wat2wasm bin/wasm2wasm bin/miniwasm
+bins: bin/wasm2wat bin/wat2wasm bin/wasm2wasm bin/wat2wat bin/miniwasm
 
 bin/miniwasm: main/miniwasm.o $(OBJS)
 	@mkdir -p bin
@@ -81,6 +81,10 @@ bin/wasm2wat: main/wasm2wat.o $(OBJS)
 bin/wasm2wasm: main/wasm2wasm.o $(OBJS)
 	@mkdir -p bin
 	$(CC) $(OPT) main/wasm2wasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
+
+bin/wat2wat: main/wat2wat.o $(OBJS)
+	@mkdir -p bin
+	$(CC) $(OPT) main/wat2wat.o $(OBJS) -o $(@) -lm $(LDFLAGS)
 
 # util
 

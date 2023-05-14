@@ -271,9 +271,9 @@ static void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_
             } else {
                 for (size_t i = 0; i < func_nreturns; i++) {
                     web49_opt_untree_emit_push((web49_instr_t){
-                                                .opcode = WEB49_OPCODE_YIELD_PUSH,
-                                            },
-                                            len, out, alloc);
+                                                   .opcode = WEB49_OPCODE_YIELD_PUSH,
+                                               },
+                                               len, out, alloc);
                 }
                 web49_opt_untree_emit_push((web49_instr_t){.opcode = WEB49_OPCODE_RETURN0}, len, out, alloc);
             }

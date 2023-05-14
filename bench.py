@@ -29,8 +29,12 @@ runs = args.runs
 engines = args.engine
 emcc = args.compiler
 optlevel = args.opt
+# emccflags = ['-msimd128', '-mmultivalue', '-fno-exceptions']
+emccflags = ['-msimd128']
+emccflags = []
 if len(engines) == 0:
     engines = ['wasm3', os.path.join(cur, 'bin/miniwasm')]
+engines.extend(['wasmer', 'wasmtime'])
 
 if len(args.test) == 0: 
     tests = {
@@ -118,7 +122,7 @@ for i in range(1, runs+1):
     print('RUN: #' + str(i))
     for test in tests.keys():
         print('  TEST: ' + test)
-        build = subprocess.call([*emcc.split(' '), '-Xlinker', f'--initial-memory={tests[test]["memory"] * (2 ** 16)}', f"-O{optlevel}", test + '.c', '-o', test + '.wasm'])
+        build = subprocess.call([*emcc.split(' '), *emccflags, '-Xlinker', f'--initial-memory={tests[test]["memory"] * (2 ** 16)}', f"-O{optlevel}", test + '.c', '-o', test + '.wasm'])
         if test not in testdata:
             testdata[test] = {}
         data = testdata[test]

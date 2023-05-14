@@ -13,13 +13,11 @@ web49_io_input_t web49_io_input_open_str(size_t len, uint8_t *str) {
 
 web49_io_input_t web49_io_input_open(const char *filename) {
     if (filename == NULL) {
-        fprintf(stderr, "no input file given\n");
-        exit(1);
+        web49_error("no input file given\n");
     }
     FILE *file = fopen(filename, "rb");
     if (file == NULL) {
-        fprintf(stderr, "cannot open file: %s\n", filename);
-        exit(1);
+        web49_error("cannot open file: %s\n", filename);
     }
     size_t len = 0;
     uint8_t *str = NULL;
@@ -59,13 +57,11 @@ void web49_io_input_rewind(web49_io_input_t *in) {
 }
 void web49_file_output_dump(web49_io_output_t out, const char *filename) {
     if (filename == NULL) {
-        fprintf(stderr, "no output file given\n");
-        exit(1);
+        web49_error("no output file given\n");
     }
     FILE *file = fopen(filename, "wb");
     if (file == NULL) {
-        fprintf(stderr, "cannot open file: %s\n", filename);
-        exit(1);
+        web49_error("cannot open file: %s\n", filename);
     }
     fwrite(out.byte_buf, 1, out.byte_index, file);
     fclose(file);

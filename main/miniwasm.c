@@ -7,7 +7,7 @@
 #include "../src/read_bin.h"
 #include "../src/read_wat.h"
 
-extern const char ** environ;
+extern const char **environ;
 
 static web49_interp_data_t web49_main_expr_to_data(web49_readwat_expr_t expr) {
     web49_interp_data_t ret;
@@ -129,18 +129,18 @@ static int web49_file_main(const char *inarg, const char **args) {
                                     } else if (!strcmp(wants.fun_fun, "f32.const")) {
                                         uint32_t part = web49_readwat_expr_to_u32f(wants.fun_args[0]);
                                         if (data[n].i32_u == part || (isnan(data[n].f32) && isnan(*(float *)&part))) {
-                                            fprintf(stderr, "wasm spec test: invoke %s pass: 0x%08"PRIX32"\n", entry.field_str, part);
+                                            fprintf(stderr, "wasm spec test: invoke %s pass: 0x%08" PRIX32 "\n", entry.field_str, part);
                                         } else {
-                                            fprintf(stderr, "wasm spec test: invoke %s fail: because got 0x%08"PRIX32" but wanted 0x%08"PRIX32"\n", entry.field_str, data[n].i32_u, part);
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because got 0x%08" PRIX32 " but wanted 0x%08" PRIX32 "\n", entry.field_str, data[n].i32_u, part);
                                             ret = 1;
                                             goto next_test;
                                         }
                                     } else if (!strcmp(wants.fun_fun, "f64.const")) {
                                         uint64_t part = web49_readwat_expr_to_u64f(wants.fun_args[0]);
                                         if (data[n].i64_u == part || (isnan(data[n].f64) && isnan(*(double *)&part))) {
-                                            fprintf(stderr, "wasm spec test: invoke %s pass: 0x%016"PRIX64"\n", entry.field_str, part);
+                                            fprintf(stderr, "wasm spec test: invoke %s pass: 0x%016" PRIX64 "\n", entry.field_str, part);
                                         } else {
-                                            fprintf(stderr, "wasm spec test: invoke %s fail: because got 0x%016"PRIX64" but wanted 0x%016"PRIX64"\n", entry.field_str, data[n].i64_u, part);
+                                            fprintf(stderr, "wasm spec test: invoke %s fail: because got 0x%016" PRIX64 " but wanted 0x%016" PRIX64 "\n", entry.field_str, data[n].i64_u, part);
                                             ret = 1;
                                             goto next_test;
                                         }

@@ -525,7 +525,7 @@ NAME(WEB49_OPCODE_MEMORY_COPY) {
     uint32_t dest = LOCAL0.i32_u;
     uint32_t src = LOCAL1.i32_u;
     uint32_t size = locals[head[2].data.i32_u].i32_u;
-    memmove(WEB49_INTERP_ADDR(void *, interp, dest, size), WEB49_INTERP_ADDR(void *, interp, src, size), (size_t) size);
+    memmove(WEB49_INTERP_ADDR(void *, interp, dest, size), WEB49_INTERP_ADDR(void *, interp, src, size), (size_t)size);
     head += 3;
     NEXT();
 }

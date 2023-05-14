@@ -7,14 +7,14 @@
 #include "./api.h"
 
 static web49_interp_data_t web49_api_wasi_random_get(void *wasi_untyped, web49_interp_t interp) {
-    (void) wasi_untyped;
+    (void)wasi_untyped;
     uint32_t ptr = interp.locals[0].i32_u;
     uint32_t len = interp.locals[1].i32_u;
     getentropy(&interp.memory[ptr], len);
     return (web49_interp_data_t){.i32_u = 0};
 }
 static web49_interp_data_t web49_api_wasi_fd_seek(void *wasi_untyped, web49_interp_t interp) {
-    (void) wasi_untyped;
+    (void)wasi_untyped;
     int whence = -1;
     switch (interp.locals[2].i32_u) {
         case 0:
@@ -68,7 +68,7 @@ static web49_interp_data_t web49_api_wasi_args_sizes_get(void *wasi_untyped, web
     return (web49_interp_data_t){.i32_u = 0};
 }
 static web49_interp_data_t web49_api_wasi_clock_time_get(void *wasi_untyped, web49_interp_t interp) {
-    (void) wasi_untyped;
+    (void)wasi_untyped;
     uint32_t wasi_clock_id = interp.locals[0].i32_u;
     // uint64_t precision = interp.locals[1].i64_u;
     uint32_t time = interp.locals[2].i32_u;
@@ -87,7 +87,7 @@ static web49_interp_data_t web49_api_wasi_clock_time_get(void *wasi_untyped, web
             clock_id = CLOCK_THREAD_CPUTIME_ID;
             break;
         default:
-            fprintf(stderr, "unknown clock id: %zu\n", (size_t) wasi_clock_id);
+            fprintf(stderr, "unknown clock id: %zu\n", (size_t)wasi_clock_id);
             return (web49_interp_data_t){.i32_u = 28};
     }
     struct timespec ts;
@@ -97,13 +97,13 @@ static web49_interp_data_t web49_api_wasi_clock_time_get(void *wasi_untyped, web
     return (web49_interp_data_t){.i32_u = 0};
 }
 static web49_interp_data_t web49_api_wasi_fd_close(void *wasi_untyped, web49_interp_t interp) {
-    (void) wasi_untyped;
+    (void)wasi_untyped;
     uint32_t fd = interp.locals[0].i32_u;
     close((int)fd);
     return (web49_interp_data_t){.i32_u = 0};
 }
 static web49_interp_data_t web49_api_wasi_fd_fdstat_get(void *wasi_untyped, web49_interp_t interp) {
-    (void) wasi_untyped;
+    (void)wasi_untyped;
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t fdstat = interp.locals[1].i32_u;
 
@@ -126,7 +126,7 @@ static web49_interp_data_t web49_api_wasi_fd_fdstat_get(void *wasi_untyped, web4
     return (web49_interp_data_t){.i32_u = 0};
 }
 static web49_interp_data_t web49_api_wasi_fd_prestat_get(void *wasi_untyped, web49_interp_t interp) {
-    (void) wasi_untyped;
+    (void)wasi_untyped;
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t buf = interp.locals[1].i32_u;
     WEB49_INTERP_WRITE(uint8_t, interp, buf, 0);
@@ -140,7 +140,7 @@ static web49_interp_data_t web49_api_wasi_fd_prestat_get(void *wasi_untyped, web
     return (web49_interp_data_t){.i32_u = 0};
 }
 static web49_interp_data_t web49_api_wasi_path_open(void *wasi_untyped, web49_interp_t interp) {
-    (void) wasi_untyped;
+    (void)wasi_untyped;
     uint32_t wdirfd = interp.locals[0].i32_u;
     // uint32_t dirflags = interp.locals[1].i32_u;
     uint32_t path = interp.locals[2].i32_u;
@@ -196,7 +196,7 @@ static web49_interp_data_t web49_api_wasi_path_open(void *wasi_untyped, web49_in
     return (web49_interp_data_t){.i32_u = 0};
 }
 static web49_interp_data_t web49_api_wasi_fd_read(void *wasi_untyped, web49_interp_t interp) {
-    (void) wasi_untyped;
+    (void)wasi_untyped;
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t iovs = interp.locals[1].i32_u;
     uint32_t iovs_len = interp.locals[2].i32_u;
@@ -210,7 +210,7 @@ static web49_interp_data_t web49_api_wasi_fd_read(void *wasi_untyped, web49_inte
     return (web49_interp_data_t){.i32_u = 0};
 }
 static web49_interp_data_t web49_api_wasi_fd_write(void *wasi_untyped, web49_interp_t interp) {
-    (void) wasi_untyped;
+    (void)wasi_untyped;
     uint32_t fd = interp.locals[0].i32_u;
     uint32_t iovs = interp.locals[1].i32_u;
     uint32_t iovs_len = interp.locals[2].i32_u;
@@ -224,11 +224,11 @@ static web49_interp_data_t web49_api_wasi_fd_write(void *wasi_untyped, web49_int
     return (web49_interp_data_t){.i32_u = 0};
 }
 static web49_interp_data_t web49_api_wasi_proc_exit(void *wasi_untyped, web49_interp_t interp) {
-    (void) wasi_untyped;
+    (void)wasi_untyped;
     exit((int)interp.locals[0].i32_u);
 }
 static web49_interp_data_t web49_api_wasi_fd_prestat_dir_name(void *wasi_untyped, web49_interp_t interp) {
-    (void) wasi_untyped;
+    (void)wasi_untyped;
     const char *name;
     switch (interp.locals[0].i32_u) {
         case 3:

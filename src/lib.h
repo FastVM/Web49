@@ -39,4 +39,8 @@ extern size_t web49_total_alloc;
 #define web49_realloc(ptr, size) (realloc(ptr, size))
 #define web49_free(ptr) (free((void *)ptr))
 
+#define web49_error(...)          \
+    fprintf(stderr, __VA_ARGS__); \
+    __builtin_trap()
+
 #endif

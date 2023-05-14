@@ -197,25 +197,24 @@ web49_type_global_t web49_readbin_type_global(web49_io_input_t *in) {
 web49_limits_t web49_readbin_limits(web49_io_input_t *in) {
     uint8_t byte = web49_readbin_byte(in);
     switch (byte) {
-    case 0: {
-        uint64_t initial = web49_readbin_uleb(in);
-        return (web49_limits_t) {
-            .initial = initial,
-            .maximum = UINT32_MAX,
-        };
-    }
-    case 1: {
-        uint64_t initial = web49_readbin_uleb(in);
-        uint64_t maximum = web49_readbin_uleb(in);
-        return (web49_limits_t) {
-            .initial = initial,
-            .maximum = maximum,
-        };
-    }
-    default: {
-        fprintf(stderr, "error in binary type, need either 0x00 or 0x01, got 0x%02zx\n", (size_t) byte);
-        exit(1);
-    }
+        case 0: {
+            uint64_t initial = web49_readbin_uleb(in);
+            return (web49_limits_t){
+                .initial = initial,
+                .maximum = UINT32_MAX,
+            };
+        }
+        case 1: {
+            uint64_t initial = web49_readbin_uleb(in);
+            uint64_t maximum = web49_readbin_uleb(in);
+            return (web49_limits_t){
+                .initial = initial,
+                .maximum = maximum,
+            };
+        }
+        default: {
+            web49_error("error in binary type, need either 0x00 or 0x01, got 0x%02zx\n", (size_t)byte);
+        }
     }
 }
 
@@ -244,8 +243,7 @@ web49_type_t web49_readbin_type(web49_io_input_t *in, web49_external_kind_t tag)
             .tag = tag,
         };
     }
-    fprintf(stderr, "unknown external kind: %zu\n", (size_t)tag);
-    exit(1);
+    web49_error("unknown external kind: %zu\n", (size_t)tag);
 }
 
 web49_section_custom_t web49_readbin_section_custom(web49_io_input_t *in, web49_section_header_t header) {
@@ -496,14 +494,11 @@ web49_section_data_t web49_readbin_section_data(web49_io_input_t *in) {
                 .data = data,
             };
         } else if (tag == 1) {
-            fprintf(stderr, "passive data mode not yet implemented\n");
-            exit(1);
+            web49_error("passive data mode not yet implemented\n");
         } else if (tag == 2) {
-            fprintf(stderr, "multiple memories for data not yet implemented\n");
-            exit(1);
+            web49_error("multiple memories for data not yet implemented\n");
         } else {
-            fprintf(stderr, "unknown data tag %"PRIu8"\n", tag);
-            exit(1);
+            web49_error("unknown data tag %" PRIu8 "\n", tag);
         }
     }
     return (web49_section_data_t){
@@ -599,7 +594,7 @@ web49_instr_immediate_t web49_readbin_instr_immediate(web49_io_input_t *in, web4
         };
     }
     if (id == WEB49_IMMEDIATE_V128) {
-        web49_instr_immediate_t ret = (web49_instr_immediate_t) {
+        web49_instr_immediate_t ret = (web49_instr_immediate_t){
             .id = WEB49_IMMEDIATE_V128,
         };
         for (size_t i = 0; i < 16; i++) {
@@ -607,7 +602,7 @@ web49_instr_immediate_t web49_readbin_instr_immediate(web49_io_input_t *in, web4
         }
         return ret;
     }
-    fprintf(stderr, "unknown internal immediate id %zu\n", (size_t) id);
+    fprintf(stderr, "unknown internal immediate id %zu\n", (size_t)id);
     __builtin_trap();
 }
 
@@ -615,8 +610,7 @@ web49_instr_t web49_readbin_init_expr(web49_io_input_t *in) {
     web49_instr_t ret = web49_readbin_instr(in);
     web49_instr_t end = web49_readbin_instr(in);
     if (end.opcode != WEB49_OPCODE_END) {
-        fprintf(stderr, "expected end opcode, got %s\n", web49_opcode_to_name(end.opcode));
-        exit(1);
+        web49_error("expected end opcode, got %s\n", web49_opcode_to_name(end.opcode));
     }
     return ret;
 }
@@ -734,8 +728,7 @@ web49_section_t web49_readbin_section(web49_io_input_t *in, web49_section_header
             .custom_section.payload = mem,
         };
     }
-    fprintf(stderr, "unknown section kind: 0x%zX starting at %zX\n", (size_t)id, (size_t)web49_io_input_ftell(in));
-    exit(1);
+    web49_error("unknown section kind: 0x%zX starting at %zX\n", (size_t)id, (size_t)web49_io_input_ftell(in));
 }
 
 web49_module_t web49_readbin_module(web49_io_input_t *in) {
@@ -759,8 +752,7 @@ web49_module_t web49_readbin_module(web49_io_input_t *in) {
         sections[num_sections] = web49_readbin_section(in, header);
         size_t b = web49_io_input_ftell(in);
         if (header.size != b - a) {
-            fprintf(stderr, "read wrong number of bytes (wanted to read: %zu) (read: %zu) (id: %zu)\n", (size_t)header.size, b - a, (size_t)header.id);
-            exit(1);
+            web49_error("read wrong number of bytes (wanted to read: %zu) (read: %zu) (id: %zu)\n", (size_t)header.size, b - a, (size_t)header.id);
         }
         num_sections += 1;
     }

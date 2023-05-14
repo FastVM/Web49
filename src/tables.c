@@ -1161,10 +1161,6 @@ size_t web49_opcode_byte_count(uint8_t first_byte) {
     return 1;
 }
 
-#define web49_error(...)          \
-    fprintf(stderr, __VA_ARGS__); \
-    __builtin_trap()
-
 web49_opcode_t web49_bytes_to_opcode(uint8_t *bytes) {
     switch (bytes[0]) {
         case 0x00:
@@ -4088,6 +4084,7 @@ void web49_opcode_to_bytes(web49_opcode_t opcode, size_t *len, uint8_t *buf) {
         }
         default:
             web49_error("unknown opcode: %zu\n", (size_t)opcode);
+            break;
     }
 }
 

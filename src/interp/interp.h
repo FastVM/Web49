@@ -2,6 +2,7 @@
 #define WEB49_HEADER_INTERP_INTERP
 
 #include "../ast.h"
+#include "../dep/simde/simd128.h"
 
 typedef uint64_t web49_interp_instr_t;
 
@@ -101,6 +102,8 @@ union web49_interp_data_t {
 
     float f32;
     double f64;
+
+    simde_v128_t *v128;
 };
 
 struct web49_interp_table_t {
@@ -189,14 +192,14 @@ void web49_free_interp(web49_interp_t interp);
 #define WEB49_INTERP_BOUNDS(low, add) (__builtin_unreachable())
 #endif
 #define WEB49_INTERP_ADDR(ptrtype, interp, dest, size) \
-    ({\
-        uint32_t xptr_ = (uint32_t) (dest); \
-        uint32_t xsize_ = (uint32_t) (size); \
-        web49_interp_t sub_ = (interp); \
-        if (sub_.memsize < xptr_ + xsize_) { \
-            WEB49_INTERP_BOUNDS(xptr_, xsize_); \
-        }; \
-        (ptrtype) &sub_.memory[xptr_]; \
+    ({                                                 \
+        uint32_t xptr_ = (uint32_t)(dest);             \
+        uint32_t xsize_ = (uint32_t)(size);            \
+        web49_interp_t sub_ = (interp);                \
+        if (sub_.memsize < xptr_ + xsize_) {           \
+            WEB49_INTERP_BOUNDS(xptr_, xsize_);        \
+        };                                             \
+        (ptrtype) & sub_.memory[xptr_];                \
     })
 #define WEB49_INTERP_READ(elemtype, interp, dest) (*WEB49_INTERP_ADDR(elemtype *, interp, dest, sizeof(elemtype)))
 #define WEB49_INTERP_WRITE(elemtype, interp, dest, src) (*WEB49_INTERP_ADDR(elemtype *, interp, dest, sizeof(elemtype)) = (src))
