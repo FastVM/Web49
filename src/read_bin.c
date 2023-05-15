@@ -620,7 +620,6 @@ web49_instr_t web49_readbin_instr(web49_io_input_t *in) {
     uint8_t bytes[4];
     if (first == 0xFD) {
         uint64_t simd_opcode = web49_readbin_uleb(in);
-        // printf("%zu\n", simd_opcode);
         bytes[0] = first;
         bytes[1] = 0x7F & (simd_opcode);
         bytes[2] = 0x7F & (simd_opcode >> 7);

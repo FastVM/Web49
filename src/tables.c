@@ -1712,7 +1712,6 @@ web49_opcode_t web49_bytes_to_opcode(uint8_t *bytes) {
                     web49_error("unknown opcode sequence: 0xFC 0x%" PRIu8 "\n", bytes[1]);
             }
         case 0xFD:
-            // printf("0x%02" PRIX8 " 0x%02" PRIX8 " 0x%02" PRIX8 " = %zu\n", bytes[1], bytes[2], bytes[3], (size_t) (bytes[1] + (bytes[2] << 7) + (bytes[3] << 14)));
             switch (bytes[1] + (bytes[2] << 7) + (bytes[3] << 14)) {
                 case 0x00:
                     return WEB49_OPCODE_V128_LOAD;

@@ -5,7 +5,7 @@
 
 #define exit(n) __builtin_trap()
 
-web49_instr_t web49_readwat_instr_buf(web49_readwat_state_t *out, web49_opcode_t opcode, size_t nargs, web49_readwat_expr_t *args);
+web49_instr_t web49_readwat_instr_buf(web49_readwat_state_t *out, web49_opcode_t opcode, size_t nargs, web49_readwat_expr_t *args, bool is_in_parens);
 
 static void web49_readwat_table_set(web49_readwat_table_t *restrict table, const char *key, uint64_t value) {
     if (table->len + 2 >= table->alloc) {
@@ -731,7 +731,6 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
             if (arg.tag == WEB49_READWAT_EXPR_TAG_FUN && !strcmp(arg.fun_fun, "param")) {
                 for (size_t i = 0; i < arg.fun_nargs; i++) {
                     if (arg.fun_args[i].tag == WEB49_READWAT_EXPR_TAG_SYM && arg.fun_args[i].sym[0] == '$') {
-                        // printf("%s\n", arg.fun_args[i].sym);
                         web49_readwat_table_set(&out->local_table, arg.fun_args[i].sym, (uint64_t)num_locals);
                     } else {
                         num_locals += 1;
@@ -740,8 +739,6 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
             }
         }
         if (num_locals != out->stype.entries[entry].num_params) {
-            // printf("%zu != %zu\n", (size_t) num_locals, max);
-            // exit(1);
             num_locals = out->stype.entries[entry].num_params;
         }
         if (out->sfunction.num_entries + 1 >= out->alloc_function) {
@@ -776,7 +773,7 @@ void web49_readwat_state_func_entry(web49_readwat_state_t *out, web49_readwat_ex
                     // fprintf(stderr, "no such opcode: %s\n", code.sym);
                     // exit(1);
                 }
-                entry.instrs[entry.num_instrs++] = web49_readwat_instr_buf(out, opcode, expr.fun_nargs - (i + 1), expr.fun_args + (i + 1));
+                entry.instrs[entry.num_instrs++] = web49_readwat_instr_buf(out, opcode, expr.fun_nargs - (i + 1), expr.fun_args + (i + 1), false);
             } else if (!strcmp(code.fun_fun, "param") || !strcmp(code.fun_fun, "type") || !strcmp(code.fun_fun, "result")) {
                 // nothing goes here
             } else if (!strcmp(code.fun_fun, "export")) {
@@ -918,10 +915,10 @@ web49_instr_t web49_readwat_instr(web49_readwat_state_t *out, web49_readwat_expr
     if (opcode == WEB49_MAX_OPCODE_NUM) {
         web49_error("no such opcode: %s\n", expr.fun_fun);
     }
-    return web49_readwat_instr_buf(out, opcode, expr.fun_nargs, expr.fun_args);
+    return web49_readwat_instr_buf(out, opcode, expr.fun_nargs, expr.fun_args, true);
 }
 
-web49_instr_t web49_readwat_instr_buf(web49_readwat_state_t *out, web49_opcode_t opcode, size_t nargs, web49_readwat_expr_t *args) {
+web49_instr_t web49_readwat_instr_buf(web49_readwat_state_t *out, web49_opcode_t opcode, size_t nargs, web49_readwat_expr_t *args, bool is_in_parens) {
     web49_immediate_id_t id = web49_opcode_immediate[opcode];
     web49_instr_immediate_t imm = (web49_instr_immediate_t){
         .id = id,
@@ -992,7 +989,6 @@ web49_instr_t web49_readwat_instr_buf(web49_readwat_state_t *out, web49_opcode_t
                 (args[i].tag == WEB49_READWAT_EXPR_TAG_SYM && args[i].sym[0] == '$')) {
                 uint32_t type_index = web49_readwat_expr_to_type_entry_index(out, nargs - i, args + i);
                 web49_section_type_entry_t ent = out->stype.entries[type_index];
-                printf("%zu -> %zu\n", (size_t)ent.num_params, (size_t)ent.num_returns);
                 if (ent.num_params == 0 && ent.num_returns == 0) {
                     out->stype.num_entries -= 1;
                     imm.block_type = web49_block_type_value(WEB49_TYPE_BLOCK_TYPE);
@@ -1127,7 +1123,7 @@ web49_instr_t web49_readwat_instr_buf(web49_readwat_state_t *out, web49_opcode_t
             vargs[vnargs++] = web49_readwat_instr(out, args[i]);
         }
     }
-    if (id == WEB49_IMMEDIATE_BLOCK_TYPE) {
+    if (is_in_parens && id == WEB49_IMMEDIATE_BLOCK_TYPE) {
         out->block_depth -= 1;
         vargs[vnargs++] = (web49_instr_t){.opcode = WEB49_OPCODE_END};
     }

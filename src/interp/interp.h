@@ -201,7 +201,13 @@ void web49_free_interp(web49_interp_t interp);
         };                                             \
         (ptrtype) & sub_.memory[xptr_];                \
     })
-#define WEB49_INTERP_READ(elemtype, interp, dest) (*WEB49_INTERP_ADDR(elemtype *, interp, dest, sizeof(elemtype)))
+#define WEB49_INTERP_READ(elemtype, interp, src) (*WEB49_INTERP_ADDR(elemtype *, interp, src, sizeof(elemtype)))
 #define WEB49_INTERP_WRITE(elemtype, interp, dest, src) (*WEB49_INTERP_ADDR(elemtype *, interp, dest, sizeof(elemtype)) = (src))
+#define WEB49_INTERP_V128(n) \
+    ({ \
+        simde_v128_t *ptr = web49_malloc(sizeof(simde_v128_t));\
+        *(__uint128_t *)ptr = *(__uint128_t *)&(n); \
+        ptr; \
+    })
 
 #endif

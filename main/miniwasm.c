@@ -169,7 +169,6 @@ static int web49_file_main(const char *inarg, const char **args) {
                 } else if (!strcmp(todo.fun_fun, "assert_malformed")) {
                     continue;
                 } else {
-                    // printf("%zu %zu\n", (size_t) todo.start, (size_t) todo.end);
                     fprintf(stderr, "wasm spec test: dont know how to handle: (%s ...)\n", todo.fun_fun);
                     return 1;
                 }

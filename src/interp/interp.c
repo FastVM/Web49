@@ -509,6 +509,12 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
             break;
         case WEB49_IMMEDIATE_DATA_INDEX:
             break;
+        case WEB49_IMMEDIATE_LANE:
+            build->code[build->ncode++].data.i32_u = cur.immediate.lane;
+            break;
+        case WEB49_IMMEDIATE_V128:
+            build->code[build->ncode++].data.v128 = WEB49_INTERP_V128(cur.immediate.u128);
+            break;
         default:
             fprintf(stderr, "bad immediate: %zu\n", (size_t)cur.immediate.id);
             __builtin_trap();
@@ -653,6 +659,7 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
 #define TABLE_PUT0(x) TABLE_PUTV(x, x)
 #define TABLE_PUT1(x) TABLE_PUTV(x, x##_R), TABLE_PUTV(x + WEB49_OPCODE_WITH_CONST0, x##_C0)
 #define TABLE_PUT2(x) TABLE_PUTV(x, x##_R), TABLE_PUTV(x + WEB49_OPCODE_WITH_CONST0, x##_C0), TABLE_PUTV(x + WEB49_OPCODE_WITH_CONST1, x##_C1), TABLE_PUTV(x + WEB49_OPCODE_WITH_CONST0 + WEB49_OPCODE_WITH_CONST1, x##_C01)
+#define TABLE_SIMD(x) TABLE_PUTV(x, x)
 #else
 #define TABLE_PUT0(x) TABLE_PUTV(x, x)
 #define TABLE_PUT1(x) TABLE_PUTV(x, x##_R)
