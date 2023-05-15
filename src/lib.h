@@ -39,8 +39,16 @@ extern size_t web49_total_alloc;
 #define web49_realloc(ptr, size) (realloc(ptr, size))
 #define web49_free(ptr) (free((void *)ptr))
 
+#define web49_unreachable() __builtin_unreachable()
+
+#if WEB49_DEBUG_DIE
+#define web49_die() __builtin_trap()
+#else
+#define web49_die() exit(1)
+#endif
+
 #define web49_error(...)          \
     fprintf(stderr, __VA_ARGS__); \
-    __builtin_trap()
+    web49_die()
 
 #endif

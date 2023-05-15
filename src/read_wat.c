@@ -3,8 +3,6 @@
 #include "./ast.h"
 #include "./tables.h"
 
-#define exit(n) __builtin_trap()
-
 web49_instr_t web49_readwat_instr_buf(web49_readwat_state_t *out, web49_opcode_t opcode, size_t nargs, web49_readwat_expr_t *args, bool is_in_parens);
 
 static void web49_readwat_table_set(web49_readwat_table_t *restrict table, const char *key, uint64_t value) {

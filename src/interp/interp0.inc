@@ -1,24 +1,21 @@
 NAME(WEB49_OPCODE_MEMORY_INIT) {
-    fprintf(stderr, "memory init?\n");
-    __builtin_trap();
+    web49_error("memory init?\n");
     NEXT();
 }
 NAME(WEB49_OPCODE_DATA_DROP) {
+    web49_error("data drop? \n");
     NEXT();
 }
 NAME(WEB49_OPCODE_TABLE_INIT) {
-    fprintf(stderr, "table init? \n");
-    __builtin_trap();
+    web49_error("table init? \n");
     NEXT();
 }
 NAME(WEB49_OPCODE_ELEM_DROP) {
-    fprintf(stderr, "elem drop?\n");
-    __builtin_trap();
+    web49_error("elem drop?\n");
     NEXT();
 }
 NAME(WEB49_OPCODE_TABLE_COPY) {
-    fprintf(stderr, "table copy?\n");
-    __builtin_trap();
+    web49_error("table copy?\n");
     NEXT();
 }
 NAME(WEB49_OPCODE_FFI_CALL1) {
@@ -223,7 +220,7 @@ NAME(WEB49_OPCODE_CALL) {
     } else if (fblock->nlocals <= 1024) {
         head[-1].opcode = OPCODE(WEB49_OPCODE_CALL_DONE1024);
     } else {
-        fprintf(stderr, "too many locals: %zu\n", (size_t)fblock->nlocals);
+        web49_error("too many locals: %zu\n", (size_t)fblock->nlocals);
         __builtin_trap();
     }
     head[0].opcodes = fblock->code;

@@ -27,8 +27,7 @@ static web49_interp_data_t web49_api_wasi_fd_seek(void *wasi_untyped, web49_inte
             whence = SEEK_SET;
             break;
         default:
-            fprintf(stderr, "bad wasi whence: %" PRIu32 "\n", interp.locals[2].i32_u);
-            __builtin_trap();
+            web49_error("bad wasi whence: %" PRIu32 "\n", interp.locals[2].i32_u);
     }
     if (interp.locals[0].i32_u <= 2 && whence == SEEK_SET) {
         WEB49_INTERP_WRITE(int64_t, interp, interp.locals[3].i32_u, interp.locals[1].i64_s);
@@ -180,8 +179,7 @@ static web49_interp_data_t web49_api_wasi_path_open(void *wasi_untyped, web49_in
             dirfd = open("./", O_RDONLY);
             break;
         default:
-            fprintf(stderr, "unknown dirfd: %i\n", wdirfd);
-            __builtin_trap();
+            web49_error("unknown dirfd: %i\n", wdirfd);
     }
 #if defined(__WIN32__)
     int hostfd = open(host_path, flags, 0644);

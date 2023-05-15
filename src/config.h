@@ -9,5 +9,6 @@
 #define WEB49_PRINT_INSTR 0
 #define WEB49_PRINT_INSTR_DEPTH 0
 #define WEB49_CHECK_BOUNDS 0
+#define WEB49_DEBUG_DIE 1
 
 #endif

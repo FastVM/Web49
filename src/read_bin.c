@@ -602,8 +602,7 @@ web49_instr_immediate_t web49_readbin_instr_immediate(web49_io_input_t *in, web4
         }
         return ret;
     }
-    fprintf(stderr, "unknown internal immediate id %zu\n", (size_t)id);
-    __builtin_trap();
+    web49_error("unknown internal immediate id %zu\n", (size_t)id);
 }
 
 web49_instr_t web49_readbin_init_expr(web49_io_input_t *in) {

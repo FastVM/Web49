@@ -214,7 +214,6 @@ static void web49_opt_untree_emit_counting(web49_opcode_t op, uint32_t num, size
 static void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_block_list_t **pblocks, web49_instr_t cur, size_t *len, web49_instr_t **out, size_t *alloc) {
     size_t nargs = cur.nargs;
     cur.nargs = 0;
-    printf("*pblocks = %p\n", *pblocks);
     if (cur.opcode == WEB49_OPCODE_IF) {
         web49_block_list_t list = (web49_block_list_t){
             .ret = false,
@@ -358,14 +357,13 @@ static void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_
                         c += 1;
                     }
                 }
-                fprintf(stderr, "could not find (func %zu)\n", (size_t)cur.immediate.varuint32);
-                __builtin_trap();
+                web49_error("could not find (func %zu)\n", (size_t)cur.immediate.varuint32);
             } else {
                 web49_section_function_t func = web49_module_get_section(*mod, WEB49_SECTION_ID_FUNCTION).function_section;
                 ent = type.entries[func.entries[cur.immediate.varuint32 - thresh]];
             }
         } else {
-            __builtin_trap();
+            web49_error("internal error: trying to handle an unhandled case");
         }
     found_call_ent:;
         if (cur.opcode == WEB49_OPCODE_CALL) {
@@ -424,7 +422,6 @@ static void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t 
     };
     blocks += 1;
     for (size_t i = 0; i < entry->num_instrs; i++) {
-        web49_debug_print_instr(stdout, entry->instrs[i]);
         web49_opt_untree(mod, type.num_returns, &blocks, entry->instrs[i], &len, head, alloc);
     }
     web49_instr_t bump = (*head)[--len];

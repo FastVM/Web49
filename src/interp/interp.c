@@ -5,7 +5,7 @@
 #if WEB49_USE_SWTICH
 #define OPCODE(n) (n)
 #else
-#define OPCODE(n) ({size_t x = (n); if (ptrs[x] == NULL) {__builtin_trap();} ptrs[x]; })
+#define OPCODE(n) ({size_t x = (n); if (ptrs[x] == NULL) {web49_die();} ptrs[x]; })
 #endif
 
 web49_env_t *web49_env_new(void *state, web49_env_func_t func) {
@@ -375,10 +375,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         args[i] = n;
         uint32_t end = state->depth;
         if (begin + 1 != end) {
-            fprintf(stderr, "error: the below instruction (%s ...) did not yield exactly 1 value (debug: %" PRIu32 "+1 != %" PRIu32 ")\n", web49_opcode_to_name(cur.args[i].opcode), begin, end);
-            web49_debug_print_instr(stderr, cur.args[i]);
-            __builtin_trap();
-            // state->depth = begin + 1;
+            web49_error("error: the instruction (%s ...) did not yield exactly 1 value (debug: %" PRIu32 "+1 != %" PRIu32 ")\n", web49_opcode_to_name(cur.args[i].opcode), begin, end);
         }
     }
     // puts(web49_opcode_to_name(cur.opcode));
@@ -388,12 +385,10 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
     }
     uint32_t outer_end = state->depth;
     if (outer_begin + cur.nargs != outer_end) {
-        fprintf(stderr, "error: stack should have been at %zu, but was at %zu\n", (size_t)(outer_begin + cur.nargs), (size_t)outer_end);
-        web49_debug_print_instr(stderr, cur);
-        __builtin_trap();
+        web49_error("error: stack should have been at %zu, but was at %zu\n", (size_t)(outer_begin + cur.nargs), (size_t)outer_end);
     }
     if (state->depth < cur.nargs) {
-        __builtin_trap();
+        web49_error("error: bad number of arguments");
     }
     state->depth -= cur.nargs;
     if (cur.opcode == WEB49_OPCODE_NOP || cur.opcode == WEB49_OPCODE_UNREACHABLE) {
@@ -516,8 +511,7 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
             build->code[build->ncode++].data.v128 = WEB49_INTERP_V128(cur.immediate.u128);
             break;
         default:
-            fprintf(stderr, "bad immediate: %zu\n", (size_t)cur.immediate.id);
-            __builtin_trap();
+            web49_error("bad immediate: %zu\n", (size_t)cur.immediate.id);
     }
     return ret;
 }
@@ -579,8 +573,7 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
             } else if (block->nreturns == 1) {
                 instrs[0].opcode = OPCODE(WEB49_OPCODE_FFI_CALL1);
             } else {
-                fprintf(stderr, "error: import returns too many things\n");
-                __builtin_trap();
+                web49_error("error: import returns too many things\n");
             }
             web49_env_t *env = NULL;
             for (size_t nimport = 0; nimport < interp.num_env; nimport++) {
@@ -593,8 +586,7 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
                 }
             }
             if (env == NULL) {
-                fprintf(stderr, "not implemented: %s.%s\n", block->module_str, block->field_str);
-                __builtin_trap();
+                web49_error("not implemented: %s.%s\n", block->module_str, block->field_str);
             }
             instrs[1].func = env;
             web49_free(block->module_str);
