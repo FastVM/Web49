@@ -1,109 +1,89 @@
 
+MODE ?= opt
+
+BUILD_DIR = ./build/$(MODE)/
+BIN_DIR = $(BUILD_DIR)bin/
+OBJ_DIR = $(BUILD_DIR)obj/
+TEST_DIR = $(BUILD_DIR)test/
+
 PYTHON ?= python3
-OPT ?= -O2
-
-INSTALL ?= install
-
-EMCC ?= emcc
 
 PROG_SRCS := main/wat2wat.c main/wasm2wat.c main/wat2wasm.c main/wasm2wasm.c main/miniwasm.c main/raywasm.c main/runtime/rlruntime.c
-PROG_OBJS := $(PROG_SRCS:%.c=%.o)
+PROG_OBJS := $(PROG_SRCS:%.c=$(OBJ_DIR)%.o)
 
-WEB49_SRCS := src/lib.c src/read_bin.c src/read_wat.c src/write_wat.c src/write_bin.c src/io.c src/tables.c src/interp/interp.c src/opt/tree.c src/opt/tee.c src/ast.c src/api/wasi.c
-WEB49_OBJS := $(WEB49_SRCS:%.c=%.o)
+WEB49_SRCS := src/lib.c src/read_bin.c src/read_wat.c src/write_wat.c src/write_bin.c src/io.c src/tables.c src/interp/interp.c src/opt/tree.c src/opt/tee.c src/ast.c src/wasi/wasi.c
+WEB49_OBJS := $(WEB49_SRCS:%.c=$(OBJ_DIR)%.o)
 
 OBJS := $(WEB49_OBJS)
-
-UNAME_S_CMD != uname -s
-
-UNAME_S ?= $(UNAME_S_CMD)
-
-RGLFW_M_OR_C_Windows = c
-RGLFW_M_OR_C_FreeBSD = c
-RGLFW_M_OR_C_Linux = c
-RGLFW_M_OR_C_Darwin = m
 
 TEST_PREFIX = test/core
 
 TEST_FILES != find $(TEST_PREFIX) -name '*.wast'
 TEST_OUTPUTS = $(TEST_FILES:%.wast=%.txt)
 
+# modes
+FLAGS_san = -g3 -ggdb -fsanitize=address,undefined
+FLAGS_debug = -g3 -ggdb
+
+CLAGS_opt = -O3
+LDFLAGS_opt = -flto
+
+CFLAGS += $(CFLAGS_$(MODE)) $(FLAGS_$(MODE))
+LDFLAGS += $(LDFLAGS_$(MODE)) $(FLAGS_$(MODE))
+
 default: all
 
-all: bins
-
-# install web49
-
-install: bins
-	cp bin/miniwasm $(INSTALL)
-	chmod $(INSTALL)/miniwasm
+all: bins test
 
 # tests
 
-test: results.txt
+TESTS != find test -type f -name '*.wast'
+TEST_LOGS = $(TESTS:%.wast=$(TEST_DIR)log/%.log)
+TEST_RESULT = $(TEST_DIR)result
 
-results.txt: $(TEST_OUTPUTS)
-	@cat /dev/null $(TEST_OUTPUTS) | sort > results.txt
+test: $(TEST_RESULT)
 
-$(TEST_OUTPUTS): bin/miniwasm $(@:%.txt=%.wast) | $(TEST_PREFIX)
-	@./bin/miniwasm $(@:%.txt=%.wast) 2>$(@:%.txt=%.log); \
-		if test $$? -eq 0; \
-		then mv $(@:%.txt=%.log) $(@:%.txt=%.pass.log) && echo "PASS $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
-		else mv $(@:%.txt=%.log) $(@:%.txt=%.fail.log) && echo "FAIL $(@:$(TEST_PREFIX)/%.txt=%)" > $(@); \
-		fi
+$(TEST_RESULT): $(TEST_LOGS)
+	@echo -n > $(TEST_RESULT).pass
+	@echo -n > $(TEST_RESULT).fail
+	@sort -u $(TEST_RESULT).pass -o $(TEST_RESULT).pass
+	@sort -u $(TEST_RESULT).fail -o $(TEST_RESULT).fail
+	@cat $(TEST_RESULT).pass > $(TEST_RESULT)
+	@echo >> $(TEST_RESULT)
+	@cat $(TEST_RESULT).fail >> $(TEST_RESULT)
+	@rm $(TEST_RESULT).pass $(TEST_RESULT).fail
 
-# test/wasi:
-# 	test -d wasi-testsuite || git clone https://github.com/WebAssembly/wasi-testsuite spec --depth 1
-# 	rm -fr test/wasi 
-
-test/core:
-	test -d spec || git clone https://github.com/WebAssembly/spec/ spec --depth 1
-	rm -fr test/core
-	cp -r spec/test/core test/core
-	rm -r test/core/simd/meta
+$(TEST_DIR)log/%.log: %.wast $(BIN_DIR)miniwasm
+	@mkdir -p $(dir $(@))
+	@echo $(BIN_DIR)miniwasm $(<); if $(BIN_DIR)miniwasm $(<) 2>$(@); then echo pass $(<) >> $(TEST_RESULT).pass; else echo fail $(<) >> $(TEST_RESULT).fail; fi
 
 # bin
 
-bins: bin/wasm2wat bin/wat2wasm bin/wasm2wasm bin/wat2wat bin/miniwasm
+MAINS != find main -type f -name '*.c'
+MAIN_BINS = $(MAINS:main/%.c=$(BIN_DIR)%)
 
-bin/miniwasm: main/miniwasm.o $(OBJS)
-	@mkdir -p bin
-	$(CC) $(OPT) main/miniwasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
+bins: $(MAIN_BINS)
 
-bin/wat2wasm: main/wat2wasm.o $(OBJS)
-	@mkdir -p bin
-	$(CC) $(OPT) main/wat2wasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
+$(BIN_DIR)%: $(OBJ_DIR)main/%.o $(OBJS)
+	@mkdir -p $(dir $(@))
+	$(CC) $(^) -o $(@) -lm $(LDFLAGS)
 
-bin/wasm2wat: main/wasm2wat.o $(OBJS)
-	@mkdir -p bin
-	$(CC) $(OPT) main/wasm2wat.o $(OBJS) -o $(@) -lm $(LDFLAGS)
+# intermediate files
 
-bin/wasm2wasm: main/wasm2wasm.o $(OBJS)
-	@mkdir -p bin
-	$(CC) $(OPT) main/wasm2wasm.o $(OBJS) -o $(@) -lm $(LDFLAGS)
-
-bin/wat2wat: main/wat2wat.o $(OBJS)
-	@mkdir -p bin
-	$(CC) $(OPT) main/wat2wat.o $(OBJS) -o $(@) -lm $(LDFLAGS)
+$(OBJ_DIR)%.o: %.c
+	@mkdir -p $(dir $(@))
+	$(CC) -c $(OPT) $(<) -o $(@) $(CFLAGS)
 
 # util
 
+.PHONY: format
 format: .dummy
 	find src main -name '*.c' | xargs -I FILENAME clang-format -style=file -i FILENAME
 	find src main -name '*.h' | xargs -I FILENAME clang-format -style=file -i FILENAME
 	find src main -name '*.inc' | xargs -I FILENAME clang-format -style=file -i FILENAME
 
+.PHONY: clean
 clean: .dummy
-	find src main -name '*.o' | xargs rm
-	find bin -type f | xargs rm
-	find test/core -name '*.txt' | xargs rm
-	find test/core -name '*.log' | xargs rm
-
-# intermediate files
-
-$(PROG_OBJS) $(WEB49_OBJS): $(@:%.o=%.c)
-	$(CC) -c $(OPT) $(@:%.o=%.c) -o $(@) $(CFLAGS)
-
-# dummy
+	rm -rf build
 
 .dummy:

@@ -198,7 +198,7 @@ uint64_t web49_readwat_expr_to_u64f(web49_readwat_expr_t expr) {
         if (str[i] == '.' || str[i] == 'p') {
             double n;
             web49_parse_double_to(str, &n);
-            return *(uint64_t *)&n;
+            return (uint64_t)*(int64_t *)&n;
         }
     }
     bool negate = false;
@@ -1379,7 +1379,7 @@ web49_module_t web49_readwat_to_module(web49_readwat_expr_t expr) {
                 .id = WEB49_SECTION_ID_TYPE,
                 .size_known = false,
             },
-            .type_section = state.stype,
+            .section.type = state.stype,
         };
     }
     if (state.simport.num_entries != 0) {
@@ -1388,7 +1388,7 @@ web49_module_t web49_readwat_to_module(web49_readwat_expr_t expr) {
                 .id = WEB49_SECTION_ID_IMPORT,
                 .size_known = false,
             },
-            .import_section = state.simport,
+            .section.import = state.simport,
         };
     }
     if (state.sfunction.num_entries != 0) {
@@ -1397,7 +1397,7 @@ web49_module_t web49_readwat_to_module(web49_readwat_expr_t expr) {
                 .id = WEB49_SECTION_ID_FUNCTION,
                 .size_known = false,
             },
-            .function_section = state.sfunction,
+            .section.function = state.sfunction,
         };
     }
     if (state.stable.num_entries != 0) {
@@ -1406,7 +1406,7 @@ web49_module_t web49_readwat_to_module(web49_readwat_expr_t expr) {
                 .id = WEB49_SECTION_ID_TABLE,
                 .size_known = false,
             },
-            .table_section = state.stable,
+            .section.table = state.stable,
         };
     }
     if (state.smemory.num_entries != 0) {
@@ -1415,7 +1415,7 @@ web49_module_t web49_readwat_to_module(web49_readwat_expr_t expr) {
                 .id = WEB49_SECTION_ID_MEMORY,
                 .size_known = false,
             },
-            .memory_section = state.smemory,
+            .section.memory = state.smemory,
         };
     }
     if (state.sglobal.num_entries != 0) {
@@ -1424,7 +1424,7 @@ web49_module_t web49_readwat_to_module(web49_readwat_expr_t expr) {
                 .id = WEB49_SECTION_ID_GLOBAL,
                 .size_known = false,
             },
-            .global_section = state.sglobal,
+            .section.global = state.sglobal,
         };
     }
     if (state.sexport.num_entries != 0) {
@@ -1433,7 +1433,7 @@ web49_module_t web49_readwat_to_module(web49_readwat_expr_t expr) {
                 .id = WEB49_SECTION_ID_EXPORT,
                 .size_known = false,
             },
-            .export_section = state.sexport,
+            .section.export = state.sexport,
         };
     }
     if (state.selement.num_entries != 0) {
@@ -1442,7 +1442,7 @@ web49_module_t web49_readwat_to_module(web49_readwat_expr_t expr) {
                 .id = WEB49_SECTION_ID_ELEMENT,
                 .size_known = false,
             },
-            .element_section = state.selement,
+            .section.element = state.selement,
         };
     }
     if (state.scode.num_entries != 0) {
@@ -1451,7 +1451,7 @@ web49_module_t web49_readwat_to_module(web49_readwat_expr_t expr) {
                 .id = WEB49_SECTION_ID_CODE,
                 .size_known = false,
             },
-            .code_section = state.scode,
+            .section.code = state.scode,
         };
     }
     if (state.sdata.num_entries != 0) {
@@ -1460,7 +1460,7 @@ web49_module_t web49_readwat_to_module(web49_readwat_expr_t expr) {
                 .id = WEB49_SECTION_ID_DATA,
                 .size_known = false,
             },
-            .data_section = state.sdata,
+            .section.data = state.sdata,
         };
     }
     return (web49_module_t){

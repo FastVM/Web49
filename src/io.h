@@ -3,10 +3,7 @@
 
 #include "./lib.h"
 
-struct web49_io_input_t;
 typedef struct web49_io_input_t web49_io_input_t;
-
-struct web49_io_output_t;
 typedef struct web49_io_output_t web49_io_output_t;
 
 struct web49_io_input_t {

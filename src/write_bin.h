@@ -4,7 +4,6 @@
 
 #include "./ast.h"
 
-struct web49_writebin_buf_t;
 typedef struct web49_writebin_buf_t web49_writebin_buf_t;
 
 struct web49_writebin_buf_t {

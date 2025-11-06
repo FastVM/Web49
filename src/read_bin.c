@@ -648,73 +648,73 @@ web49_section_t web49_readbin_section(web49_io_input_t *in, web49_section_header
     if (id == WEB49_SECTION_ID_CUSTOM) {
         return (web49_section_t){
             .header = header,
-            .custom_section = web49_readbin_section_custom(in, header),
+            .section.custom = web49_readbin_section_custom(in, header),
         };
     }
     if (id == WEB49_SECTION_ID_TYPE) {
         return (web49_section_t){
             .header = header,
-            .type_section = web49_readbin_section_type(in),
+            .section.type = web49_readbin_section_type(in),
         };
     }
     if (id == WEB49_SECTION_ID_IMPORT) {
         return (web49_section_t){
             .header = header,
-            .import_section = web49_readbin_section_import(in),
+            .section.import = web49_readbin_section_import(in),
         };
     }
     if (id == WEB49_SECTION_ID_FUNCTION) {
         return (web49_section_t){
             .header = header,
-            .function_section = web49_readbin_section_function(in),
+            .section.function = web49_readbin_section_function(in),
         };
     }
     if (id == WEB49_SECTION_ID_TABLE) {
         return (web49_section_t){
             .header = header,
-            .table_section = web49_readbin_section_table(in),
+            .section.table = web49_readbin_section_table(in),
         };
     }
     if (id == WEB49_SECTION_ID_MEMORY) {
         return (web49_section_t){
             .header = header,
-            .memory_section = web49_readbin_section_memory(in),
+            .section.memory = web49_readbin_section_memory(in),
         };
     }
     if (id == WEB49_SECTION_ID_GLOBAL) {
         return (web49_section_t){
             .header = header,
-            .global_section = web49_readbin_section_global(in),
+            .section.global = web49_readbin_section_global(in),
         };
     }
     if (id == WEB49_SECTION_ID_EXPORT) {
         return (web49_section_t){
             .header = header,
-            .export_section = web49_readbin_section_export(in),
+            .section.export = web49_readbin_section_export(in),
         };
     }
     if (id == WEB49_SECTION_ID_START) {
         return (web49_section_t){
             .header = header,
-            .start_section = web49_readbin_section_start(in),
+            .section.start = web49_readbin_section_start(in),
         };
     }
     if (id == WEB49_SECTION_ID_ELEMENT) {
         return (web49_section_t){
             .header = header,
-            .element_section = web49_readbin_section_element(in),
+            .section.element = web49_readbin_section_element(in),
         };
     }
     if (id == WEB49_SECTION_ID_CODE) {
         return (web49_section_t){
             .header = header,
-            .code_section = web49_readbin_section_code(in),
+            .section.code = web49_readbin_section_code(in),
         };
     }
     if (id == WEB49_SECTION_ID_DATA) {
         return (web49_section_t){
             .header = header,
-            .data_section = web49_readbin_section_data(in),
+            .section.data = web49_readbin_section_data(in),
         };
     }
     if (id == WEB49_SECTION_ID_DATA_COUNT) {
@@ -722,8 +722,8 @@ web49_section_t web49_readbin_section(web49_io_input_t *in, web49_section_header
         web49_io_input_fread(in, header.size, mem);
         return (web49_section_t){
             .header = header,
-            .custom_section.name = NULL,
-            .custom_section.payload = mem,
+            .section.custom.name = NULL,
+            .section.custom.payload = mem,
         };
     }
     web49_error("unknown section kind: 0x%zX starting at %zX\n", (size_t)id, (size_t)web49_io_input_ftell(in));

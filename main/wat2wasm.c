@@ -1,5 +1,4 @@
 #include "../src/ast.h"
-#include "../src/interp/interp.h"
 #include "../src/read_wat.h"
 #include "../src/write_bin.h"
 

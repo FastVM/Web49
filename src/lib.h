@@ -47,8 +47,9 @@ extern size_t web49_total_alloc;
 #define web49_die() exit(1)
 #endif
 
-#define web49_error(...)          \
-    fprintf(stderr, __VA_ARGS__); \
+#define web49_error(...)                \
+    /* fprintf(stderr, __VA_ARGS__); */ \
+    /* fflush(stdout); */               \
     web49_die()
 
 #endif

@@ -33,7 +33,7 @@ optlevel = args.opt
 emccflags = ['-msimd128']
 emccflags = []
 if len(engines) == 0:
-    engines = ['wasm3', os.path.join(cur, 'bin/miniwasm')]
+    engines = ['wasm3', os.path.join(cur, 'build/opt/bin/miniwasm')]
 engines.extend(['wasmer', 'wasmtime'])
 
 if len(args.test) == 0: 

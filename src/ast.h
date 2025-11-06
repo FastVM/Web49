@@ -545,109 +545,40 @@ enum web49_immediate_id_enum_t {
     WEB49_IMMEDIATE_LANE,
 };
 
-struct web49_preamble_t;
 typedef struct web49_preamble_t web49_preamble_t;
-
-struct web49_section_header_t;
 typedef struct web49_section_header_t web49_section_header_t;
-
-struct web49_br_table_t;
 typedef struct web49_br_table_t web49_br_table_t;
-
-struct web49_call_indirect_t;
 typedef struct web49_call_indirect_t web49_call_indirect_t;
-
-struct web49_block_type_t;
 typedef struct web49_block_type_t web49_block_type_t;
-
-struct web49_memory_immediate_t;
 typedef struct web49_memory_immediate_t web49_memory_immediate_t;
-
-struct web49_type_function_t;
 typedef struct web49_type_function_t web49_type_function_t;
-
-struct web49_type_table_t;
 typedef struct web49_type_table_t web49_type_table_t;
-
-struct web49_type_t;
 typedef struct web49_type_t web49_type_t;
-
-struct web49_type_global_t;
 typedef struct web49_type_global_t web49_type_global_t;
-
-struct web49_limits_t;
 typedef struct web49_limits_t web49_limits_t;
-
-struct web49_section_custom_t;
 typedef struct web49_section_custom_t web49_section_custom_t;
-
-struct web49_section_type_entry_t;
 typedef struct web49_section_type_entry_t web49_section_type_entry_t;
-
-struct web49_section_type_t;
 typedef struct web49_section_type_t web49_section_type_t;
-
-struct web49_section_export_entry_t;
 typedef struct web49_section_export_entry_t web49_section_export_entry_t;
-
-struct web49_section_export_t;
 typedef struct web49_section_export_t web49_section_export_t;
-
-struct web49_section_import_entry_t;
 typedef struct web49_section_import_entry_t web49_section_import_entry_t;
-
-struct web49_section_import_t;
 typedef struct web49_section_import_t web49_section_import_t;
-
-struct web49_section_function_t;
 typedef struct web49_section_function_t web49_section_function_t;
-
-struct web49_section_table_t;
 typedef struct web49_section_table_t web49_section_table_t;
-
-struct web49_section_memory_t;
 typedef struct web49_section_memory_t web49_section_memory_t;
-
-struct web49_section_global_entry_t;
 typedef struct web49_section_global_entry_t web49_section_global_entry_t;
-
-struct web49_section_global_t;
 typedef struct web49_section_global_t web49_section_global_t;
-
-struct web49_section_start_t;
 typedef struct web49_section_start_t web49_section_start_t;
-
-struct web49_section_element_entry_t;
 typedef struct web49_section_element_entry_t web49_section_element_entry_t;
-
-struct web49_section_element_t;
 typedef struct web49_section_element_t web49_section_element_t;
-
-struct web49_section_code_entry_local_t;
 typedef struct web49_section_code_entry_local_t web49_section_code_entry_local_t;
-
-struct web49_section_code_entry_t;
 typedef struct web49_section_code_entry_t web49_section_code_entry_t;
-
-struct web49_section_code_t;
 typedef struct web49_section_code_t web49_section_code_t;
-
-struct web49_section_data_entry_t;
 typedef struct web49_section_data_entry_t web49_section_data_entry_t;
-
-struct web49_section_data_t;
 typedef struct web49_section_data_t web49_section_data_t;
-
-struct web49_instr_immediate_t;
 typedef struct web49_instr_immediate_t web49_instr_immediate_t;
-
-struct web49_instr_t;
 typedef struct web49_instr_t web49_instr_t;
-
-struct web49_section_t;
 typedef struct web49_section_t web49_section_t;
-
-struct web49_module_t;
 typedef struct web49_module_t web49_module_t;
 
 struct web49_preamble_t {
@@ -865,19 +796,19 @@ struct web49_section_data_t {
 
 struct web49_section_t {
     union {
-        web49_section_custom_t custom_section;
-        web49_section_type_t type_section;
-        web49_section_import_t import_section;
-        web49_section_function_t function_section;
-        web49_section_table_t table_section;
-        web49_section_memory_t memory_section;
-        web49_section_global_t global_section;
-        web49_section_export_t export_section;
-        web49_section_start_t start_section;
-        web49_section_element_t element_section;
-        web49_section_code_t code_section;
-        web49_section_data_t data_section;
-    };
+        web49_section_custom_t custom;
+        web49_section_type_t type;
+        web49_section_import_t import;
+        web49_section_function_t function;
+        web49_section_table_t table;
+        web49_section_memory_t memory;
+        web49_section_global_t global;
+        web49_section_export_t export;
+        web49_section_start_t start;
+        web49_section_element_t element;
+        web49_section_code_t code;
+        web49_section_data_t data;
+    } section;
     web49_section_header_t header;
 };
 

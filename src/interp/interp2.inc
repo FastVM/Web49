@@ -9,47 +9,47 @@ NAME(WEB49_OPCODE_SELECT) {
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_STORE) {
-    WEB49_INTERP_WRITE(uint32_t, interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.i32_u);
+    web49_interp_write_u32(interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_STORE) {
-    WEB49_INTERP_WRITE(uint64_t, interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.i64_u);
+    web49_interp_write_u64(interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.i64_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F32_STORE) {
-    WEB49_INTERP_WRITE(float, interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.f32);
+    web49_interp_write_f32(interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.f32);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_F64_STORE) {
-    WEB49_INTERP_WRITE(double, interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.f64);
+    web49_interp_write_f64(interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.f64);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_STORE8) {
-    WEB49_INTERP_WRITE(uint8_t, interp, LOCAL0.i32_u + head[2].data.i32_u, (uint8_t)LOCAL1.i32_u);
+    web49_interp_write_u8(interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I32_STORE16) {
-    WEB49_INTERP_WRITE(uint16_t, interp, LOCAL0.i32_u + head[2].data.i32_u, (uint16_t)LOCAL1.i32_u);
+    web49_interp_write_u16(interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.i32_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_STORE8) {
-    WEB49_INTERP_WRITE(uint8_t, interp, LOCAL0.i32_u + head[2].data.i32_u, (uint8_t)LOCAL1.i64_u);
+    web49_interp_write_u8(interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.i64_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_STORE16) {
-    WEB49_INTERP_WRITE(uint16_t, interp, LOCAL0.i32_u + head[2].data.i32_u, (uint16_t)LOCAL1.i64_u);
+    web49_interp_write_u16(interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.i64_u);
     head += 3;
     NEXT();
 }
 NAME(WEB49_OPCODE_I64_STORE32) {
-    WEB49_INTERP_WRITE(uint32_t, interp, LOCAL0.i32_u + head[2].data.i32_u, (uint32_t)LOCAL1.i64_u);
+    web49_interp_write_u32(interp, LOCAL0.i32_u + head[2].data.i32_u, LOCAL1.i64_u);
     head += 3;
     NEXT();
 }
@@ -517,7 +517,7 @@ NAME(WEB49_OPCODE_MEMORY_FILL) {
     uint32_t dest = LOCAL0.i32_u;
     uint32_t byte = LOCAL1.i32_u;
     uint32_t size = locals[head[2].data.i32_u].i32_u;
-    memset(WEB49_INTERP_ADDR(void *, interp, dest, size), (int)byte, size);
+    memset(web49_interp_addr(interp, dest, size), (int)byte, size);
     head += 3;
     NEXT();
 }
@@ -525,7 +525,7 @@ NAME(WEB49_OPCODE_MEMORY_COPY) {
     uint32_t dest = LOCAL0.i32_u;
     uint32_t src = LOCAL1.i32_u;
     uint32_t size = locals[head[2].data.i32_u].i32_u;
-    memmove(WEB49_INTERP_ADDR(void *, interp, dest, size), WEB49_INTERP_ADDR(void *, interp, src, size), (size_t)size);
+    memmove(web49_interp_addr(interp, dest, size), web49_interp_addr(interp, src, size), (size_t)size);
     head += 3;
     NEXT();
 }

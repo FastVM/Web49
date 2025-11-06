@@ -2,7 +2,6 @@
 #define WEB49_HEADER_INTERP_INTERP
 
 #include "../ast.h"
-#include "../dep/simde/simd128.h"
 
 typedef uint64_t web49_interp_instr_t;
 
@@ -44,34 +43,14 @@ enum web49_interp_instr_enum_t {
 #endif
 };
 
-union web49_interp_data_t;
 typedef union web49_interp_data_t web49_interp_data_t;
-
-struct web49_interp_t;
 typedef struct web49_interp_t web49_interp_t;
-
-union web49_interp_opcode_t;
 typedef union web49_interp_opcode_t web49_interp_opcode_t;
-
-struct web49_interp_block_t;
 typedef struct web49_interp_block_t web49_interp_block_t;
-
-struct web49_interp_instr_buf_t;
-typedef struct web49_interp_instr_buf_t web49_interp_instr_buf_t;
-
-struct web49_read_block_state_t;
 typedef struct web49_read_block_state_t web49_read_block_state_t;
-
-struct web49_interp_build_t;
 typedef struct web49_interp_build_t web49_interp_build_t;
-
-struct web49_interp_link_t;
 typedef struct web49_interp_link_t web49_interp_link_t;
-
-struct web49_env_t;
 typedef struct web49_env_t web49_env_t;
-
-struct web49_interp_table_t;
 typedef struct web49_interp_table_t web49_interp_table_t;
 
 typedef web49_interp_data_t (*web49_env_func_t)(void *state, web49_interp_t interp);
@@ -102,8 +81,6 @@ union web49_interp_data_t {
 
     float f32;
     double f64;
-
-    simde_v128_t *v128;
 };
 
 struct web49_interp_table_t {
@@ -132,7 +109,7 @@ struct web49_interp_t {
 };
 
 union web49_interp_opcode_t {
-#if WEB49_USE_SWTICH
+#if WEB49_USE_SWITCH
     size_t opcode;
 #else
     void *opcode;
@@ -146,10 +123,14 @@ union web49_interp_opcode_t {
 
 struct web49_interp_block_t {
     web49_interp_opcode_t *code;
-    uint32_t nlocals : 32;
-    uint32_t nparams : 16;
-    uint32_t nreturns : 15;
-    bool is_code : 1;
+    // uint32_t nlocals : 32;
+    // uint32_t nparams : 16;
+    // uint32_t nreturns : 15;
+    // bool is_code : 1;
+    uint32_t nlocals;
+    uint8_t nparams;
+    uint8_t nreturns;
+    bool is_code;
     union {
         struct {
             web49_instr_t *instrs;
@@ -186,28 +167,124 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
 
 void web49_free_interp(web49_interp_t interp);
 
+static inline void web49_interp_bounds(uint32_t dest, uint32_t add) {
 #if WEB49_CHECK_BOUNDS
-#define WEB49_INTERP_BOUNDS(low, add) ({ web49_error(stderr, "memmory access 0x%zx of size 0x%zx out of bounds\n", (size_t) (low), (size_t) (add)); })
+    web49_error(stderr, "memory access 0x%zx of size 0x%zx out of bounds\n", (size_t)(low), (size_t)(add));
 #else
-#define WEB49_INTERP_BOUNDS(low, add) (__builtin_unreachable())
+    __builtin_trap();
 #endif
-#define WEB49_INTERP_ADDR(ptrtype, interp, dest, size) \
-    ({                                                 \
-        uint32_t xptr_ = (uint32_t)(dest);             \
-        uint32_t xsize_ = (uint32_t)(size);            \
-        web49_interp_t sub_ = (interp);                \
-        if (sub_.memsize < xptr_ + xsize_) {           \
-            WEB49_INTERP_BOUNDS(xptr_, xsize_);        \
-        };                                             \
-        (ptrtype) & sub_.memory[xptr_];                \
-    })
-#define WEB49_INTERP_READ(elemtype, interp, src) (*WEB49_INTERP_ADDR(elemtype *, interp, src, sizeof(elemtype)))
-#define WEB49_INTERP_WRITE(elemtype, interp, dest, src) (*WEB49_INTERP_ADDR(elemtype *, interp, dest, sizeof(elemtype)) = (src))
-#define WEB49_INTERP_V128(n) \
-    ({ \
-        simde_v128_t *ptr = web49_malloc(sizeof(simde_v128_t));\
-        *(__uint128_t *)ptr = *(__uint128_t *)&(n); \
-        ptr; \
-    })
+}
+
+static inline uint8_t *web49_interp_addr(web49_interp_t interp, uint32_t addr, uint32_t size) {
+    if (interp.memsize < addr + size) {
+        web49_interp_bounds(addr, size);
+    };
+    return &interp.memory[addr];
+}
+
+// unsigned read
+static inline uint8_t web49_interp_read_u8(web49_interp_t interp, uint32_t addr) {
+    return *web49_interp_addr(interp, addr, sizeof(uint8_t));
+}
+
+static inline uint16_t web49_interp_read_u16(web49_interp_t interp, uint32_t addr) {
+    uint8_t *ptr = web49_interp_addr(interp, addr, sizeof(uint16_t));
+    return (uint16_t)ptr[0] | (uint16_t)ptr[1] << 8;
+}
+
+static inline uint32_t web49_interp_read_u32(web49_interp_t interp, uint32_t addr) {
+    uint8_t *ptr = web49_interp_addr(interp, addr, sizeof(uint32_t));
+    return ((uint32_t)ptr[0]) | ((uint32_t)ptr[1] << 8) | ((uint32_t)ptr[2] << 16) | ((uint32_t)ptr[3] << 24);
+}
+
+static inline uint64_t web49_interp_read_u64(web49_interp_t interp, uint32_t addr) {
+    uint8_t *ptr = web49_interp_addr(interp, addr, sizeof(uint64_t));
+    return ((uint64_t)ptr[0]) | ((uint64_t)ptr[1] << 8) | ((uint64_t)ptr[2] << 16) | ((uint64_t)ptr[3] << 24) | ((uint64_t)ptr[4] << 32) | ((uint64_t)ptr[5] << 40) | ((uint64_t)ptr[6] << 48) | ((uint64_t)ptr[7] << 56);
+}
+
+// signed read
+static inline int8_t web49_interp_read_i8(web49_interp_t interp, uint32_t addr) {
+    return (int8_t)web49_interp_read_u8(interp, addr);
+}
+
+static inline int16_t web49_interp_read_i16(web49_interp_t interp, uint32_t addr) {
+    return (int16_t)web49_interp_read_u16(interp, addr);
+}
+
+static inline int32_t web49_interp_read_i32(web49_interp_t interp, uint32_t addr) {
+    return (int32_t)web49_interp_read_u32(interp, addr);
+}
+
+static inline int64_t web49_interp_read_i64(web49_interp_t interp, uint32_t addr) {
+    return (int64_t)web49_interp_read_u64(interp, addr);
+}
+
+// float read
+static inline float web49_interp_read_f32(web49_interp_t interp, uint32_t addr) {
+    uint32_t x = web49_interp_read_u32(interp, addr);
+    return *(float *) &x;
+}
+
+static inline double web49_interp_read_f64(web49_interp_t interp, uint32_t addr) {
+    uint64_t x = web49_interp_read_u64(interp, addr);
+    return *(double *) &x;
+}
+
+// unsigned write
+static inline void web49_interp_write_u8(web49_interp_t interp, uint32_t addr, uint8_t value) {
+    *web49_interp_addr(interp, addr, sizeof(uint8_t)) = value;
+}
+
+static inline void web49_interp_write_u16(web49_interp_t interp, uint32_t addr, uint16_t value) {
+    uint8_t *ptr = web49_interp_addr(interp, addr, sizeof(uint16_t));
+    ptr[0] = (uint8_t) value;
+    ptr[1] = (uint8_t) (value >> 8);
+}
+
+static inline void web49_interp_write_u32(web49_interp_t interp, uint32_t addr, uint32_t value) {
+    uint8_t *ptr = web49_interp_addr(interp, addr, sizeof(uint32_t));
+    ptr[0] = (uint8_t) value;
+    ptr[1] = (uint8_t) (value >> 8);
+    ptr[2] = (uint8_t) (value >> 16);
+    ptr[3] = (uint8_t) (value >> 24);
+}
+
+static inline void web49_interp_write_u64(web49_interp_t interp, uint32_t addr, uint64_t value) {
+    uint8_t *ptr = web49_interp_addr(interp, addr, sizeof(uint64_t));
+    ptr[0] = (uint8_t) value;
+    ptr[1] = (uint8_t) (value >> 8);
+    ptr[2] = (uint8_t) (value >> 16);
+    ptr[3] = (uint8_t) (value >> 24);
+    ptr[4] = (uint8_t) (value >> 32);
+    ptr[5] = (uint8_t) (value >> 40);
+    ptr[6] = (uint8_t) (value >> 48);
+    ptr[7] = (uint8_t) (value >> 56);
+}
+
+// signed write
+static inline void web49_interp_write_i8(web49_interp_t interp, uint32_t addr, int8_t value) {
+    web49_interp_write_u8(interp, addr, (uint8_t) value);
+}
+
+static inline void web49_interp_write_i16(web49_interp_t interp, uint32_t addr, uint16_t value) {
+    web49_interp_write_u16(interp, addr, (uint16_t) value);
+}
+
+static inline void web49_interp_write_i32(web49_interp_t interp, uint32_t addr, uint16_t value) {
+    web49_interp_write_u32(interp, addr, (uint32_t) value);
+}
+
+static inline void web49_interp_write_i64(web49_interp_t interp, uint32_t addr, uint16_t value) {
+    web49_interp_write_u64(interp, addr, (uint64_t) value);
+}
+
+// write read
+static inline void web49_interp_write_f32(web49_interp_t interp, uint32_t addr, float value) {
+    web49_interp_write_u32(interp, addr, *(uint32_t *)&value);
+}
+
+static inline void web49_interp_write_f64(web49_interp_t interp, uint32_t addr, double value) {
+    web49_interp_write_u64(interp, addr, *(uint64_t *)&value);
+}
 
 #endif

@@ -4,7 +4,6 @@
 
 #define N 16
 
-struct tree_t;
 typedef struct tree_t tree_t;
 
 struct tree_t {

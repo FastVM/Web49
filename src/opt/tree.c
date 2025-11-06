@@ -4,7 +4,6 @@
 
 #define MAX_LOCAL 2048
 
-struct web49_opt_list_t;
 typedef struct web49_opt_list_t web49_opt_list_t;
 
 struct web49_opt_list_t {
@@ -13,9 +12,9 @@ struct web49_opt_list_t {
 };
 
 static web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_t **head) {
-    web49_section_import_t import_section = web49_module_get_section(*mod, WEB49_SECTION_ID_IMPORT).import_section;
-    web49_section_function_t function_section = web49_module_get_section(*mod, WEB49_SECTION_ID_FUNCTION).function_section;
-    web49_section_type_t type_section = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).type_section;
+    web49_section_import_t import_section = web49_module_get_section(*mod, WEB49_SECTION_ID_IMPORT).section.import;
+    web49_section_function_t function_section = web49_module_get_section(*mod, WEB49_SECTION_ID_FUNCTION).section.function;
+    web49_section_type_t type_section = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).section.type;
     uint32_t num_funcs = web49_module_num_func_imports(*mod);
     web49_instr_t ret;
     uint64_t nalloc = 8;
@@ -182,7 +181,6 @@ static web49_instr_t web49_opt_tree_read_block(web49_module_t *mod, web49_instr_
     return ret;
 }
 
-struct web49_block_list_t;
 typedef struct web49_block_list_t web49_block_list_t;
 
 struct web49_block_list_t {
@@ -224,7 +222,7 @@ static void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_
             .is_type_index = false,
         };
         if (type.is_type_index) {
-            web49_section_type_t types = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).type_section;
+            web49_section_type_t types = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).section.type;
             web49_section_type_entry_t te = types.entries[type.type_index];
             list.nreturns = te.num_returns;
             list.nparams = te.num_params;
@@ -302,7 +300,7 @@ static void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_
             .is_type_index = false,
         };
         if (type.is_type_index) {
-            web49_section_type_t types = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).type_section;
+            web49_section_type_t types = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).section.type;
             web49_section_type_entry_t te = types.entries[type.type_index];
             list.nreturns = te.num_returns;
             list.nparams = te.num_params;
@@ -339,14 +337,14 @@ static void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_
         for (size_t i = 0; i < nargs; i++) {
             web49_opt_untree(mod, func_nreturns, pblocks, cur.args[i], len, out, alloc);
         }
-        web49_section_type_t type = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).type_section;
+        web49_section_type_t type = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).section.type;
         web49_section_type_entry_t ent = (web49_section_type_entry_t){0};
         if (cur.opcode == WEB49_OPCODE_CALL_INDIRECT) {
             ent = type.entries[cur.immediate.call_indirect.index];
         } else if (cur.opcode == WEB49_OPCODE_CALL) {
             uint32_t thresh = web49_module_num_func_imports(*mod);
             if (cur.immediate.varuint32 < thresh) {
-                web49_section_import_t imports = web49_module_get_section(*mod, WEB49_SECTION_ID_IMPORT).import_section;
+                web49_section_import_t imports = web49_module_get_section(*mod, WEB49_SECTION_ID_IMPORT).section.import;
                 size_t c = 0;
                 for (size_t i = 0; i < imports.num_entries; i++) {
                     if (c == cur.immediate.varuint32) {
@@ -359,7 +357,7 @@ static void web49_opt_untree(web49_module_t *mod, uint32_t func_nreturns, web49_
                 }
                 web49_error("could not find (func %zu)\n", (size_t)cur.immediate.varuint32);
             } else {
-                web49_section_function_t func = web49_module_get_section(*mod, WEB49_SECTION_ID_FUNCTION).function_section;
+                web49_section_function_t func = web49_module_get_section(*mod, WEB49_SECTION_ID_FUNCTION).section.function;
                 ent = type.entries[func.entries[cur.immediate.varuint32 - thresh]];
             }
         } else {
@@ -437,9 +435,9 @@ static void web49_opt_tree_code(web49_module_t *mod, web49_section_code_entry_t 
 void web49_opt_tree_module(web49_module_t *mod) {
     size_t alloc = 16;
     web49_instr_t *head = web49_malloc(sizeof(web49_instr_t) * alloc);
-    web49_section_code_t code_section = web49_module_get_section(*mod, WEB49_SECTION_ID_CODE).code_section;
-    web49_section_function_t function_section = web49_module_get_section(*mod, WEB49_SECTION_ID_FUNCTION).function_section;
-    web49_section_type_t type_section = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).type_section;
+    web49_section_code_t code_section = web49_module_get_section(*mod, WEB49_SECTION_ID_CODE).section.code;
+    web49_section_function_t function_section = web49_module_get_section(*mod, WEB49_SECTION_ID_FUNCTION).section.function;
+    web49_section_type_t type_section = web49_module_get_section(*mod, WEB49_SECTION_ID_TYPE).section.type;
     for (uint64_t i = 0; i < code_section.num_entries; i++) {
         web49_opt_tree_code(mod, &code_section.entries[i], type_section.entries[function_section.entries[i]], &head, &alloc);
     }

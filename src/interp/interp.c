@@ -1,8 +1,9 @@
 #include "./interp.h"
 
+#include "../config.h"
 #include "../tables.h"
 
-#if WEB49_USE_SWTICH
+#if WEB49_USE_SWITCH
 #define OPCODE(n) (n)
 #else
 #define OPCODE(n) ({size_t x = (n); if (ptrs[x] == NULL) {web49_die();} ptrs[x]; })
@@ -507,9 +508,6 @@ uint32_t web49_interp_read_instr(web49_read_block_state_t *state, web49_instr_t 
         case WEB49_IMMEDIATE_LANE:
             build->code[build->ncode++].data.i32_u = cur.immediate.lane;
             break;
-        case WEB49_IMMEDIATE_V128:
-            build->code[build->ncode++].data.v128 = WEB49_INTERP_V128(cur.immediate.u128);
-            break;
         default:
             web49_error("bad immediate: %zu\n", (size_t)cur.immediate.id);
     }
@@ -598,7 +596,7 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
     }
 }
 
-#if WEB49_USE_SWTICH
+#if WEB49_USE_SWITCH
 #define USE_R(name) name
 #define USE_C0(name) name + WEB49_OPCODE_WITH_CONST0
 #define USE_C1(name) name + WEB49_OPCODE_WITH_CONST1
@@ -628,7 +626,7 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
 #define DPRINT(name)
 #endif
 
-#if WEB49_USE_SWTICH
+#if WEB49_USE_SWITCH
 #define LABEL(op) \
     case op:;     \
         DPRINT(#op);
@@ -637,7 +635,7 @@ static void web49_interp_block_run_comp(web49_interp_block_t *block, void **ptrs
     goto next;
 #else
 #define LABEL(op) \
-    DO_##op:;     \
+    DO_##op :;    \
     DPRINT(#op);
 #define NEXT() goto *head++->opcode;
 #endif
@@ -1128,7 +1126,7 @@ web49_interp_data_t *web49_interp_block_run(web49_interp_t *ptr_interp, web49_in
 #if WEB49_PRINT_INSTR_DEPTH
     size_t depth = 1;
 #endif
-#if WEB49_USE_SWTICH
+#if WEB49_USE_SWITCH
     size_t switch_case;
     NEXT();
 next:;
@@ -1190,21 +1188,21 @@ next:;
 #undef LOCAL1
 #undef NAME
 #endif
-#if WEB49_USE_SWTICH
+#if WEB49_USE_SWITCH
     }
 #endif
 }
 
 web49_interp_t web49_interp_module(web49_module_t mod) {
-    web49_section_code_t code_section = web49_module_get_section(mod, WEB49_SECTION_ID_CODE).code_section;
-    web49_section_type_t type_section = web49_module_get_section(mod, WEB49_SECTION_ID_TYPE).type_section;
-    web49_section_table_t table_section = web49_module_get_section(mod, WEB49_SECTION_ID_TABLE).table_section;
-    web49_section_import_t import_section = web49_module_get_section(mod, WEB49_SECTION_ID_IMPORT).import_section;
-    web49_section_global_t global_section = web49_module_get_section(mod, WEB49_SECTION_ID_GLOBAL).global_section;
-    web49_section_data_t data_section = web49_module_get_section(mod, WEB49_SECTION_ID_DATA).data_section;
-    web49_section_element_t element_section = web49_module_get_section(mod, WEB49_SECTION_ID_ELEMENT).element_section;
-    web49_section_memory_t memory_section = web49_module_get_section(mod, WEB49_SECTION_ID_MEMORY).memory_section;
-    web49_section_function_t function_section = web49_module_get_section(mod, WEB49_SECTION_ID_FUNCTION).function_section;
+    web49_section_code_t code_section = web49_module_get_section(mod, WEB49_SECTION_ID_CODE).section.code;
+    web49_section_type_t type_section = web49_module_get_section(mod, WEB49_SECTION_ID_TYPE).section.type;
+    web49_section_table_t table_section = web49_module_get_section(mod, WEB49_SECTION_ID_TABLE).section.table;
+    web49_section_import_t import_section = web49_module_get_section(mod, WEB49_SECTION_ID_IMPORT).section.import;
+    web49_section_global_t global_section = web49_module_get_section(mod, WEB49_SECTION_ID_GLOBAL).section.global;
+    web49_section_data_t data_section = web49_module_get_section(mod, WEB49_SECTION_ID_DATA).section.data;
+    web49_section_element_t element_section = web49_module_get_section(mod, WEB49_SECTION_ID_ELEMENT).section.element;
+    web49_section_memory_t memory_section = web49_module_get_section(mod, WEB49_SECTION_ID_MEMORY).section.memory;
+    web49_section_function_t function_section = web49_module_get_section(mod, WEB49_SECTION_ID_FUNCTION).section.function;
     uint32_t num_funcs = code_section.num_entries + web49_module_num_func_imports(mod);
     uint32_t cur_func = 0;
     web49_interp_data_t *locals = web49_alloc0(sizeof(web49_interp_data_t) * (1 << 16));
@@ -1259,7 +1257,7 @@ web49_interp_t web49_interp_module(web49_module_t mod) {
     }
     for (size_t j = 0; j < data_section.num_entries; j++) {
         web49_section_data_entry_t entry = data_section.entries[j];
-        memcpy(WEB49_INTERP_ADDR(void *, interp, entry.offset.immediate.varuint32, entry.size), entry.data, entry.size);
+        memcpy(web49_interp_addr(interp, entry.offset.immediate.varuint32, entry.size), entry.data, entry.size);
     }
     for (size_t j = 0; j < code_section.num_entries; j++) {
         web49_section_code_entry_t *entry = &code_section.entries[j];

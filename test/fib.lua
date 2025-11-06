@@ -1,4 +1,4 @@
-local function fib(n)
+test/corelocal function fib(n)
     if n < 2 then
         return n
     else

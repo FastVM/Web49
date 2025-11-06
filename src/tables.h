@@ -4,7 +4,6 @@
 
 #include "./ast.h"
 
-struct web49_table_stack_effect_t;
 typedef struct web49_table_stack_effect_t web49_table_stack_effect_t;
 
 enum {

@@ -3,7 +3,6 @@
 
 #include "../interp/interp.h"
 
-struct web49_wasi_t;
 typedef struct web49_wasi_t web49_wasi_t;
 
 struct web49_wasi_t {

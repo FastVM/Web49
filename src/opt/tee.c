@@ -75,8 +75,8 @@ void web49_opt_tee_module(web49_module_t *mod) {
     for (uint64_t s = 0; s < mod->num_sections; s++) {
         web49_section_t cur = mod->sections[s];
         if (cur.header.id == WEB49_SECTION_ID_CODE) {
-            for (uint64_t i = 0; i < cur.code_section.num_entries; i++) {
-                web49_opt_tee_code(&cur.code_section.entries[i]);
+            for (uint64_t i = 0; i < cur.section.code.num_entries; i++) {
+                web49_opt_tee_code(&cur.section.code.entries[i]);
             }
         }
     }

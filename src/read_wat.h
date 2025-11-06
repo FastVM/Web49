@@ -11,13 +11,8 @@ enum {
     WEB49_READWAT_EXPR_TAG_STR,
 };
 
-struct web49_readwat_table_t;
 typedef struct web49_readwat_table_t web49_readwat_table_t;
-
-struct web49_readwat_state_t;
 typedef struct web49_readwat_state_t web49_readwat_state_t;
-
-struct web49_readwat_expr_t;
 typedef struct web49_readwat_expr_t web49_readwat_expr_t;
 
 void web49_readwat_skip(web49_io_input_t *in);

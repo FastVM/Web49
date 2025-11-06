@@ -203,14 +203,14 @@ void web49_wat_print_section_function(web49_io_output_t *out, web49_module_t mod
     web49_section_type_t type_section;
     for (uint64_t i = 0; i < mod.num_sections; i++) {
         if (mod.sections[i].header.id == WEB49_SECTION_ID_CODE) {
-            code_section = mod.sections[i].code_section;
+            code_section = mod.sections[i].section.code;
         }
         if (mod.sections[i].header.id == WEB49_SECTION_ID_TYPE) {
-            type_section = mod.sections[i].type_section;
+            type_section = mod.sections[i].section.type;
         }
         if (mod.sections[i].header.id == WEB49_SECTION_ID_IMPORT) {
-            for (uint64_t j = 0; j < mod.sections[i].import_section.num_entries; j++) {
-                if (mod.sections[i].import_section.entries[j].kind == WEB49_EXTERNAL_KIND_FUNCTION) {
+            for (uint64_t j = 0; j < mod.sections[i].section.import.num_entries; j++) {
+                if (mod.sections[i].section.import.entries[j].kind == WEB49_EXTERNAL_KIND_FUNCTION) {
                     num_funcs++;
                 }
             }
@@ -320,16 +320,16 @@ void web49_wat_print_section_export(web49_io_output_t *out, web49_module_t mod, 
         web49_io_output_fprintf(out, "\n  (export \"%s\" ", export.field_str);
         switch (export.kind) {
             case WEB49_EXTERNAL_KIND_FUNCTION:
-                web49_io_output_fprintf(out, "(func %zu)", (size_t) export.index);
+                web49_io_output_fprintf(out, "(func %zu)", (size_t)export.index);
                 break;
             case WEB49_EXTERNAL_KIND_TABLE:
-                web49_io_output_fprintf(out, "(table %zu)", (size_t) export.index);
+                web49_io_output_fprintf(out, "(table %zu)", (size_t)export.index);
                 break;
             case WEB49_EXTERNAL_KIND_MEMORY:
-                web49_io_output_fprintf(out, "(memory %zu)", (size_t) export.index);
+                web49_io_output_fprintf(out, "(memory %zu)", (size_t)export.index);
                 break;
             case WEB49_EXTERNAL_KIND_GLOBAL:
-                web49_io_output_fprintf(out, "(global %zu)", (size_t) export.index);
+                web49_io_output_fprintf(out, "(global %zu)", (size_t)export.index);
                 break;
         }
         web49_io_output_write_str(out, ")");
@@ -399,47 +399,47 @@ void web49_wat_print_section(web49_io_output_t *out, web49_module_t mod, web49_s
             break;
         }
         case WEB49_SECTION_ID_TYPE: {
-            web49_wat_print_section_type(out, mod, section.type_section);
+            web49_wat_print_section_type(out, mod, section.section.type);
             break;
         }
         case WEB49_SECTION_ID_IMPORT: {
-            web49_wat_print_section_import(out, mod, section.import_section);
+            web49_wat_print_section_import(out, mod, section.section.import);
             break;
         }
         case WEB49_SECTION_ID_FUNCTION: {
-            web49_wat_print_section_function(out, mod, section.function_section);
+            web49_wat_print_section_function(out, mod, section.section.function);
             break;
         }
         case WEB49_SECTION_ID_TABLE: {
-            web49_wat_print_section_table(out, mod, section.table_section);
+            web49_wat_print_section_table(out, mod, section.section.table);
             break;
         }
         case WEB49_SECTION_ID_MEMORY: {
-            web49_wat_print_section_memory(out, mod, section.memory_section);
+            web49_wat_print_section_memory(out, mod, section.section.memory);
             break;
         }
         case WEB49_SECTION_ID_GLOBAL: {
-            web49_wat_print_section_global(out, mod, section.global_section);
+            web49_wat_print_section_global(out, mod, section.section.global);
             break;
         }
         case WEB49_SECTION_ID_EXPORT: {
-            web49_wat_print_section_export(out, mod, section.export_section);
+            web49_wat_print_section_export(out, mod, section.section.export);
             break;
         }
         case WEB49_SECTION_ID_START: {
-            web49_wat_print_section_start(out, mod, section.start_section);
+            web49_wat_print_section_start(out, mod, section.section.start);
             break;
         }
         case WEB49_SECTION_ID_ELEMENT: {
-            web49_wat_print_section_element(out, mod, section.element_section);
+            web49_wat_print_section_element(out, mod, section.section.element);
             break;
         }
         case WEB49_SECTION_ID_CODE: {
-            web49_wat_print_section_code(out, mod, section.code_section);
+            web49_wat_print_section_code(out, mod, section.section.code);
             break;
         }
         case WEB49_SECTION_ID_DATA: {
-            web49_wat_print_section_data(out, mod, section.data_section);
+            web49_wat_print_section_data(out, mod, section.section.data);
             break;
         }
     }

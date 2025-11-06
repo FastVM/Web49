@@ -164,12 +164,12 @@ void web49_writebin_sleb(web49_writebin_buf_t *out, int64_t x) {
     web49_writebin_fwrite(out, len, result);
 }
 void web49_writebin_section_custom(web49_writebin_buf_t *out, web49_section_t section) {
-    web49_writebin_fwrite(out, section.header.size, section.custom_section.payload);
+    web49_writebin_fwrite(out, section.header.size, section.section.custom.payload);
 }
 void web49_writebin_section_type(web49_writebin_buf_t *out, web49_section_t section) {
-    web49_writebin_uleb(out, section.type_section.num_entries);
-    for (uint64_t i = 0; i < section.type_section.num_entries; i++) {
-        web49_section_type_entry_t entry = section.type_section.entries[i];
+    web49_writebin_uleb(out, section.section.type.num_entries);
+    for (uint64_t i = 0; i < section.section.type.num_entries; i++) {
+        web49_section_type_entry_t entry = section.section.type.entries[i];
         web49_writebin_byte(out, entry.type);
         web49_writebin_uleb(out, entry.num_params);
         for (uint64_t j = 0; j < entry.num_params; j++) {
@@ -182,9 +182,9 @@ void web49_writebin_section_type(web49_writebin_buf_t *out, web49_section_t sect
     }
 }
 void web49_writebin_section_import(web49_writebin_buf_t *out, web49_section_t section) {
-    web49_writebin_uleb(out, section.import_section.num_entries);
-    for (uint64_t i = 0; i < section.import_section.num_entries; i++) {
-        web49_section_import_entry_t entry = section.import_section.entries[i];
+    web49_writebin_uleb(out, section.section.import.num_entries);
+    for (uint64_t i = 0; i < section.section.import.num_entries; i++) {
+        web49_section_import_entry_t entry = section.section.import.entries[i];
         uint64_t msl = strlen(entry.module_str);
         web49_writebin_uleb(out, msl);
         web49_writebin_fwrite(out, msl, entry.module_str);
@@ -213,37 +213,37 @@ void web49_writebin_section_import(web49_writebin_buf_t *out, web49_section_t se
     }
 }
 void web49_writebin_section_function(web49_writebin_buf_t *out, web49_section_t section) {
-    web49_writebin_uleb(out, section.function_section.num_entries);
-    for (uint64_t i = 0; i < section.function_section.num_entries; i++) {
-        web49_writebin_uleb(out, section.function_section.entries[i]);
+    web49_writebin_uleb(out, section.section.function.num_entries);
+    for (uint64_t i = 0; i < section.section.function.num_entries; i++) {
+        web49_writebin_uleb(out, section.section.function.entries[i]);
     }
 }
 void web49_writebin_section_table(web49_writebin_buf_t *out, web49_section_t section) {
-    web49_writebin_uleb(out, section.table_section.num_entries);
-    for (uint64_t i = 0; i < section.table_section.num_entries; i++) {
-        web49_type_table_t entry = section.table_section.entries[i];
+    web49_writebin_uleb(out, section.section.table.num_entries);
+    for (uint64_t i = 0; i < section.section.table.num_entries; i++) {
+        web49_type_table_t entry = section.section.table.entries[i];
         web49_writebin_type_table(out, entry);
     }
 }
 void web49_writebin_section_memory(web49_writebin_buf_t *out, web49_section_t section) {
-    web49_writebin_uleb(out, section.memory_section.num_entries);
-    for (uint64_t i = 0; i < section.memory_section.num_entries; i++) {
-        web49_limits_t entry = section.memory_section.entries[i];
+    web49_writebin_uleb(out, section.section.memory.num_entries);
+    for (uint64_t i = 0; i < section.section.memory.num_entries; i++) {
+        web49_limits_t entry = section.section.memory.entries[i];
         web49_writebin_type_memory(out, entry);
     }
 }
 void web49_writebin_section_global(web49_writebin_buf_t *out, web49_section_t section) {
-    web49_writebin_uleb(out, section.global_section.num_entries);
-    for (uint64_t i = 0; i < section.global_section.num_entries; i++) {
-        web49_section_global_entry_t entry = section.global_section.entries[i];
+    web49_writebin_uleb(out, section.section.global.num_entries);
+    for (uint64_t i = 0; i < section.section.global.num_entries; i++) {
+        web49_section_global_entry_t entry = section.section.global.entries[i];
         web49_writebin_type_global(out, entry.global);
         web49_writebin_init_expr(out, entry.init_expr);
     }
 }
 void web49_writebin_section_export(web49_writebin_buf_t *out, web49_section_t section) {
-    web49_writebin_uleb(out, section.export_section.num_entries);
-    for (uint64_t i = 0; i < section.export_section.num_entries; i++) {
-        web49_section_export_entry_t entry = section.export_section.entries[i];
+    web49_writebin_uleb(out, section.section.export.num_entries);
+    for (uint64_t i = 0; i < section.section.export.num_entries; i++) {
+        web49_section_export_entry_t entry = section.section.export.entries[i];
         size_t len = strlen(entry.field_str);
         web49_writebin_uleb(out, len);
         web49_writebin_fwrite(out, len, entry.field_str);
@@ -252,12 +252,12 @@ void web49_writebin_section_export(web49_writebin_buf_t *out, web49_section_t se
     }
 }
 void web49_writebin_section_start(web49_writebin_buf_t *out, web49_section_t section) {
-    web49_writebin_uleb(out, section.export_section.num_entries);
+    web49_writebin_uleb(out, section.section.export.num_entries);
 }
 void web49_writebin_section_element(web49_writebin_buf_t *out, web49_section_t section) {
-    web49_writebin_uleb(out, section.element_section.num_entries);
-    for (uint64_t i = 0; i < section.element_section.num_entries; i++) {
-        web49_section_element_entry_t entry = section.element_section.entries[i];
+    web49_writebin_uleb(out, section.section.element.num_entries);
+    for (uint64_t i = 0; i < section.section.element.num_entries; i++) {
+        web49_section_element_entry_t entry = section.section.element.entries[i];
         web49_writebin_uleb(out, entry.index);
         web49_writebin_init_expr(out, entry.offset);
         web49_writebin_uleb(out, entry.num_elems);
@@ -267,9 +267,9 @@ void web49_writebin_section_element(web49_writebin_buf_t *out, web49_section_t s
     }
 }
 void web49_writebin_section_code(web49_writebin_buf_t *out, web49_section_t section) {
-    web49_writebin_uleb(out, section.code_section.num_entries);
-    for (uint64_t i = 0; i < section.code_section.num_entries; i++) {
-        web49_section_code_entry_t entry = section.code_section.entries[i];
+    web49_writebin_uleb(out, section.section.code.num_entries);
+    for (uint64_t i = 0; i < section.section.code.num_entries; i++) {
+        web49_section_code_entry_t entry = section.section.code.entries[i];
         web49_writebin_buf_t buf = {0};
         web49_writebin_uleb(&buf, entry.num_locals);
         for (uint64_t j = 0; j < entry.num_locals; j++) {
@@ -284,9 +284,9 @@ void web49_writebin_section_code(web49_writebin_buf_t *out, web49_section_t sect
     }
 }
 void web49_writebin_section_data(web49_writebin_buf_t *out, web49_section_t section) {
-    web49_writebin_uleb(out, section.data_section.num_entries);
-    for (uint64_t i = 0; i < section.data_section.num_entries; i++) {
-        web49_section_data_entry_t entry = section.data_section.entries[i];
+    web49_writebin_uleb(out, section.section.data.num_entries);
+    for (uint64_t i = 0; i < section.section.data.num_entries; i++) {
+        web49_section_data_entry_t entry = section.section.data.entries[i];
         web49_writebin_byte(out, 0);
         web49_writebin_init_expr(out, entry.offset);
         web49_writebin_uleb(out, entry.size);
